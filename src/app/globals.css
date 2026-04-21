@@ -1,0 +1,47 @@
+@import "tailwindcss";
+
+:root {
+  --rhoam-coral: #FF5A5F;
+}
+
+body {
+  font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont;
+  background: white;
+}
+
+.normal-pin {
+  width: 14px;
+  height: 14px;
+  background: coral;
+  border-radius: 50%;
+}
+
+.featured-pin {
+  width: 18px;
+  height: 18px;
+  background: coral;
+  border-radius: 50%;
+  box-shadow: 0 0 12px 4px rgba(255, 127, 80, 0.6);
+  border: 2px solid white;
+}
+
+.price-bubble {
+  display: inline-block;
+  background: #ff5a5f;            /* Airbnb coral */
+  color: white;
+  padding: 8px 14px;
+  border-radius: 999px;           /* pill shape */
+  font-weight: 700;
+  font-size: 14px;
+  white-space: nowrap;            /* prevents breaking */
+  box-shadow: 0 3px 10px rgba(0,0,0,0.25);
+  
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
