@@ -1,20 +1,21 @@
-import { NextResponse } from "next/server"
-import { prisma } from "@/lib/prisma"
+import { NextResponse } from "next/server";
+import { createClient } from "@supabase/supabase-js";
 
-export async function GET(
-  req: Request,
-  { params }: { params: { id: string } }
-) {
-  const property = await prisma.property.findUnique({
-    where: { id: params.id },
-  })
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+);
 
-  if (!property) {
-    return NextResponse.json(
-      { error: "Property not found" },
-      { status: 404 }
-    )
+export async function GET(_: Request, { params }: { params: { id: string } }) {
+  const { data, error } = await supabase
+    .from("properties")
+    .select("*")
+    .eq("id", params.id)
+    .single();
+
+  if (error) {
+    return NextResponse.json({ error }, { status: 500 });
   }
 
-  return NextResponse.json(property)
+  return NextResponse.json(data);
 }
