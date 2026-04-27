@@ -1,0 +1,9 @@
+export type Property = {
+    id: string;
+    title: string;
+    price: number;
+    latitude: number;
+    longitude: number;
+    category: string;
+    image_url: string;
+  };

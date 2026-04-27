@@ -1,19 +1,15 @@
-import { supabase } from "@/lib/supabase";
+import { createClient } from "@supabase/supabase-js";
 
-export async function GET(req: Request) {
-  const { searchParams } = new URL(req.url);
-  const category = searchParams.get("category");
+const supabase = createClient(
+  process.env.SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_ROLE_KEY!
+);
 
-  let query = supabase.from("properties").select("*");
-
-  if (category && category !== "All") {
-    query = query.eq("category", category);
-  }
-
-  const { data, error } = await query;
+export async function GET() {
+  const { data, error } = await supabase.from("properties").select("*");
 
   if (error) {
-    return Response.json({ error }, { status: 500 });
+    return Response.json({ error }, { status: 400 });
   }
 
   return Response.json(data);
