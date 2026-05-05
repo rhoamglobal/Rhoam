@@ -19,6 +19,7 @@ const CATEGORIES = [
   { name: "Student Apartments", icon: GraduationCap },
   { name: "Apartments", icon: Building2 },
   { name: "Shortlets", icon: Home },
+  { name: "Campus", icon: Home },
 ];
 
 export default function CategoryBar({ active, setActive }: Props) {

@@ -1,6 +1,6 @@
 "use client";
 
-import { useMap, useMapEvents } from "react-leaflet";
+import { useMapEvents } from "react-leaflet";
 import { LatLngBounds } from "leaflet";
 
 type Props = {
@@ -8,13 +8,13 @@ type Props = {
 };
 
 export default function MapBoundsHandler({ onBoundsChange }: Props) {
-  const map = useMap(); // ✅ real map instance
-
   useMapEvents({
-    moveend() {
+    moveend(e) {
+      const map = e.target;
       onBoundsChange(map.getBounds());
     },
-    zoomend() {
+    zoomend(e) {
+      const map = e.target;
       onBoundsChange(map.getBounds());
     },
   });

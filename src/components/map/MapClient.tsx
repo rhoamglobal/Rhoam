@@ -2,62 +2,72 @@
 
 import { MapContainer, TileLayer, Marker } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
-import { useEffect, useMemo, useState } from "react";
+import { useState } from "react";
 import { LatLngBounds } from "leaflet";
 
-import { Property } from "./types";
 import { priceIcon } from "./PriceMarker";
 import CloseOnMapClick from "./CloseOnMapClick";
 import PreviewCard from "./PreviewCard";
-import CategoryBar from "./CategoryBar";
 import MapBoundsHandler from "./MapBoundsHandler";
+import MapAutoFit from "./MapAutoFit";
 
-export default function MapClient() {
-  const [properties, setProperties] = useState<Property[]>([]);
+import { useDebounce } from "@/hooks/useDebounce";
+import { usePropertySearch } from "@/hooks/usePropertySearch";
+import { Property } from "./types";
+import { useEffect } from "react";
+import SearchThisAreaButton from "./SearchThisAreaButton";
+
+type Props = {
+  category: string;
+  search: string;
+};
+
+export default function MapClient({ category, search }: Props) {
   const [selected, setSelected] = useState<Property | null>(null);
-
-  const [activeCategory, setActiveCategory] = useState("All");
   const [bounds, setBounds] = useState<LatLngBounds | null>(null);
 
-  useEffect(() => {
-    fetch("/api/property")
-      .then((res) => res.json())
-      .then((data) => setProperties(data));
-  }, []);
+  // ✅ debounce search HERE
+  const debouncedSearch = useDebounce(search, 400);
 
-  // ✅ Category + Bounds filtering combined
-  const filteredProperties = useMemo(() => {
-    return properties.filter((p) => {
-      // Category filter
-      if (activeCategory !== "All" && p.category !== activeCategory) {
-        return false;
-      }
+  // ✅ search now button
+  const [pendingBounds, setPendingBounds] = useState<LatLngBounds | null>(null);
+  const [showSearchButton, setShowSearchButton] = useState(false);
 
-      // Bounds filter
-      if (bounds) {
-        return bounds.contains([p.latitude, p.longitude]);
-      }
+  // ✅ database filtering
+  const properties = usePropertySearch({
+    bounds,
+    category,
+    search: debouncedSearch,
+  });
 
-      return true;
-    });
-  }, [properties, activeCategory, bounds]);
+  const applySearchArea = () => {
+    if (pendingBounds) {
+      setBounds(pendingBounds);
+      setShowSearchButton(false);
+    }
+  };
 
   return (
-    <div style={{ height: "100vh", width: "100%" }}>
-      <CategoryBar active={activeCategory} setActive={setActiveCategory} />
-
+    <div className="h-full w-full">
       <MapContainer
-        center={[6.4584, 7.5464]}
+        center={[6.30624, 7.53812]}
         zoom={13}
         scrollWheelZoom
         style={{ height: "100%", width: "100%" }}
       >
-        <MapBoundsHandler onBoundsChange={setBounds} />
+        <MapBoundsHandler
+          onBoundsChange={(b) => {
+            setPendingBounds(b);
+            setShowSearchButton(true);
+          }}
+        />
         <CloseOnMapClick onClose={() => setSelected(null)} />
 
         <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
 
-        {filteredProperties.map((p) => (
+        <MapAutoFit properties={properties} />
+
+        {properties.map((p) => (
           <Marker
             key={p.id}
             position={[p.latitude, p.longitude]}
@@ -68,6 +78,11 @@ export default function MapClient() {
           />
         ))}
       </MapContainer>
+
+      <SearchThisAreaButton
+        visible={showSearchButton}
+        onClick={applySearchArea}
+      />
 
       <PreviewCard property={selected} />
     </div>
