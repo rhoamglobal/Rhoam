@@ -10,6 +10,11 @@ export async function GET(req: Request) {
   const west = Number(searchParams.get("west"));
   const category = searchParams.get("category");
   const search = searchParams.get("search");
+  const maxPrice = Number(searchParams.get("maxPrice"));
+
+if (maxPrice) {
+  query = query.lte("price", maxPrice);
+}
 
   if (!north || !south || !east || !west) {
     return NextResponse.json([]);

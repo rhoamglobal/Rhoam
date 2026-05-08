@@ -15,7 +15,11 @@ import { useDebounce } from "@/hooks/useDebounce";
 import { usePropertySearch } from "@/hooks/usePropertySearch";
 import { Property } from "./types";
 import { useEffect } from "react";
-import SearchThisAreaButton from "./SearchThisAreaButton";
+import SearchThisAreaButton from "./search/SearchThisAreaButton";
+import RememberMapView from "./RememberMapView";
+
+  // ✅ school search HERE
+import FlyToSchool from "./search/FlyToSchool";
 
 type Props = {
   category: string;
@@ -33,11 +37,16 @@ export default function MapClient({ category, search }: Props) {
   const [pendingBounds, setPendingBounds] = useState<LatLngBounds | null>(null);
   const [showSearchButton, setShowSearchButton] = useState(false);
 
+  // ✅ parse search 
+  const [maxPrice, setMaxPrice] = useState<number | undefined>(undefined);
+  const [activeCategory, setActiveCategory] = useState(category);
+
   // ✅ database filtering
   const properties = usePropertySearch({
     bounds,
     category,
     search: debouncedSearch,
+    maxPrice,
   });
 
   const applySearchArea = () => {
@@ -46,6 +55,7 @@ export default function MapClient({ category, search }: Props) {
       setShowSearchButton(false);
     }
   };
+  
 
   return (
     <div className="h-full w-full">
@@ -64,6 +74,17 @@ export default function MapClient({ category, search }: Props) {
         <CloseOnMapClick onClose={() => setSelected(null)} />
 
         <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+
+        <RememberMapView />
+        
+        <FlyToSchool
+          search={search}
+          setBounds={setBounds}
+          setCategory={setActiveCategory}
+          setMaxPrice={setMaxPrice}
+        />
+        
+        <MapAutoFit properties={properties} />
 
         <MapAutoFit properties={properties} />
 
