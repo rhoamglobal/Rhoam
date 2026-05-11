@@ -19,6 +19,7 @@ export type ParsedSearch = {
     if (text.includes("hostel")) result.category = "hostel";
     if (text.includes("apartment")) result.category = "apartment";
     if (text.includes("self contain")) result.category = "self contain";
+    if (text.includes("hotels")) result.category = "hotels";
   
     // Detect price like 300k / 450k
     const priceMatch = text.match(/(\d+)\s?k/);

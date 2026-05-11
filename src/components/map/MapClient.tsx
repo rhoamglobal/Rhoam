@@ -24,7 +24,12 @@ import { detectSchoolFromSearch } from "@/lib/detectSchool";
   // ✅ school search HERE
 import FlyToSchool from "./search/FlyToSchool";
 
-import { schoolIcon } from "@/lib/mapIcons"
+// @for clustering
+import "leaflet.markercluster/dist/MarkerCluster.css";
+import "leaflet.markercluster/dist/MarkerCluster.Default.css";
+import MarkerClusterGroup from "react-leaflet-cluster";
+
+
 
 type Props = {
   category: string;
@@ -101,17 +106,52 @@ export default function MapClient({ category, search }: Props) {
         <MapAutoFit properties={properties} />
 
           
-        {Array.isArray(properties) &&
-        properties.map((property) => (
-          <Marker
-            key={property.id}
-            position={[property.latitude, property.longitude]}
-            icon={priceIcon(property.price)}
-            eventHandlers={{
-              click: () => setSelected(property),
+        <MarkerClusterGroup
+          chunkedLoading
+          spiderfyOnMaxZoom
+          showCoverageOnHover={false}
+          iconCreateFunction={(cluster) => {
+            const count = cluster.getChildCount();
+        
+            return L.divIcon({
+              html: `
+                <div style="
+                  background: coral;
+                  color: white;
+                  border-radius: 9999px;
+                  width: 44px;
+                  height: 44px;
+                  display: flex;
+                  align-items: center;
+                  justify-content: center;
+                  font-weight: 700;
+                  font-size: 14px;
+                  border: 3px solid white;
+                  box-shadow: 0 4px 10px rgba(0,0,0,0.25);
+                "
+                onmouseover="this.style.transform='translateY(-4px) scale(1.05)'"
+                onmouseout="this.style.transform='translateY(0)'"
+                >
+                  ${count}
+                </div>
+              `,
+              className: "custom-cluster",
+              iconSize: L.point(44, 44),
+            });
             }}
-          />
-        ))}
+        >
+          {Array.isArray(properties) &&
+            properties.map((property) => (
+              <Marker
+                key={property.id}
+                position={[property.latitude, property.longitude]}
+                icon={priceIcon(property.price)}
+                eventHandlers={{
+                  click: () => setSelected(property),
+                }}
+              />
+            ))}
+        </MarkerClusterGroup>
           
       </MapContainer>
 

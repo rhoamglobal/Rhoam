@@ -38,9 +38,14 @@ body {
   
 }
 
-.custom-price-marker {
-  background: none;
+.price-bubble {
+
   border: none;
+  transition: transform 0.2s ease;
+}
+.price-bubble:hover {
+  transform: translateY(-4px) scale(1.05);
+  z-index: 9999;
 }
 
 .scrollbar-hide::-webkit-scrollbar {
