@@ -12,8 +12,10 @@ export async function GET(req: Request) {
   const search = searchParams.get("search");
   const maxPrice = Number(searchParams.get("maxPrice"));
 
+let query = supabase.from("properties").select("*");
+
 if (maxPrice) {
-  query = query.lte("price", maxPrice);
+  query = query.lte("price", Number(maxPrice));
 }
 
   if (!north || !south || !east || !west) {
