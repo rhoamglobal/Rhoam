@@ -1,5 +1,6 @@
 import "./globals.css";
 import "leaflet/dist/leaflet.css";
+import BottomNav from "@/components/navigation/BottomNav";
 
 export const metadata = {
   title: "Rhoam",
@@ -13,7 +14,9 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body>{children}</body>
+      <body>{children}
+      <BottomNav />
+      </body>
     </html>
   );
 }

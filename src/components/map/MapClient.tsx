@@ -1,6 +1,6 @@
 "use client";
 
-import { MapContainer, TileLayer, Marker } from "react-leaflet";
+import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import { useState } from "react";
 import { LatLngBounds } from "leaflet";
@@ -18,8 +18,13 @@ import { useEffect } from "react";
 import SearchThisAreaButton from "./search/SearchThisAreaButton";
 import RememberMapView from "./RememberMapView";
 
+import { schools } from "@/lib/schools";
+import { detectSchoolFromSearch } from "@/lib/detectSchool";
+
   // ✅ school search HERE
 import FlyToSchool from "./search/FlyToSchool";
+
+import { schoolIcon } from "@/lib/mapIcons"
 
 type Props = {
   category: string;
@@ -41,6 +46,12 @@ export default function MapClient({ category, search }: Props) {
   const [maxPrice, setMaxPrice] = useState<number | undefined>(undefined);
   const [activeCategory, setActiveCategory] = useState(category);
 
+  // ✅ detect school 
+  
+  const detectedSchool = detectSchoolFromSearch(debouncedSearch);
+
+  
+  
   // ✅ database filtering
   const properties = usePropertySearch({
     bounds,
@@ -55,6 +66,7 @@ export default function MapClient({ category, search }: Props) {
       setShowSearchButton(false);
     }
   };
+  console.log("PROPERTIES DATA:", properties)
   
 
   return (
@@ -88,16 +100,19 @@ export default function MapClient({ category, search }: Props) {
 
         <MapAutoFit properties={properties} />
 
-        {properties.map((p) => (
+          
+        {Array.isArray(properties) &&
+        properties.map((property) => (
           <Marker
-            key={p.id}
-            position={[p.latitude, p.longitude]}
-            icon={priceIcon(p.price)}
+            key={property.id}
+            position={[property.latitude, property.longitude]}
+            icon={priceIcon(property.price)}
             eventHandlers={{
-              click: () => setSelected(p),
+              click: () => setSelected(property),
             }}
           />
         ))}
+          
       </MapContainer>
 
       <SearchThisAreaButton
@@ -105,7 +120,7 @@ export default function MapClient({ category, search }: Props) {
         onClick={applySearchArea}
       />
 
-      <PreviewCard property={selected} />
+<PreviewCard property={selected} school={detectedSchool} />
     </div>
   );
 }
