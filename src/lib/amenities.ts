@@ -5,9 +5,10 @@ import {
     Zap,
     Car,
     Wind,
+    LucideIcon,
   } from "lucide-react";
   
-  export const amenityIcons: Record<string, any> = {
+  export const amenityIcons: Record<string, LucideIcon> = {
     wifi: Wifi,
     borehole: Droplets,
     water: Droplets,

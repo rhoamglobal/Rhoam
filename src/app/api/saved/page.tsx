@@ -1,13 +1,11 @@
 import { createClient } from "@supabase/supabase-js";
+import Image from "next/image";
 
 export default async function SavedPage() {
   const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.SUPABASE_SERVICE_ROLE_KEY!
   );
-
-  // TEMP USER (replace later with auth)
-  const userId = "guest-user-1";
 
   const { data: saved } = await supabase
     .from("saved_properties")
@@ -37,10 +35,14 @@ export default async function SavedPage() {
             href={`/property/${p.id}`}
             className="border rounded-xl overflow-hidden hover:shadow-md transition"
           >
-            <img
-              src={p.images?.[0]}
-              className="h-40 w-full object-cover"
-            />
+            <div className="relative h-40 w-full">
+              <Image
+                src={p.images?.[0] || "/placeholder.jpg"}
+                alt={p.title}
+                fill
+                className="object-cover"
+              />
+            </div>
 
             <div className="p-3">
               <p className="font-semibold">

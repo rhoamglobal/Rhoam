@@ -2,6 +2,7 @@
 
 import { motion, AnimatePresence } from "framer-motion";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 import { Property } from "./types";
 import { useEffect, useState } from "react";
 import { isSaved, toggleSaved } from "@/lib/saved";
@@ -26,11 +27,14 @@ export default function PreviewCard({
 
   const [saved, setSaved] = useState(false);
 
-useEffect(() => {
-  if (property) {
-    setSaved(isSaved(property.id));
-  }
-}, [property]);
+  useEffect(() => {
+    if (property) {
+      const timer = setTimeout(() => {
+        setSaved(isSaved(property.id));
+      }, 0);
+      return () => clearTimeout(timer);
+    }
+  }, [property]);
 
 const handleSave = () => {
   if (!property) return;
@@ -66,7 +70,14 @@ const handleSave = () => {
           className="preview-card"
         >
         <div style={{ position: "relative" }}>
-          <img src={property.image_url} alt={property.title} />
+          <div className="relative h-48 w-full">
+            <Image
+              src={property.image_url}
+              alt={property.title}
+              fill
+              className="object-cover"
+            />
+          </div>
 
           <div
             onClick={handleSave}

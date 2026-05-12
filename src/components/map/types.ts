@@ -6,4 +6,7 @@ export type Property = {
     longitude: number;
     category: string;
     image_url: string;
+    images?: string[];
+    description?: string;
+    amenities?: string[];
   };

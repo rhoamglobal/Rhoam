@@ -1,8 +1,11 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
+import { Property } from "../types";
+
+import { LatLngBounds } from "leaflet";
 
 interface SearchParams {
-  bounds: any;
+  bounds: LatLngBounds | null;
   category: string;
   search: string;
   maxPrice: number;
@@ -14,7 +17,7 @@ export function usePropertySearch({
   search,
   maxPrice,
 }: SearchParams) {
-  const [properties, setProperties] = useState<any[]>([]);
+  const [properties, setProperties] = useState<Property[]>([]);
 
   useEffect(() => {
     const fetchProperties = async () => {
