@@ -14,31 +14,27 @@ export default function PropertyClient({
 }) {
   const [activeImage, setActiveImage] = useState(0);
   const [saved, setSaved] = useState(false);
-  const [userId, setUserId] = useState<string | null>(null);
 
   useEffect(() => {
-    const getUser = async () => {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-  
-      setUserId(user?.id || null);
-    };
-  
-    getUser();
-  }, []);
+    const checkSaved = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) return;
 
-  useEffect(() => {
-    if (!userId) return;
-    fetch(`/api/saved?userId=${userId}`)
-      .then((res) => res.json())
-      .then((data) => {
+      const res = await fetch("/api/saved", {
+        headers: {
+          Authorization: `Bearer ${session.access_token}`,
+        },
+      });
+      if (res.ok) {
+        const data = await res.json();
         const isSaved = data.some(
-          (item: { property_id: string }) => item.property_id === property.id
+          (item: Property) => item.id === property.id
         );
         setSaved(isSaved);
-      });
-  }, [userId, property.id]);
+      }
+    };
+    checkSaved();
+  }, [property.id]);
   
 
   return (
@@ -138,11 +134,19 @@ export default function PropertyClient({
         {/* SAVE BUTTON */}
         <button
             onClick={async () => {
+              const { data: { session } } = await supabase.auth.getSession();
+              if (!session) {
+                alert("Please login to save properties");
+                return;
+              }
+
               const res = await fetch("/api/save", {
                 method: "POST",
-                headers: { "Content-Type": "application/json" },
+                headers: {
+                  "Content-Type": "application/json",
+                  "Authorization": `Bearer ${session.access_token}`
+                },
                 body: JSON.stringify({
-                  userId,
                   propertyId: property.id,
                 }),
               });

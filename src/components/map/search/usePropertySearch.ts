@@ -8,7 +8,7 @@ interface SearchParams {
   bounds: LatLngBounds | null;
   category: string;
   search: string;
-  maxPrice: number;
+  maxPrice: number | undefined;
 }
 
 export function usePropertySearch({

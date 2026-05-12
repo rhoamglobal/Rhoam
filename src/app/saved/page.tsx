@@ -2,8 +2,8 @@
 
 import { useEffect, useState } from "react";
 import PreviewCard from "@/components/map/PreviewCard";
-import { getSaved } from "@/lib/saved";
 import { Property } from "@/components/map/types";
+import { supabase } from "@/lib/supabaseClient";
 
 export default function SavedPage() {
   const [properties, setProperties] = useState<Property[]>([]);
@@ -11,25 +11,19 @@ export default function SavedPage() {
 
   useEffect(() => {
     const fetchSaved = async () => {
-      const savedIds = getSaved();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
 
-      if (savedIds.length === 0) {
+      if (!user) {
         setLoading(false);
         return;
       }
 
-      // ✅ Call YOUR API (same as map)
-      const res = await fetch("/api/properties", {
-        cache: "no-store",
-      });
-      const allProperties = await res.json();
+      const res = await fetch(`/api/saved?userId=${user.id}`);
+      const data = await res.json();
 
-      // ✅ Filter only saved ones
-      const filtered = allProperties.filter((p: Property) =>
-        savedIds.includes(p.id)
-      );
-
-      setProperties(filtered);
+      setProperties(data);
       setLoading(false);
     };
 

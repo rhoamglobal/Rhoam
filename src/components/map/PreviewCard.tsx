@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { Property } from "./types";
 import { useEffect, useState } from "react";
-import { isSaved, toggleSaved } from "@/lib/saved";
+import { toggleSaved } from "@/lib/saved";
 import { Heart } from "lucide-react";
 
 import { getDistanceKm, kmToWalkMinutes } from "@/lib/distance";
@@ -19,26 +19,26 @@ type School = {
 export default function PreviewCard({
   property,
   school, // ✅ now a school OBJECT
+  isInitiallySaved = false,
 }: {
   property: Property | null;
   school?: School | null;
+  isInitiallySaved?: boolean;
 }) {
   const router = useRouter();
 
-  const [saved, setSaved] = useState(false);
+  const [saved, setSaved] = useState(isInitiallySaved);
 
   useEffect(() => {
-    if (property) {
-      const timer = setTimeout(() => {
-        setSaved(isSaved(property.id));
-      }, 0);
-      return () => clearTimeout(timer);
-    }
-  }, [property]);
+    const timer = setTimeout(() => {
+      setSaved(isInitiallySaved);
+    }, 0);
+    return () => clearTimeout(timer);
+  }, [isInitiallySaved]);
 
-const handleSave = () => {
+const handleSave = async () => {
   if (!property) return;
-  const state = toggleSaved(property.id); // ✅ correct name
+  const state = await toggleSaved(property.id);
   setSaved(state);
 };
 
