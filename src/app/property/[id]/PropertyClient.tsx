@@ -127,7 +127,7 @@ export default function PropertyClient({
         <div className="mt-10 bg-gray-50 border rounded-xl p-5">
           <h2 className="text-sm font-medium mb-2">Location</h2>
           <p className="text-sm text-gray-500">
-            {property.latitude}, {property.longitude}
+            {property.latitude ?? property.lat}, {property.longitude ?? property.lng}
           </p>
         </div>
 

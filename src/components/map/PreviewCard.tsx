@@ -72,7 +72,7 @@ const handleSave = async () => {
         <div style={{ position: "relative" }}>
           <div className="relative h-48 w-full">
             <Image
-              src={property.image_url}
+              src={property.images?.[0] || property.image_url || "/placeholder.jpg"}
               alt={property.title}
               fill
               className="object-cover"

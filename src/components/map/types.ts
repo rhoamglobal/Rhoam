@@ -9,4 +9,6 @@ export type Property = {
     images?: string[];
     description?: string;
     amenities?: string[];
+    lat?: number;
+    lng?: number;
   };

@@ -26,10 +26,10 @@ export function usePropertySearch({
       // ✅ Map bounds filter
       if (bounds) {
         query = query
-          .gte("lat", bounds.getSouth())
-          .lte("lat", bounds.getNorth())
-          .gte("lng", bounds.getWest())
-          .lte("lng", bounds.getEast());
+          .gte("latitude", bounds.getSouth())
+          .lte("latitude", bounds.getNorth())
+          .gte("longitude", bounds.getWest())
+          .lte("longitude", bounds.getEast());
       }
 
       // ✅ Category filter
