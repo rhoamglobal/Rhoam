@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { createClient } from "@supabase/supabase-js";
+import { supabaseAdmin } from "@/lib/supabaseAdmin";
 
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
@@ -12,14 +12,8 @@ export async function GET(req: Request) {
   const search = searchParams.get("search");
   const maxPrice = searchParams.get("maxPrice");
 
-  // Create Supabase client
-  const supabase = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!
-  );
-
   // Base query (MUST be first)
-  let query = supabase.from("properties").select("*");
+  let query = supabaseAdmin.from("properties").select("*");
 
   // Map bounds filter (only apply if all exist)
   if (north && south && east && west) {

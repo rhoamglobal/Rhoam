@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { createClient } from "@supabase/supabase-js";
+import { supabaseAdmin } from "@/lib/supabaseAdmin";
 
 export async function POST(req: Request) {
   const { propertyId } = await req.json();
@@ -11,30 +11,20 @@ export async function POST(req: Request) {
     );
   }
 
-  const supabase = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!,
-    {
-      auth: {
-        persistSession: false,
-      },
-    }
-  );
-
   const authHeader = req.headers.get("Authorization");
   if (!authHeader) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   const token = authHeader.replace("Bearer ", "");
-  const { data: { user }, error: authError } = await supabase.auth.getUser(token);
+  const { data: { user }, error: authError } = await supabaseAdmin.auth.getUser(token);
 
   if (authError || !user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   // check if already saved
-  const { data: existing } = await supabase
+  const { data: existing } = await supabaseAdmin
     .from("saved_properties")
     .select("*")
     .eq("user_id", user.id)
@@ -43,7 +33,7 @@ export async function POST(req: Request) {
 
   // if exists → remove (toggle off)
   if (existing) {
-    await supabase
+    await supabaseAdmin
       .from("saved_properties")
       .delete()
       .eq("user_id", user.id)
@@ -53,7 +43,7 @@ export async function POST(req: Request) {
   }
 
   // else → save
-  await supabase.from("saved_properties").insert({
+  await supabaseAdmin.from("saved_properties").insert({
     user_id: user.id,
     property_id: propertyId,
   });

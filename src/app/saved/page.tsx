@@ -12,18 +12,24 @@ export default function SavedPage() {
   useEffect(() => {
     const fetchSaved = async () => {
       const {
-        data: { user },
-      } = await supabase.auth.getUser();
+        data: { session },
+      } = await supabase.auth.getSession();
 
-      if (!user) {
+      if (!session) {
         setLoading(false);
         return;
       }
 
-      const res = await fetch(`/api/saved?userId=${user.id}`);
-      const data = await res.json();
+      const res = await fetch("/api/saved", {
+        headers: {
+          Authorization: `Bearer ${session.access_token}`,
+        },
+      });
 
-      setProperties(data);
+      if (res.ok) {
+        const data = await res.json();
+        setProperties(data);
+      }
       setLoading(false);
     };
 

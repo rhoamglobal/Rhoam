@@ -2,6 +2,8 @@ import { notFound } from "next/navigation";
 import { createClient } from "@supabase/supabase-js";
 import PropertyClient from "./PropertyClient";
 
+export const dynamic = "force-dynamic";
+
 export default async function PropertyPage({
   params,
 }: {

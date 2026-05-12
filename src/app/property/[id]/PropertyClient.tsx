@@ -43,7 +43,11 @@ export default function PropertyClient({
       {/* HERO IMAGE */}
       <div className="w-full h-[420px] relative">
         <Image
-          src={property.images?.[activeImage] || "/placeholder.jpg"}
+          src={
+            (property.images && property.images.length > 0
+              ? property.images[activeImage]
+              : property.image_url) || "/placeholder.jpg"
+          }
           alt={property.title}
           fill
           className="object-cover"
@@ -52,7 +56,7 @@ export default function PropertyClient({
 
       {/* THUMBNAILS */}
       <div className="flex gap-2 px-6 mt-3 overflow-x-auto">
-        {property.images?.map((img: string, i: number) => (
+        {(property.images || []).map((img: string, i: number) => (
           <div
             key={i}
             className={`relative h-16 w-20 flex-shrink-0 rounded-md cursor-pointer border-2 ${
