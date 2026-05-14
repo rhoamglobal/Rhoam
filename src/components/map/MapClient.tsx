@@ -12,10 +12,8 @@ import MapBoundsHandler from "./MapBoundsHandler";
 import MapAutoFit from "./MapAutoFit";
 
 import { useDebounce } from "@/hooks/useDebounce";
-import { usePropertySearch } from "./search/usePropertySearch";
+import { usePropertySearch } from "@/hooks/usePropertySearch";
 import { Property } from "./types";
-import { useEffect } from "react";
-import { supabase } from "@/lib/supabaseClient";
 import SearchThisAreaButton from "./search/SearchThisAreaButton";
 import RememberMapView from "./RememberMapView";
 
@@ -39,7 +37,6 @@ type Props = {
 export default function MapClient({ category, search }: Props) {
   const [selected, setSelected] = useState<Property | null>(null);
   const [bounds, setBounds] = useState<LatLngBounds | null>(null);
-  const [savedIds, setSavedIds] = useState<string[]>([]);
 
   // ✅ debounce search HERE
   const debouncedSearch = useDebounce(search, 400);
@@ -65,24 +62,6 @@ export default function MapClient({ category, search }: Props) {
     search: debouncedSearch,
     maxPrice,
   });
-
-  useEffect(() => {
-    const fetchSaved = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) return;
-
-      const res = await fetch("/api/saved", {
-        headers: {
-          Authorization: `Bearer ${session.access_token}`,
-        },
-      });
-      if (res.ok) {
-        const data = await res.json();
-        setSavedIds(data.map((p: Property) => p.id));
-      }
-    };
-    fetchSaved();
-  }, []);
 
   const applySearchArea = () => {
     if (pendingBounds) {
@@ -179,11 +158,7 @@ export default function MapClient({ category, search }: Props) {
         onClick={applySearchArea}
       />
 
-<PreviewCard
-  property={selected}
-  school={detectedSchool}
-  isInitiallySaved={selected ? savedIds.includes(selected.id) : false}
-/>
+<PreviewCard property={selected} school={detectedSchool} />
     </div>
   );
 }

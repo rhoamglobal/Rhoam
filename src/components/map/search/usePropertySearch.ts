@@ -1,14 +1,13 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { Property } from "../types";
-
 import { LatLngBounds } from "leaflet";
 
 interface SearchParams {
   bounds: LatLngBounds | null;
   category: string;
   search: string;
-  maxPrice: number | undefined;
+  maxPrice: number;
 }
 
 export function usePropertySearch({
@@ -26,10 +25,10 @@ export function usePropertySearch({
       // ✅ Map bounds filter
       if (bounds) {
         query = query
-          .gte("latitude", bounds.getSouth())
-          .lte("latitude", bounds.getNorth())
-          .gte("longitude", bounds.getWest())
-          .lte("longitude", bounds.getEast());
+          .gte("lat", bounds.getSouth())
+          .lte("lat", bounds.getNorth())
+          .gte("lng", bounds.getWest())
+          .lte("lng", bounds.getEast());
       }
 
       // ✅ Category filter

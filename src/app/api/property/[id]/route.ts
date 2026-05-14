@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { supabaseAdmin } from "@/lib/supabaseAdmin";
+import { createClient } from "@supabase/supabase-js";
 
 export async function GET(
   req: Request,
@@ -8,6 +8,10 @@ export async function GET(
   // ✅ unwrap the params Promise (Next 15 requirement)
   const { id } = await context.params;
 
+  console.log("ID:", id);
+  console.log("URL:", process.env.NEXT_PUBLIC_SUPABASE_URL);
+  console.log("KEY:", process.env.SUPABASE_SERVICE_ROLE_KEY);
+
   if (!id) {
     return NextResponse.json(
       { error: "Property ID is required" },
@@ -15,7 +19,12 @@ export async function GET(
     );
   }
 
-  const { data, error } = await supabaseAdmin
+  const supabase = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL as string,
+    process.env.SUPABASE_SERVICE_ROLE_KEY as string
+  );
+
+  const { data, error } = await supabase
     .from("properties")
     .select("*")
     .eq("id", id)

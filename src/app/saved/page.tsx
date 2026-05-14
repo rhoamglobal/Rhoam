@@ -2,8 +2,10 @@
 
 import { useEffect, useState } from "react";
 import PreviewCard from "@/components/map/PreviewCard";
+import { getSaved } from "@/lib/saved";
 import { Property } from "@/components/map/types";
-import { supabase } from "@/lib/supabaseClient";
+
+export const dynamic = "force-dynamic";
 
 export default function SavedPage() {
   const [properties, setProperties] = useState<Property[]>([]);
@@ -11,25 +13,25 @@ export default function SavedPage() {
 
   useEffect(() => {
     const fetchSaved = async () => {
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
+      const savedIds = getSaved();
 
-      if (!session) {
+      if (savedIds.length === 0) {
         setLoading(false);
         return;
       }
 
-      const res = await fetch("/api/saved", {
-        headers: {
-          Authorization: `Bearer ${session.access_token}`,
-        },
+      // ✅ Call YOUR API (same as map)
+      const res = await fetch("/api/properties", {
+        cache: "no-store",
       });
+      const allProperties = await res.json();
 
-      if (res.ok) {
-        const data = await res.json();
-        setProperties(data);
-      }
+      // ✅ Filter only saved ones
+      const filtered = allProperties.filter((p: Property) =>
+        savedIds.includes(p.id)
+      );
+
+      setProperties(filtered);
       setLoading(false);
     };
 

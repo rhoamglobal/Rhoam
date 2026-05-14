@@ -1,34 +1,23 @@
-import { Property } from "@/components/map/types";
-import { supabase } from "./supabaseClient";
+export const getSaved = (): string[] => {
+    if (typeof window === "undefined") return [];
+    const data = localStorage.getItem("rhoam_saved");
+    return data ? JSON.parse(data) : [];
+  };
 
-export const getSaved = async (): Promise<Property[]> => {
-  const { data: { session } } = await supabase.auth.getSession();
-  if (!session) return [];
+  export const isSaved = (id: string) => {
+    return getSaved().includes(id);
+  };
 
-  const res = await fetch("/api/saved", {
-    headers: {
-      Authorization: `Bearer ${session.access_token}`,
-    },
-  });
+  export const toggleSaved = (id: string) => {
+    const saved = getSaved();
 
-  if (!res.ok) return [];
-  return res.json();
-};
-
-export const toggleSaved = async (id: string): Promise<boolean> => {
-  const { data: { session } } = await supabase.auth.getSession();
-  if (!session) return false;
-
-  const res = await fetch("/api/save", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${session.access_token}`,
-    },
-    body: JSON.stringify({ propertyId: id }),
-  });
-
-  if (!res.ok) return false;
-  const data = await res.json();
-  return data.saved;
-};
+    if (saved.includes(id)) {
+      const updated = saved.filter((x) => x !== id);
+      localStorage.setItem("rhoam_saved", JSON.stringify(updated));
+      return false;
+    } else {
+      const updated = [...saved, id];
+      localStorage.setItem("rhoam_saved", JSON.stringify(updated));
+      return true;
+    }
+  };

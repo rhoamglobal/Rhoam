@@ -2,22 +2,17 @@ import { NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabaseAdmin";
 
 export async function GET(req: Request) {
-  const authHeader = req.headers.get("Authorization");
-  if (!authHeader) {
-    return NextResponse.json({ error: "Missing Authorization header" }, { status: 401 });
-  }
+  const { searchParams } = new URL(req.url);
+  const userId = searchParams.get("userId");
 
-  const token = authHeader.replace("Bearer ", "");
-  const { data: { user }, error: authError } = await supabaseAdmin.auth.getUser(token);
-
-  if (authError || !user) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (!userId) {
+    return NextResponse.json({ error: "Missing userId" }, { status: 400 });
   }
 
   const { data: saved } = await supabaseAdmin
     .from("saved_properties")
     .select("property_id")
-    .eq("user_id", user.id);
+    .eq("user_id", userId);
 
   const ids = saved?.map((s) => s.property_id) || [];
 

@@ -1,9 +1,9 @@
 "use client";
 
 import { useState } from "react";
+import dynamic from "next/dynamic";
 import TopBar from "@/components/map/TopBar";
 import Categories from "@/components/map/CategoryBar";
-import dynamic from "next/dynamic";
 
 const MapClient = dynamic(() => import("@/components/map/MapClient"), {
   ssr: false,

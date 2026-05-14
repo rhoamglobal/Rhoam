@@ -1,50 +1,43 @@
 import { NextResponse } from "next/server";
-import { supabaseAdmin } from "@/lib/supabaseAdmin";
+import { createClient } from "@supabase/supabase-js";
+
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_ROLE_KEY!
+);
 
 export async function POST(req: Request) {
-  const { propertyId } = await req.json();
+  const { userId, propertyId } = await req.json();
 
-  if (!propertyId) {
+  if (!userId || !propertyId) {
     return NextResponse.json(
-      { error: "Missing propertyId" },
+      { error: "Missing fields" },
       { status: 400 }
     );
   }
 
-  const authHeader = req.headers.get("Authorization");
-  if (!authHeader) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
-
-  const token = authHeader.replace("Bearer ", "");
-  const { data: { user }, error: authError } = await supabaseAdmin.auth.getUser(token);
-
-  if (authError || !user) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
-
   // check if already saved
-  const { data: existing } = await supabaseAdmin
+  const { data: existing } = await supabase
     .from("saved_properties")
     .select("*")
-    .eq("user_id", user.id)
+    .eq("user_id", userId)
     .eq("property_id", propertyId)
     .maybeSingle();
 
   // if exists → remove (toggle off)
   if (existing) {
-    await supabaseAdmin
+    await supabase
       .from("saved_properties")
       .delete()
-      .eq("user_id", user.id)
+      .eq("user_id", userId)
       .eq("property_id", propertyId);
 
     return NextResponse.json({ saved: false });
   }
 
   // else → save
-  await supabaseAdmin.from("saved_properties").insert({
-    user_id: user.id,
+  await supabase.from("saved_properties").insert({
+    user_id: userId,
     property_id: propertyId,
   });
 
