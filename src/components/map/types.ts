@@ -11,4 +11,5 @@ export type Property = {
     amenities?: string[];
     lat?: number;
     lng?: number;
+    image?: string;
   };

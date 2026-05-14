@@ -46,7 +46,7 @@ export default function PropertyClient({
           src={
             (property.images && property.images.length > 0
               ? property.images[activeImage]
-              : property.image_url) || "/placeholder.jpg"
+              : property.image_url || property.image) || "/placeholder.jpg"
           }
           alt={property.title}
           fill
