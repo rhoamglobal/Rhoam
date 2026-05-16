@@ -1,15 +1,16 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { toggleSave } from "@/lib/toggleSave";
+import Image from "next/image";
 import { amenityIcons } from "@/lib/amenities";
+import { Property } from "@/components/map/types";
 import { Heart } from "lucide-react";
 import { supabase } from "@/lib/supabaseClient";
 
 export default function PropertyClient({
   property,
 }: {
-  property: any;
+  property: Property;
 }) {
   const [activeImage, setActiveImage] = useState(0);
   const [saved, setSaved] = useState(false);
@@ -20,53 +21,63 @@ export default function PropertyClient({
       const {
         data: { user },
       } = await supabase.auth.getUser();
-  
+
       setUserId(user?.id || null);
     };
-  
+
     getUser();
   }, []);
 
-  // fallback amenities (you can later store in DB)
-  const amenities: string[] =
-    property.amenities || ["WiFi", "Borehole", "Security", "Electricity"];
 
   useEffect(() => {
+    if (!userId) return;
     fetch(`/api/saved?userId=${userId}`)
       .then((res) => res.json())
       .then((data) => {
         const isSaved = data.some(
-          (item: any) => item.property_id === property.id
+          (item: { property_id: string }) => item.property_id === property.id
         );
         setSaved(isSaved);
       });
-  }, []);
+  }, [userId, property.id]);
   
 
   return (
     <div className="min-h-screen bg-white text-gray-800">
 
       {/* HERO IMAGE */}
-      <div className="w-full h-[420px]">
-        <img
-          src={property.images?.[activeImage] || "/placeholder.jpg"}
-          className="w-full h-full object-cover"
+      <div className="w-full h-[420px] relative">
+        <Image
+          src={
+            (property.images && property.images.length > 0
+              ? property.images[activeImage]
+              : property.image_url || property.image) || "/placeholder.jpg"
+          }
+          alt={property.title}
+          fill
+          className="object-cover"
         />
       </div>
 
       {/* THUMBNAILS */}
       <div className="flex gap-2 px-6 mt-3 overflow-x-auto">
-        {property.images?.map((img: string, i: number) => (
-          <img
+        {(property.images || []).map((img: string, i: number) => (
+          <div
             key={i}
-            src={img}
-            onClick={() => setActiveImage(i)}
-            className={`h-16 w-20 object-cover rounded-md cursor-pointer border-2 ${
+            className={`relative h-16 w-20 flex-shrink-0 rounded-md cursor-pointer border-2 ${
               activeImage === i
                 ? "border-[#FF6B6B]"
                 : "border-transparent"
             }`}
-          />
+            onClick={() => setActiveImage(i)}
+          >
+            <Image
+              src={img}
+              alt={`${property.title} thumbnail ${i + 1}`}
+              fill
+              className="object-cover rounded-md"
+            />
+          </div>
         ))}
       </div>
 
@@ -125,7 +136,7 @@ export default function PropertyClient({
         <div className="mt-10 bg-gray-50 border rounded-xl p-5">
           <h2 className="text-sm font-medium mb-2">Location</h2>
           <p className="text-sm text-gray-500">
-            {property.latitude}, {property.longitude}
+            {property.latitude ?? property.lat}, {property.longitude ?? property.lng}
           </p>
         </div>
 

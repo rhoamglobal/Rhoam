@@ -1,6 +1,8 @@
 import { notFound } from "next/navigation";
-import { createClient } from "@supabase/supabase-js";
+import { supabaseAdmin } from "@/lib/supabaseAdmin";
 import PropertyClient from "./PropertyClient";
+
+export const dynamic = "force-dynamic";
 
 export default async function PropertyPage({
   params,
@@ -9,12 +11,7 @@ export default async function PropertyPage({
 }) {
   const { id } = await params;
 
-  const supabase = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!
-  );
-
-  const { data: property } = await supabase
+  const { data: property } = await supabaseAdmin
     .from("properties")
     .select("*")
     .eq("id", id)

@@ -3,9 +3,12 @@
 import { useEffect, useState } from "react";
 import PreviewCard from "@/components/map/PreviewCard";
 import { getSaved } from "@/lib/saved";
+import { Property } from "@/components/map/types";
+
+export const dynamic = "force-dynamic";
 
 export default function SavedPage() {
-  const [properties, setProperties] = useState<any[]>([]);
+  const [properties, setProperties] = useState<Property[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -24,7 +27,7 @@ export default function SavedPage() {
       const allProperties = await res.json();
 
       // ✅ Filter only saved ones
-      const filtered = allProperties.filter((p: any) =>
+      const filtered = allProperties.filter((p: Property) =>
         savedIds.includes(p.id)
       );
 

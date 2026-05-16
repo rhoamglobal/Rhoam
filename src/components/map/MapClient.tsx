@@ -1,9 +1,9 @@
 "use client";
 
-import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
+import { MapContainer, TileLayer, Marker } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import { useState } from "react";
-import { LatLngBounds } from "leaflet";
+import L, { LatLngBounds } from "leaflet";
 
 import { priceIcon } from "./PriceMarker";
 import CloseOnMapClick from "./CloseOnMapClick";
@@ -14,11 +14,9 @@ import MapAutoFit from "./MapAutoFit";
 import { useDebounce } from "@/hooks/useDebounce";
 import { usePropertySearch } from "@/hooks/usePropertySearch";
 import { Property } from "./types";
-import { useEffect } from "react";
 import SearchThisAreaButton from "./search/SearchThisAreaButton";
 import RememberMapView from "./RememberMapView";
 
-import { schools } from "@/lib/schools";
 import { detectSchoolFromSearch } from "@/lib/detectSchool";
 
   // ✅ school search HERE
@@ -49,7 +47,7 @@ export default function MapClient({ category, search }: Props) {
 
   // ✅ parse search 
   const [maxPrice, setMaxPrice] = useState<number | undefined>(undefined);
-  const [activeCategory, setActiveCategory] = useState(category);
+  const [, setActiveCategory] = useState(category);
 
   // ✅ detect school 
   
@@ -110,7 +108,7 @@ export default function MapClient({ category, search }: Props) {
           chunkedLoading
           spiderfyOnMaxZoom
           showCoverageOnHover={false}
-          iconCreateFunction={(cluster) => {
+          iconCreateFunction={(cluster: L.MarkerCluster) => {
             const count = cluster.getChildCount();
         
             return L.divIcon({

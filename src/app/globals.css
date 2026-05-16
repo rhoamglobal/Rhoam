@@ -60,7 +60,7 @@ body {
 .preview-card {
   position: fixed;
   bottom: 30px;
-  left: 35%;
+  left: 50%;
   transform: translateX(-50%);
   width: 360px;
   background: white;
