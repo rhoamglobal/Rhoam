@@ -14,10 +14,14 @@ export default function BottomNav() {
   ];
 
   return (
-    <div className="fixed bottom-5 left-1/2 -translate-x-1/2 z-[1000]">
-      <nav className="relative flex items-center gap-8 px-10 py-4 rounded-full
-        bg-white/70 backdrop-blur-xl shadow-2xl border border-white/40">
-
+    <nav
+      className="
+        fixed bottom-0 left-0 w-full z-[1000]
+        bg-white border-t border-gray-200
+        shadow-[0_-4px_20px_rgba(0,0,0,0.06)]
+      "
+    >
+      <div className="flex items-center justify-around h-16">
         {tabs.map((tab) => {
           const isActive = pathname === tab.href;
           const Icon = tab.icon;
@@ -26,24 +30,17 @@ export default function BottomNav() {
             <Link
               key={tab.href}
               href={tab.href}
-              className="relative flex flex-col items-center justify-center w-16"
+              className="flex flex-col items-center justify-center flex-1"
             >
-              {/* Active bubble */}
-              {isActive && (
-                <span className="absolute -top-3 w-14 h-14 bg-rhoam-primary/15 rounded-full blur-md animate-pulse" />
-              )}
-
               <Icon
-                size={26}
-                className={`transition-all duration-300 ${
-                  isActive
-                    ? "text-[#ff5a5f] scale-125"
-                    : "text-gray-400"
+                size={24}
+                className={`transition-all duration-200 ${
+                  isActive ? "text-[#ff5a5f]" : "text-gray-400"
                 }`}
               />
 
               <span
-                className={`mt-1 text-xs transition-all duration-300 ${
+                className={`text-xs mt-1 ${
                   isActive
                     ? "text-[#ff5a5f] font-semibold"
                     : "text-gray-400"
@@ -54,7 +51,7 @@ export default function BottomNav() {
             </Link>
           );
         })}
-      </nav>
-    </div>
+      </div>
+    </nav>
   );
 }
