@@ -3,11 +3,20 @@
 import { useState } from "react";
 
 export default function SearchBar({
+  search,
   setSearch,
 }: {
+  search: string;
   setSearch: (v: string) => void;
 }) {
-  const [input, setInput] = useState("");
+  const [input, setInput] = useState(search);
+
+  // Sync state with search prop (e.g. if cleared from outside)
+  const [prevSearch, setPrevSearch] = useState(search);
+  if (search !== prevSearch) {
+    setPrevSearch(search);
+    setInput(search);
+  }
 
   const handleSubmit = () => {
     setSearch(input); // ✅ only fires when button is clicked
