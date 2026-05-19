@@ -59,8 +59,9 @@ body {
 /* preview-card */
 .preview-card {
   position: fixed;
-  bottom: 30px;
-  left: 50%;
+  bottom: 40px;
+  left: 30%;
+
   transform: translateX(-50%);
   width: 360px;
   background: white;

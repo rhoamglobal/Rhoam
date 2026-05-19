@@ -43,7 +43,7 @@ export default function FlyToSchool({
 
       setBounds(bounds);
     }
-  }, [search, map]);
+  }, [search, map, setBounds, setCategory, setMaxPrice]);
 
   return null;
 }

@@ -100,10 +100,7 @@ export default function MapClient({ category, search }: Props) {
         />
         
         <MapAutoFit properties={properties} />
-
-        <MapAutoFit properties={properties} />
-
-          
+ 
         <MarkerClusterGroup
           chunkedLoading
           spiderfyOnMaxZoom
