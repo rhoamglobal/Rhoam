@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { Property } from "../types";
 import { LatLngBounds } from "leaflet";
+import { parseSearch } from "./parseSearch";
 
 interface SearchParams {
   bounds: LatLngBounds | null;
@@ -41,8 +42,10 @@ export function usePropertySearch({
         query = query.lte("price", maxPrice);
       }
 
-      // ✅ THIS IS THE MISSING PART — TEXT SEARCH
-      if (search && search.trim() !== "") {
+      const parsed = parseSearch(search);
+
+      // Only do text search if it's NOT a school search
+      if (search && search.trim() !== "" && !parsed.school) {
         query = query.or(
           `title.ilike.%${search}%,location.ilike.%${search}%`
         );

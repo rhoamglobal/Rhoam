@@ -8,7 +8,7 @@ import L, { LatLngBounds } from "leaflet";
 import { priceIcon } from "./PriceMarker";
 import CloseOnMapClick from "./CloseOnMapClick";
 import PreviewCard from "./PreviewCard";
-import MapBoundsHandler from "./MapBoundsHandler";
+
 import MapAutoFit from "./MapAutoFit";
 
 import { useDebounce } from "@/hooks/useDebounce";
@@ -21,6 +21,7 @@ import { detectSchoolFromSearch } from "@/lib/detectSchool";
 
   // ✅ school search HERE
 import FlyToSchool from "./search/FlyToSchool";
+import { useMapEvents } from "react-leaflet";
 
 // @for clustering
 import "leaflet.markercluster/dist/MarkerCluster.css";
@@ -41,9 +42,6 @@ export default function MapClient({ category, search }: Props) {
   // ✅ debounce search HERE
   const debouncedSearch = useDebounce(search, 400);
 
-  // ✅ search now button
-  const [pendingBounds, setPendingBounds] = useState<LatLngBounds | null>(null);
-  const [showSearchButton, setShowSearchButton] = useState(false);
 
   // ✅ parse search 
   const [maxPrice, setMaxPrice] = useState<number | undefined>(undefined);
@@ -53,6 +51,17 @@ export default function MapClient({ category, search }: Props) {
   
   const detectedSchool = detectSchoolFromSearch(debouncedSearch);
 
+
+  function MapBoundsListener({ setBounds }: { setBounds: any }) {
+    useMapEvents({
+      moveend: (e) => {
+        const map = e.target;
+        setBounds(map.getBounds());
+      },
+    });
+  
+    return null;
+  }
   
   
   // ✅ database filtering
@@ -63,12 +72,6 @@ export default function MapClient({ category, search }: Props) {
     maxPrice,
   });
 
-  const applySearchArea = () => {
-    if (pendingBounds) {
-      setBounds(pendingBounds);
-      setShowSearchButton(false);
-    }
-  };
   console.log("PROPERTIES DATA:", properties)
   
 
@@ -80,21 +83,16 @@ export default function MapClient({ category, search }: Props) {
         scrollWheelZoom
         style={{ height: "100%", width: "100%" }}
       >
-        <MapBoundsHandler
-          onBoundsChange={(b) => {
-            setPendingBounds(b);
-            setShowSearchButton(true);
-          }}
-        />
+        
         <CloseOnMapClick onClose={() => setSelected(null)} />
 
         <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
 
         <RememberMapView />
+        <MapBoundsListener setBounds={setBounds} />
         
         <FlyToSchool
           search={search}
-          setBounds={setBounds}
           setCategory={setActiveCategory}
           setMaxPrice={setMaxPrice}
         />
@@ -150,10 +148,6 @@ export default function MapClient({ category, search }: Props) {
           
       </MapContainer>
 
-      <SearchThisAreaButton
-        visible={showSearchButton}
-        onClick={applySearchArea}
-      />
 
 <PreviewCard property={selected} school={detectedSchool} />
     </div>

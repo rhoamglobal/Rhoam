@@ -8,14 +8,12 @@ import { parseSearch } from "./parseSearch";
 
 type Props = {
   search: string;
-  setBounds: (b: LatLngBounds) => void;
   setCategory: (c: string) => void;
   setMaxPrice: (p: number | undefined) => void;
 };
 
 export default function FlyToSchool({
   search,
-  setBounds,
   setCategory,
   setMaxPrice,
 }: Props) {
@@ -36,14 +34,8 @@ export default function FlyToSchool({
 
       map.flyTo([lat, lng], 15, { duration: 1.5 });
 
-      const bounds = L.latLngBounds(
-        [lat - 0.01, lng - 0.01],
-        [lat + 0.01, lng + 0.01]
-      );
-
-      setBounds(bounds);
     }
-  }, [search, map, setBounds, setCategory, setMaxPrice]);
+  }, [search, map, setCategory, setMaxPrice]);
 
   return null;
 }
