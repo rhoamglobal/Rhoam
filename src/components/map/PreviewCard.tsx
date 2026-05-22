@@ -116,7 +116,7 @@ const handleSave = () => {
             </span>
 
             <p className="text-xs text-gray-500">
-              {property.location}
+              {property.latitude} {property.longitude}
             </p>
 
             <button onClick={() => router.push(`/property/${property.id}`)}>
