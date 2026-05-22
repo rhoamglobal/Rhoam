@@ -41,14 +41,6 @@ export default function PropertyClient({
       });
   }, [userId, property.id]);
 
-  /* hide buttom nave */
-  useEffect(() => {
-    document.body.setAttribute("data-page", "property");
-  
-    return () => {
-      document.body.removeAttribute("data-page");
-    };
-  }, []);
   
 
   return (
