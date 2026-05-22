@@ -62,13 +62,13 @@ const handleSave = () => {
     <AnimatePresence mode="wait">
       {property && (
         <motion.div
-          key={property.id}
-          initial={{ y: 100, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          exit={{ y: 120, opacity: 0 }}
-          transition={{ duration: 0.35 }}
-          className="preview-card"
-        >
+        key={property.id}
+        initial={{ y: 100, x: "-50%", opacity: 0 }}
+        animate={{ y: 0, x: "-50%", opacity: 1 }}
+        exit={{ y: 120, x: "-50%", opacity: 0 }}
+        transition={{ duration: 0.35 }}
+        className="preview-card"
+      >
         <div style={{ position: "relative" }}>
           <div className="relative h-48 w-full">
             <Image
