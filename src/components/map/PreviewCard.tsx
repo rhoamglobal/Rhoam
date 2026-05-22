@@ -111,15 +111,13 @@ const handleSave = () => {
             {/* coral branding */}
             <h2 style={{ color: "#ff5a5f" }}>{property.category}</h2>
 
-            <p style={{ opacity: 0.8 }}>
+            <span className="text-[#FF6B6B] font-semibold">
               ₦{property.price.toLocaleString()} / year
-            </p>
+            </span>
 
-            {distanceInfo && (
-              <p className="text-sm mt-1 text-gray-600">
-                📍 {distanceInfo}
-              </p>
-            )}
+            <p className="text-xs text-gray-500">
+              {property.location}
+            </p>
 
             <button onClick={() => router.push(`/property/${property.id}`)}>
               View details

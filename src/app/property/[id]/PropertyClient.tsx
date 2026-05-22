@@ -40,13 +40,22 @@ export default function PropertyClient({
         setSaved(isSaved);
       });
   }, [userId, property.id]);
+
+  /* hide buttom nave */
+  useEffect(() => {
+    document.body.setAttribute("data-page", "property");
+  
+    return () => {
+      document.body.removeAttribute("data-page");
+    };
+  }, []);
   
 
   return (
-    <div className="min-h-screen bg-white text-gray-800">
+    <div className="min-h-screen bg-white text-gray-900">
 
       {/* HERO IMAGE */}
-      <div className="w-full h-[420px] relative">
+      <div className="w-full h-[460px] relative">
         <Image
           src={
             (property.images && property.images.length > 0
@@ -56,26 +65,73 @@ export default function PropertyClient({
           alt={property.title}
           fill
           className="object-cover"
+          priority
         />
+
+        {/* gradient */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
+
+        {/* ⬅️ BACK BUTTON */}
+        <button
+          onClick={() => window.history.back()}
+          className="
+            absolute top-4 left-4
+            bg-white/90 hover:bg-white
+            p-2 rounded-full shadow-md
+            transition
+          "
+        >
+          ←
+        </button>
+
+        {/* ❤️ SAVE BUTTON */}
+        <button
+          onClick={async () => {
+            const res = await fetch("/api/save", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                userId,
+                propertyId: property.id,
+              }),
+            });
+
+            const data = await res.json();
+            setSaved(data.saved);
+          }}
+          className="
+            absolute top-4 right-4
+            bg-white/90 hover:bg-white
+            p-2 rounded-full shadow-md
+            transition
+            hover:scale-105 active:scale-95
+          "
+        >
+          <Heart
+            size={20}
+            fill={saved ? "#FF6B6B" : "none"}
+            color={saved ? "#FF6B6B" : "gray"}
+          />
+        </button>
       </div>
 
       {/* THUMBNAILS */}
-      <div className="flex gap-2 px-6 mt-3 overflow-x-auto">
+      <div className="flex gap-2 px-6 mt-4 overflow-x-auto">
         {(property.images || []).map((img: string, i: number) => (
           <div
             key={i}
-            className={`relative h-16 w-20 flex-shrink-0 rounded-md cursor-pointer border-2 ${
-              activeImage === i
-                ? "border-[#FF6B6B]"
-                : "border-transparent"
-            }`}
             onClick={() => setActiveImage(i)}
+            className={`
+              relative h-16 w-20 flex-shrink-0 rounded-lg cursor-pointer
+              border transition overflow-hidden
+              ${activeImage === i ? "border-[#FF6B6B]" : "border-gray-200"}
+            `}
           >
             <Image
               src={img}
-              alt={`${property.title} thumbnail ${i + 1}`}
+              alt=""
               fill
-              className="object-cover rounded-md"
+              className="object-cover"
             />
           </div>
         ))}
@@ -100,12 +156,13 @@ export default function PropertyClient({
         </div>
 
         {/* CORAL LINE */}
-        <div className="w-14 h-[3px] bg-[#FF6B6B] rounded-full mt-5" />
+        <div className="w-16 h-[3px] bg-[#FF6B6B] rounded-full mt-6" />
 
         {/* DESCRIPTION */}
         <div className="mt-8">
           <h2 className="text-lg font-medium mb-2">About this place</h2>
-          <p className="text-gray-600 leading-relaxed">
+
+          <p className="text-gray-600 leading-relaxed text-[15px]">
             {property.description || "No description provided."}
           </p>
         </div>
@@ -133,43 +190,38 @@ export default function PropertyClient({
         </div>
 
         {/* LOCATION */}
-        <div className="mt-10 bg-gray-50 border rounded-xl p-5">
+        <div className="mt-10 bg-white border rounded-2xl p-5 shadow-sm">
           <h2 className="text-sm font-medium mb-2">Location</h2>
+
           <p className="text-sm text-gray-500">
             {property.latitude ?? property.lat}, {property.longitude ?? property.lng}
           </p>
         </div>
 
-        {/* SAVE BUTTON */}
-        <button
-            onClick={async () => {
-              const res = await fetch("/api/save", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                  userId,
-                  propertyId: property.id,
-                }),
-              });
+        {/* cta button */}
+        <div className="fixed bottom-0 left-0 w-full bg-white border-t shadow-lg px-6 py-4 flex items-center justify-between z-[1000]">
+          <div>
+            <p className="text-sm text-gray-500">Interested in this property?</p>
+            <p className="text-base font-semibold text-gray-900">
+              ₦{property.price.toLocaleString()}
+            </p>
+          </div>
 
-              const data = await res.json();
-              setSaved(data.saved);
+          <button
+            className="
+              bg-[#FF6B6B] hover:bg-[#ff5252]
+              text-white px-6 py-3
+              rounded-full font-medium
+              transition
+            "
+            onClick={() => {
+              alert("Contact landlord feature coming soon 🚀");
             }}
-            className="flex items-center gap-2 px-4 py-2 rounded-full border hover:border-[#FF6B6B] transition"
           >
-            <Heart
-              size={18}
-              fill={saved ? "#FF6B6B" : "none"}
-              color={saved ? "#FF6B6B" : "gray"}
-            />
-
-            <span>{saved ? "Saved" : "Save"}</span>
+            Contact landlord
           </button>
-
-        {/* DESCRIPTION */}
-        <div className="mt-8 text-gray-600">
-          {property.description}
         </div>
+
       </div>
     </div>
   );

@@ -1,23 +1,26 @@
+const KEY = "rhoam_saved";
+
 export const getSaved = (): string[] => {
-    if (typeof window === "undefined") return [];
-    const data = localStorage.getItem("rhoam_saved");
-    return data ? JSON.parse(data) : [];
-  };
+  if (typeof window === "undefined") return [];
+  const data = localStorage.getItem(KEY);
+  return data ? JSON.parse(data) : [];
+};
 
-  export const isSaved = (id: string) => {
-    return getSaved().includes(id);
-  };
+export const isSaved = (id: string) => {
+  return getSaved().includes(id);
+};
 
-  export const toggleSaved = (id: string) => {
-    const saved = getSaved();
+export const toggleSaved = (id: string) => {
+  const saved = getSaved();
 
-    if (saved.includes(id)) {
-      const updated = saved.filter((x) => x !== id);
-      localStorage.setItem("rhoam_saved", JSON.stringify(updated));
-      return false;
-    } else {
-      const updated = [...saved, id];
-      localStorage.setItem("rhoam_saved", JSON.stringify(updated));
-      return true;
-    }
-  };
+  let updated: string[];
+
+  if (saved.includes(id)) {
+    updated = saved.filter((x) => x !== id);
+  } else {
+    updated = [...saved, id];
+  }
+
+  localStorage.setItem(KEY, JSON.stringify(updated));
+  return !saved.includes(id);
+};

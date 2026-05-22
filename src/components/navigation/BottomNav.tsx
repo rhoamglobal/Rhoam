@@ -13,6 +13,13 @@ export default function BottomNav() {
     { href: "/profile", label: "Profile", icon: User },
   ];
 
+  // hide nav bar on property page
+  const isPropertyPage =
+  typeof document !== "undefined" &&
+  document.body.dataset.page === "property";
+
+  if (isPropertyPage) return null;
+
   return (
     <nav
       className="
