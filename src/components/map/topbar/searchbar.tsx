@@ -21,7 +21,8 @@ export default function SearchBar({
         value={input}
         onChange={(e) => setInput(e.target.value)}
         placeholder="Search location, title..."
-        className="flex-1 p-3 rounded-full shadow-lg border outline-none"
+        className="flex-1 p-3 rounded-full shadow-lg border outline-none
+                    bg-white/70 text-gray-700 border-gray-300"
       />
 
       <button
