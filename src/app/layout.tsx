@@ -1,6 +1,7 @@
 import "./globals.css";
 import "leaflet/dist/leaflet.css";
 import LayoutWrapper from "@/components/LayoutWrapper";
+import { AuthProvider } from "@/components/providers/AuthProvider";
 
 export const metadata = {
   title: "Rhoam",
@@ -15,9 +16,11 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
-        <LayoutWrapper>
-          {children}
-        </LayoutWrapper>
+      <AuthProvider>
+          <LayoutWrapper>
+            {children}
+          </LayoutWrapper>
+        </AuthProvider>
       </body>
     </html>
   );
