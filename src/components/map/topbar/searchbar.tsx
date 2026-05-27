@@ -14,6 +14,7 @@ export default function SearchBar({
   useEffect(() => {
     setInput(search);
   }, [search]);
+  
 
   return (
     <div className="absolute top-4 left-1/2 -translate-x-1/2 z-[1000] w-[90%] max-w-xl flex gap-2">

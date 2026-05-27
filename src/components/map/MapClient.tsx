@@ -28,6 +28,9 @@ import "leaflet.markercluster/dist/MarkerCluster.css";
 import "leaflet.markercluster/dist/MarkerCluster.Default.css";
 import MarkerClusterGroup from "react-leaflet-cluster";
 
+// @authentication test
+import { useAuth } from "@/components/providers/AuthProvider";
+
 
 
 type Props = {
@@ -72,7 +75,9 @@ export default function MapClient({ category, search }: Props) {
     maxPrice,
   });
 
-  console.log("PROPERTIES DATA:", properties)
+  const { user } = useAuth();
+
+  console.log(user);
   
 
   return (

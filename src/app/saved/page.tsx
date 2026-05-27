@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { getSaved, toggleSaved } from "@/lib/saved";
 import { Property } from "@/components/map/types";
 import SavedPropertyCard from "@/components/cards/SavedPropertyCard";
+import ProtectedRoute from "@/components/auth/ProtectedRoute";
 
 export const dynamic = "force-dynamic";
 
@@ -78,13 +79,15 @@ export default function SavedPage() {
   // 🧼 SKELETON LOADING UI
   function SkeletonCard() {
     return (
-      <div className="animate-pulse">
-        <div className="h-64 w-full bg-gray-200 rounded-2xl" />
-        <div className="mt-3 space-y-2">
-          <div className="h-4 bg-gray-200 rounded w-3/4" />
-          <div className="h-3 bg-gray-200 rounded w-1/2" />
+      <ProtectedRoute>
+        <div className="animate-pulse">
+          <div className="h-64 w-full bg-gray-200 rounded-2xl" />
+          <div className="mt-3 space-y-2">
+            <div className="h-4 bg-gray-200 rounded w-3/4" />
+            <div className="h-3 bg-gray-200 rounded w-1/2" />
+          </div>
         </div>
-      </div>
+      </ProtectedRoute>
     );
   }
 
