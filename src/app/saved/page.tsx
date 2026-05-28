@@ -66,8 +66,8 @@ useEffect(() => {
     // update UI instantly
     setProperties((prev) => prev.filter((p) => p.id !== id));
 
-    // update storage
-    toggleSaved(id);
+
+
 
     // show toast
     setUndoItem(removed);
@@ -85,7 +85,6 @@ useEffect(() => {
     if (!undoItem) return;
 
     setProperties((prev) => [undoItem, ...prev]);
-    toggleSaved(undoItem.id);
 
     setToastVisible(false);
     setUndoItem(null);
