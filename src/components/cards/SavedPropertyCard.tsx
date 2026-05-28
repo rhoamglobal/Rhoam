@@ -4,6 +4,7 @@ import { Property } from "@/components/map/types";
 import { Heart } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { toggleSaved } from "@/lib/saved";
+import { useAuth } from "@/components/providers/AuthProvider";
 
 export default function SavedPropertyCard({
   property,
@@ -13,10 +14,13 @@ export default function SavedPropertyCard({
   onRemove: (id: string) => void;
 }) {
   const router = useRouter();
+  const { user } = useAuth();
 
-  const handleRemove = (e: any) => {
+  const handleRemove = (e: React.MouseEvent) => {
     e.stopPropagation();
-    toggleSaved(property.id);
+    if (user) {
+      toggleSaved(user.id, property.id);
+    }
     onRemove(property.id);
   };
 

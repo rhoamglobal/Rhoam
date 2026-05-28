@@ -31,7 +31,16 @@ import MarkerClusterGroup from "react-leaflet-cluster";
 // @authentication test
 import { useAuth } from "@/components/providers/AuthProvider";
 
+function MapBoundsListener({ setBounds }: { setBounds: (bounds: LatLngBounds) => void }) {
+  useMapEvents({
+    moveend: (e) => {
+      const map = e.target;
+      setBounds(map.getBounds());
+    },
+  });
 
+  return null;
+}
 
 type Props = {
   category: string;
@@ -54,19 +63,6 @@ export default function MapClient({ category, search }: Props) {
   
   const detectedSchool = detectSchoolFromSearch(debouncedSearch);
 
-
-  function MapBoundsListener({ setBounds }: { setBounds: any }) {
-    useMapEvents({
-      moveend: (e) => {
-        const map = e.target;
-        setBounds(map.getBounds());
-      },
-    });
-  
-    return null;
-  }
-  
-  
   // ✅ database filtering
   const properties = usePropertySearch({
     bounds,

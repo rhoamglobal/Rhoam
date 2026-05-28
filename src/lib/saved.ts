@@ -2,7 +2,7 @@ import { supabase } from "@/lib/supabase";
 
 export async function isSaved(
   userId: string,
-  propertyId: number
+  propertyId: string
 ) {
   const { data } = await supabase
     .from("saved_properties")
@@ -16,7 +16,7 @@ export async function isSaved(
 
 export async function toggleSaved(
   userId: string,
-  propertyId: number
+  propertyId: string
 ) {
   const alreadySaved = await isSaved(userId, propertyId);
 
