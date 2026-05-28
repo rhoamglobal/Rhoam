@@ -7,6 +7,7 @@ import { Property } from "./types";
 import { useEffect, useState } from "react";
 import { isSaved, toggleSaved } from "@/lib/saved";
 import { Heart } from "lucide-react";
+import { useAuth } from "@/components/providers/AuthProvider";
 
 import { getDistanceKm, kmToWalkMinutes } from "@/lib/distance";
 
@@ -24,23 +25,33 @@ export default function PreviewCard({
   school?: School | null;
 }) {
   const router = useRouter();
+  const { user } = useAuth();
 
   const [saved, setSaved] = useState(false);
 
-useEffect(() => {
-  if (property) {
-    const timer = setTimeout(() => {
-      setSaved(isSaved(property.id));
-    }, 0);
-    return () => clearTimeout(timer);
-  }
-}, [property]);
 
-const handleSave = () => {
-  if (!property) return;
-  const state = toggleSaved(property.id); // ✅ correct name
-  setSaved(state);
-};
+  //authenticate saving
+  useEffect(() => {
+    const checkSaved = async () => {
+      if (!property || !user) return;
+  
+      const state = await isSaved(user.id, property.id);
+      setSaved(state);
+    };
+  
+    checkSaved();
+  }, [property, user]);
+  
+  const handleSave = async () => {
+    if (!property || !user) {
+      router.push("/login");
+      return;
+    }
+  
+    const state = await toggleSaved(user.id, property.id);
+  
+    setSaved(state);
+  };
 
   let distanceInfo: string | null = null;
 

@@ -1,10 +1,13 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { getSaved, toggleSaved } from "@/lib/saved";
+
 import { Property } from "@/components/map/types";
 import SavedPropertyCard from "@/components/cards/SavedPropertyCard";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
+
+import { supabase } from "@/lib/supabase";
+import { useAuth } from "@/components/providers/AuthProvider";
 
 export const dynamic = "force-dynamic";
 
@@ -16,32 +19,44 @@ export default function SavedPage() {
   const [undoItem, setUndoItem] = useState<Property | null>(null);
   const [toastVisible, setToastVisible] = useState(false);
 
-  useEffect(() => {
-    const fetchSaved = async () => {
-      const savedIds = getSaved();
+  const { user } = useAuth();
 
-      if (savedIds.length === 0) {
-        setProperties([]);
-        setLoading(false);
-        return;
-      }
+useEffect(() => {
+  const fetchSavedProperties = async () => {
+    if (!user) return;
 
-      const res = await fetch("/api/properties", {
-        cache: "no-store",
-      });
+    // 1. get saved property ids
+    const { data: savedData, error: savedError } = await supabase
+      .from("saved_properties")
+      .select("property_id")
+      .eq("user_id", user.id);
 
-      const allProperties = await res.json();
+    if (savedError || !savedData) return;
 
-      const filtered = allProperties.filter((p: Property) =>
-        savedIds.includes(p.id)
-      );
+    const propertyIds = savedData.map((item) => item.property_id);
 
-      setProperties(filtered);
+    if (propertyIds.length === 0) {
+      setProperties([]);
       setLoading(false);
-    };
+      return;
+    }
 
-    fetchSaved();
-  }, []);
+    // 2. fetch actual properties
+    const { data: propertiesData, error: propertiesError } =
+      await supabase
+        .from("properties")
+        .select("*")
+        .in("id", propertyIds);
+
+    if (!propertiesError && propertiesData) {
+      setProperties(propertiesData);
+    }
+
+    setLoading(false);
+  };
+
+  fetchSavedProperties();
+}, [user]);
 
   // ⚡ REMOVE WITH UNDO
   const handleRemove = (id: string) => {

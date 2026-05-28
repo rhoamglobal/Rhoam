@@ -1,26 +1,39 @@
-const KEY = "rhoam_saved";
+import { supabase } from "@/lib/supabase";
 
-export const getSaved = (): string[] => {
-  if (typeof window === "undefined") return [];
-  const data = localStorage.getItem(KEY);
-  return data ? JSON.parse(data) : [];
-};
+export async function isSaved(
+  userId: string,
+  propertyId: number
+) {
+  const { data } = await supabase
+    .from("saved_properties")
+    .select("*")
+    .eq("user_id", userId)
+    .eq("property_id", propertyId)
+    .single();
 
-export const isSaved = (id: string) => {
-  return getSaved().includes(id);
-};
+  return !!data;
+}
 
-export const toggleSaved = (id: string) => {
-  const saved = getSaved();
+export async function toggleSaved(
+  userId: string,
+  propertyId: number
+) {
+  const alreadySaved = await isSaved(userId, propertyId);
 
-  let updated: string[];
+  if (alreadySaved) {
+    await supabase
+      .from("saved_properties")
+      .delete()
+      .eq("user_id", userId)
+      .eq("property_id", propertyId);
 
-  if (saved.includes(id)) {
-    updated = saved.filter((x) => x !== id);
-  } else {
-    updated = [...saved, id];
+    return false;
   }
 
-  localStorage.setItem(KEY, JSON.stringify(updated));
-  return !saved.includes(id);
-};
+  await supabase.from("saved_properties").insert({
+    user_id: userId,
+    property_id: propertyId,
+  });
+
+  return true;
+}

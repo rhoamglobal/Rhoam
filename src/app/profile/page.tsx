@@ -5,7 +5,7 @@ import { Heart, LogOut, Home } from "lucide-react";
 
 import { useAuth } from "@/components/providers/AuthProvider";
 import { supabase } from "@/lib/supabase";
-import { getSaved } from "@/lib/saved";
+import { isSaved } from "@/lib/saved";
 // protected routes
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
 
@@ -13,7 +13,7 @@ export default function ProfilePage() {
   const { user } = useAuth();
   const router = useRouter();
 
-  const savedCount = getSaved().length;
+  const savedCount = isSaved().length;
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
