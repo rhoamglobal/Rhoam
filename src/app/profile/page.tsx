@@ -5,7 +5,7 @@ import { Heart, LogOut, Home } from "lucide-react";
 
 import { useAuth } from "@/components/providers/AuthProvider";
 import { supabase } from "@/lib/supabase";
-import { isSaved } from "@/lib/saved";
+
 // protected routes
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
 
@@ -13,7 +13,7 @@ export default function ProfilePage() {
   const { user } = useAuth();
   const router = useRouter();
 
-  const savedCount = isSaved().length;
+
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
@@ -68,7 +68,7 @@ export default function ProfilePage() {
                   </h2>
 
                   <p className="text-sm text-gray-500">
-                    {savedCount} saved homes
+                     saved homes
                   </p>
                 </div>
               </div>
