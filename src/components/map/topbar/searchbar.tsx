@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 export default function SearchBar({
   search,
@@ -9,11 +9,12 @@ export default function SearchBar({
   setSearch: (v: string) => void;
 }) {
   const [input, setInput] = useState(search);
+  const [prevSearch, setPrevSearch] = useState(search);
 
-  // Sync with parent search
-  useEffect(() => {
+  if (search !== prevSearch) {
     setInput(search);
-  }, [search]);
+    setPrevSearch(search);
+  }
   
 
   return (

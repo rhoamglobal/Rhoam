@@ -1,0 +1,84 @@
+
+> rhoam-new-project@0.1.0 dev
+> next dev
+
+▲ Next.js 16.2.4 (Turbopack)
+- Local:         http://localhost:3000
+- Network:       http://192.168.0.2:3000
+✓ Ready in 764ms
+
+○ Compiling / ...
+ GET / 200 in 7.9s (next.js: 7.2s, application-code: 654ms)
+ GET /saved 200 in 959ms (next.js: 830ms, application-code: 129ms)
+ GET /login 200 in 815ms (next.js: 678ms, application-code: 137ms)
+ GET /login 200 in 106ms (next.js: 5ms, application-code: 101ms)
+ GET /login 200 in 59ms (next.js: 5ms, application-code: 54ms)
+ GET /login 200 in 90ms (next.js: 4ms, application-code: 86ms)
+ GET /login 200 in 112ms (next.js: 4ms, application-code: 109ms)
+ GET /login 200 in 119ms (next.js: 4ms, application-code: 115ms)
+ GET /login 200 in 92ms (next.js: 4ms, application-code: 88ms)
+ GET /login 200 in 88ms (next.js: 4ms, application-code: 84ms)
+ GET /login 200 in 88ms (next.js: 9ms, application-code: 78ms)
+ GET /login 200 in 73ms (next.js: 6ms, application-code: 66ms)
+ GET /login 200 in 108ms (next.js: 6ms, application-code: 102ms)
+ GET /login 200 in 108ms (next.js: 5ms, application-code: 103ms)
+ GET /login 200 in 97ms (next.js: 3ms, application-code: 93ms)
+ GET /login 200 in 102ms (next.js: 3ms, application-code: 99ms)
+ GET /login 200 in 72ms (next.js: 6ms, application-code: 66ms)
+ GET /login 200 in 36ms (next.js: 4ms, application-code: 32ms)
+ GET / 200 in 78ms (next.js: 4ms, application-code: 74ms)
+ GET /login 200 in 130ms (next.js: 3ms, application-code: 127ms)
+ GET / 200 in 72ms (next.js: 3ms, application-code: 69ms)
+ GET /login 200 in 71ms (next.js: 3ms, application-code: 67ms)
+[browser] A tree hydrated but some attributes of the server rendered HTML didn't match the client properties. This won't be patched up. This can happen if a SSR-ed Client Component used:
+
+- A server/client branch `if (typeof window !== 'undefined')`.
+- Variable input such as `Date.now()` or `Math.random()` which changes each time it's called.
+- Date formatting in a user's locale which doesn't match the server.
+- External changing data without sending a snapshot of it along with the HTML.
+- Invalid HTML tag nesting.
+
+It can also happen if the client has a browser extension installed which messes with the HTML before React loaded.
+
+https://react.dev/link/hydration-mismatch
+
+  ...
+    <LoadingBoundary name="login/" loading={null}>
+      <HTTPAccessFallbackBoundary notFound={undefined} forbidden={undefined} unauthorized={undefined}>
+        <RedirectBoundary>
+          <RedirectErrorBoundary router={{...}}>
+            <InnerLayoutRouter url="/login" tree={[...]} params={{}} cacheNode={{rsc:{...}, ...}} segmentPath={[...]} ...>
+              <SegmentViewNode type="page" pagePath="src/login/...">
+                <SegmentTrieNode>
+                <ClientPageRoot Component={function LoginPage} serverProvidedParams={{...}}>
+                  <LoginPage params={Promise} searchParams={Promise}>
+                    <div className="min-h-scre...">
+                      <div>
+                      <div>
+                      <div className="relative w...">
+                        <div className="bg-white/8...">
+                          <div>
+                          <div className="space-y-5">
+                            <div>
+                              <label>
+                              <input
+                                type="email"
+                                placeholder="you@example.com"
+                                className="mt-2 w-full px-5 py-4 rounded-2xl bg-gray-50 border border-gray-100 focus:b..."
+                                value=""
+                                onChange={function onChange}
+-                               style={{caret-color:"transparent"}}
+                              >
+                            <div>
+                              <label>
+                              <input
+                                type="password"
+                                placeholder="••••••••"
+                                className="mt-2 w-full px-5 py-4 rounded-2xl bg-gray-50 border border-gray-100 focus:b..."
+                                value=""
+                                onChange={function onChange}
+-                               style={{caret-color:"transparent"}}
+                              >
+                          ...
+              ...
+            ...
