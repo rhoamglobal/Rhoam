@@ -16,8 +16,8 @@ type Props = {
 export const CATEGORIES = [
   { name: "All", icon: LayoutGrid },
   { name: "Hotels", icon: Hotel },
-  { name: "Student louges", icon: GraduationCap },
-  { name: "Apartments", icon: Building2 },
+  { name: "Student lodges", icon: GraduationCap },
+  { name: "Apartment", icon: Building2 },
   { name: "Shortlets", icon: Home },
 ];
 

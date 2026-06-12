@@ -77,7 +77,7 @@ useEffect(() => {
     setTimeout(() => {
       setToastVisible(false);
       setUndoItem(null);
-    }, 10000);
+    }, 3000);
   };
 
   // 🔄 UNDO ACTION
@@ -161,15 +161,20 @@ useEffect(() => {
       {/* ⚡ UNDO TOAST (AIRBNB STYLE) */}
       {toastVisible && undoItem && (
         <button
-        onClick={undoRemove} className="
-          fixed bottom-8 left-1/2 -translate-x-1/2
-          bg-[#ff5a5f] text-white
-          px-4 py-4 rounded-xl shadow-lg
-          flex items-center text-sm
-          gap-6 justify-between min-w-[200px]]
-          z-[1000] hover:cursor-pointer
-        ">
-          <p className="text-sm">
+          onClick={undoRemove}
+          className="
+            fixed bottom-24 left-1/2 -translate-x-1/2
+            bg-[#ff5a5f] text-white
+            px-6 py-3
+            rounded-full shadow-xl
+            flex items-center justify-center
+            z-[1000]
+            hover:scale-105 active:scale-95
+            transition-all duration-200
+            hover:cursor-pointer
+          "
+        >
+          <p className="text-sm font-medium whitespace-nowrap">
             Undo Remove
           </p>
         </button>
