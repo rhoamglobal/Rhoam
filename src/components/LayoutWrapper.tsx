@@ -19,7 +19,7 @@ export default function LayoutWrapper({
     <>
       <main
         style={{
-          paddingBottom: hideNav ? 0 : "60px",
+          paddingBottom: hideNav ? 0 : "0px",
         }}
       >
         {children}

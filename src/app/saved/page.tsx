@@ -8,6 +8,7 @@ import ProtectedRoute from "@/components/auth/ProtectedRoute";
 
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/components/providers/AuthProvider";
+import { Undo2 } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
@@ -123,16 +124,16 @@ useEffect(() => {
   }
 
   return (
-    <div className="min-h-screen bg-white px-6 py-8">
+    <div className="min-h-screen bg-white px-6 py-8 pb-[80px]" >
       {/* HEADER */}
-      <div className="mb-10">
-  <h1 className="text-3xl font-semibold text-gray-900">
-    Saved homes
-  </h1>
-  <p className="text-sm text-gray-500 mt-1">
-    Your curated collection
-  </p>
-</div>
+          <div className="mb-10">
+      <h1 className="text-3xl font-semibold text-gray-900">
+        Saved homes
+      </h1>
+      <p className="text-sm text-gray-500 mt-1">
+        Your curated collection
+      </p>
+    </div>
 
       {/* EMPTY STATE */}
       {properties.length === 0 && (
@@ -175,7 +176,8 @@ useEffect(() => {
           "
         >
           <p className="text-sm font-medium whitespace-nowrap">
-            Undo Remove
+
+          <span>Undo Remove</span>
           </p>
         </button>
       )}
