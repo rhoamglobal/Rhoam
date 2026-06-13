@@ -182,7 +182,7 @@ export default function PropertyClient({
         </div>
 
         {/* LOCATION */}
-        <div className="mt-10 bg-white border rounded-2xl p-5 shadow-sm">
+        <div className="mt-10 bg-white border rounded-2xl p-5 shadow-sm mb-[60px]">
           <h2 className="text-sm font-medium mb-2">Location</h2>
 
           <p className="text-sm text-gray-500">
