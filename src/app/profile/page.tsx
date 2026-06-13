@@ -45,16 +45,18 @@ export default function ProfilePage() {
 
   if (!user) {
     return (
-      <div className="h-screen flex items-center justify-center">
-        <p className="text-gray-500">Loading profile...</p>
-      </div>
+      <ProtectedRoute>
+        <div className="h-screen flex items-center justify-center">
+          <p className="text-gray-500">Loading profile...</p>
+        </div>
+      </ProtectedRoute>
     );
   }
   const displayName =
   user.email?.split("@")[0] || "User";
 
   return (
-    <ProtectedRoute>
+    
       <div className="min-h-screen bg-[#f8f8f8] pb-28 px-5">
         
         {/* Profile Hero */}
@@ -214,6 +216,6 @@ export default function ProfilePage() {
         </div>
 
       </div>
-    </ProtectedRoute>
+    
   );
 }
