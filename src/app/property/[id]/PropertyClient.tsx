@@ -6,6 +6,7 @@ import { amenityIcons } from "@/lib/amenities";
 import { Property } from "@/components/map/types";
 import { Heart } from "lucide-react";
 import { supabase } from "@/lib/supabaseClient";
+import { useToast } from "@/components/ToastProvider";
 
 export default function PropertyClient({
   property,
@@ -15,6 +16,9 @@ export default function PropertyClient({
   const [activeImage, setActiveImage] = useState(0);
   const [saved, setSaved] = useState(false);
   const [userId, setUserId] = useState<string | null>(null);
+  const [unlocked, setUnlocked] = useState(false);
+
+  const { showToast } = useToast();
 
   useEffect(() => {
     const getUser = async () => {
@@ -28,6 +32,63 @@ export default function PropertyClient({
     getUser();
   }, []);
 
+  //if contact is alrwady unlocked
+  useEffect(() => {
+    if (!userId) return;
+  
+    const checkUnlock = async () => {
+      const { data, error } = await supabase
+        .from("contact_unlocks")
+        .insert([
+          {
+            user_id: userId,
+            property_id: Number(property.id),
+            payment_method: "paystack",
+          },
+        ]);
+
+      console.log("UNLOCK DATA:", data);
+      console.log("UNLOCK ERROR:", error);
+  
+      if (data) {
+        setUnlocked(true);
+      }
+    };
+  
+    checkUnlock();
+  }, [userId, property.id]);
+
+  //unlock handler
+  const handleUnlock = async () => {
+    if (!userId) {
+      showToast("Login first to unlock contact.");
+      return;
+    }
+  
+    const confirmed = confirm(
+      "Unlock landlord contact for ₦500?"
+    );
+  
+    if (!confirmed) return;
+  
+    // TEMP: simulate payment success
+    const { error } = await supabase
+      .from("contact_unlocks")
+      .insert([
+        {
+          user_id: userId,
+          property_id: property.id,
+          payment_method: "paystack",
+        },
+      ]);
+  
+    if (error) {
+      alert(error.message);
+      return;
+    }
+  
+    setUnlocked(true);
+  };
 
   useEffect(() => {
     if (!userId) return;
@@ -199,19 +260,31 @@ export default function PropertyClient({
             </p>
           </div>
 
-          <button
-            className="
-              bg-[#FF6B6B] hover:bg-[#ff5252]
-              text-white px-6 py-3
-              rounded-full font-medium
-              transition
-            "
-            onClick={() => {
-              alert("Contact landlord feature coming soon 🚀");
-            }}
-          >
-            Contact landlord
-          </button>
+          {unlocked ? (
+            <a
+              href={`tel:${property.landlord_phone}`}
+              className="
+                bg-green-500 hover:bg-green-600
+                text-white px-6 py-3
+                rounded-full font-medium
+                transition
+              "
+            >
+              Call Landlord
+            </a>
+          ) : (
+            <button
+              onClick={handleUnlock}
+              className="
+                bg-[#FF6B6B] hover:bg-[#ff5252]
+                text-white px-6 py-3
+                rounded-full font-medium
+                transition
+              "
+            >
+              Unlock Contact — ₦500
+            </button>
+          )}
         </div>
 
       </div>

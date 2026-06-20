@@ -12,7 +12,8 @@ export default function LayoutWrapper({
 
   // Hide nav on property pages
   const hideNav =
-    pathname.startsWith("/property/") || pathname.startsWith("/login") || pathname.startsWith("/signup");
+    pathname.startsWith("/property/") || pathname.startsWith("/login") || pathname.startsWith("/signup")
+    || pathname.startsWith("/onboarding");
     
 
   return (

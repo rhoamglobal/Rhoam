@@ -173,7 +173,7 @@ export default function EditPropertyPage() {
 
   return (
     <AdminRoute>
-      <div className="min-h-screen bg-[#f8f8f8] p-6">
+      <div className="min-h-screen bg-[#f8f8f8] p-6 pb-[60px]">
 
         <div className="max-w-3xl mx-auto">
 

@@ -45,11 +45,51 @@ export default function ProfilePage() {
 
   if (!user) {
     return (
-      <ProtectedRoute>
-        <div className="h-screen flex items-center justify-center">
-          <p className="text-gray-500">Loading profile...</p>
+        <ProtectedRoute>
+    <div className="h-screen flex flex-col items-center justify-center bg-[#f8f8f8]">
+      
+      {/* Logo Loader */}
+      <div className="relative flex items-center justify-center">
+        
+        {/* Outer pulse ring */}
+        <div className="absolute w-20 h-20 rounded-full bg-[#ff5a5f]/20 animate-ping" />
+
+        {/* Main icon */}
+        <div
+          className="
+            w-16 h-16 rounded-2xl
+            bg-[#ff5a5f]
+            flex items-center justify-center
+            shadow-lg
+          "
+        >
+          <Home className="text-white" size={28} />
         </div>
-      </ProtectedRoute>
+      </div>
+
+      {/* Brand name */}
+      <h2 className="mt-6 text-2xl font-bold text-gray-900">
+        Rhoam
+      </h2>
+
+      {/* Animated dots */}
+      <div className="flex gap-2 mt-3">
+        <span className="w-2 h-2 bg-[#ff5a5f] rounded-full animate-bounce" />
+        <span
+          className="w-2 h-2 bg-[#ff5a5f] rounded-full animate-bounce"
+          style={{ animationDelay: "0.2s" }}
+        />
+        <span
+          className="w-2 h-2 bg-[#ff5a5f] rounded-full animate-bounce"
+          style={{ animationDelay: "0.4s" }}
+        />
+      </div>
+
+      <p className="mt-4 text-gray-500 text-sm">
+        Loading your profile...
+      </p>
+    </div>
+  </ProtectedRoute>
     );
   }
   const displayName =

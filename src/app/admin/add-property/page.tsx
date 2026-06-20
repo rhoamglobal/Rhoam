@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { useToast } from "@/components/ToastProvider";
+import { PROPERTY_CATEGORIES } from "@/lib/categories";
 
 export default function AddPropertyPage() {
   const [loading, setLoading] = useState(false);
@@ -18,6 +19,10 @@ export default function AddPropertyPage() {
   const [longitude, setLongitude] = useState("");
 
   const [imageUrl, setImageUrl] = useState("");
+  const [landlordPhone, setLandlordPhone] = useState("");
+
+
+  
 
   //drag and drop images
   const [image, setImage] = useState<File | null>(null);
@@ -60,6 +65,7 @@ export default function AddPropertyPage() {
   
           latitude: Number(latitude),
           longitude: Number(longitude),
+          landlord_phone: landlordPhone,
   
           image_url: imageUrl,
           images: [imageUrl],
@@ -80,7 +86,7 @@ export default function AddPropertyPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#f8f8f8] p-6">
+    <div className="min-h-screen bg-[#f8f8f8] p-6 pb-[65px]">
 
       <h1 className="text-3xl font-bold text-[#ff5a5f] mb-8">
         Add Property
@@ -107,31 +113,18 @@ export default function AddPropertyPage() {
           onChange={(e) => setCategory(e.target.value)}
           className="w-full border rounded-2xl p-4 bg-white"
         >
-          <option value="">Select Category</option>
-
-          <option value="Hostel">
-            Hostel
+          <option value="">
+            Select Category
           </option>
 
-          <option value="Apartment">
-            Apartment
-          </option>
-
-          <option value="Self Contain">
-            Self Contain
-          </option>
-
-          <option value="Lodge">
-            Lodge
-          </option>
-
-          <option value="Flat">
-            Flat
-          </option>
-
-          <option value="Room">
-            Room
-          </option>
+          {PROPERTY_CATEGORIES.map((cat) => (
+            <option
+              key={cat}
+              value={cat}
+            >
+              {cat}
+            </option>
+          ))}
         </select>
 
         <textarea
@@ -166,6 +159,13 @@ export default function AddPropertyPage() {
           className="w-full border p-4 rounded-2xl"
         />
 
+        <input
+          placeholder="Landlord Phone"
+          value={landlordPhone}
+          onChange={(e) => setLandlordPhone(e.target.value)}
+          className="w-full border p-4 rounded-2xl"
+        />
+
         <button
           onClick={handleSubmit}
           disabled={loading}
@@ -173,6 +173,7 @@ export default function AddPropertyPage() {
         >
           {loading ? "Publishing..." : "Publish Property"}
         </button>
+        
 
       </div>
 
