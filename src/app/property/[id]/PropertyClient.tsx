@@ -34,24 +34,23 @@ export default function PropertyClient({
 
   //if contact is alrwady unlocked
   useEffect(() => {
-    if (!userId) return;
+    if (!userId || !property?.id) return;
   
     const checkUnlock = async () => {
       const { data, error } = await supabase
         .from("contact_unlocks")
-        .insert([
-          {
-            user_id: userId,
-            property_id: Number(property.id),
-            payment_method: "paystack",
-          },
-        ]);
-
-      console.log("UNLOCK DATA:", data);
+        .select("*")
+        .eq("user_id", String(userId))
+        .eq("property_id", Number(property.id))
+        .maybeSingle();
+  
+      console.log("UNLOCK CHECK:", data);
       console.log("UNLOCK ERROR:", error);
   
       if (data) {
         setUnlocked(true);
+      } else {
+        setUnlocked(false);
       }
     };
   
