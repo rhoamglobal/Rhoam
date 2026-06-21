@@ -15,20 +15,21 @@ export default function OnboardingPage() {
       <div className="absolute w-[400px] h-[400px] bg-[#ff5a5f]/10 blur-[100px] rounded-full bottom-[-120px] left-[-120px]" />
 
       {/* main card */}
-      <div className="relative z-10 w-full max-w-md bg-white border border-gray-100 rounded-[38px] shadow-[0_20px_80px_rgba(0,0,0,0.08)] px-8 py-10">
+      <div >
 
         {/* top accent line */}
         <div className="w-16 h-1 bg-[#ff5a5f] rounded-full mb-10" />
 
         {/* illustration */}
-        <div className="flex justify-center mb-8">
-          <Image
-            src="/onboarding-house.png"
-            alt="Rhoam onboarding"
-            width={220}
-            height={220}
-            className="object-contain"
-          />
+        <div className="flex justify-center mb-8
+        object-contain dark:brightness-110 ">
+        <Image
+          src="/onboarding-house.png"
+          alt="Rhoam onboarding"
+          width={240}
+          height={240}
+          className="object-contain"
+        />
         </div>
 
         {/* text */}
