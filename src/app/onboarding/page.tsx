@@ -10,9 +10,6 @@ export default function OnboardingPage() {
   return (
     <div className="min-h-screen bg-white flex items-center justify-center px-6 relative overflow-hidden">
 
-      {/* ambient coral glow */}
-      <div className="absolute w-[500px] h-[500px] bg-[#ff5a5f]/15 blur-[120px] rounded-full top-[-120px] right-[-120px]" />
-      <div className="absolute w-[400px] h-[400px] bg-[#ff5a5f]/10 blur-[100px] rounded-full bottom-[-120px] left-[-120px]" />
 
       {/* main card */}
       <div >
@@ -26,8 +23,8 @@ export default function OnboardingPage() {
         <Image
           src="/onboarding-house.png"
           alt="Rhoam onboarding"
-          width={240}
-          height={240}
+          width={280}
+          height={280}
           className="object-contain"
         />
         </div>
