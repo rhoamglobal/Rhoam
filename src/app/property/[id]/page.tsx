@@ -16,6 +16,10 @@ export default async function PropertyPage({
     .select("*")
     .eq("id", id)
     .single();
+    console.log(property.id);
+    console.log("FULL PROPERTY:", property);
+console.log("PROPERTY ID:", property?.id);
+console.log("RECEIVED PROPERTY:", property);
 
   if (!property) return notFound();
 

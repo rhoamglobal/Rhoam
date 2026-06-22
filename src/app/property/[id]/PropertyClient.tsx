@@ -11,15 +11,21 @@ import { useToast } from "@/components/ToastProvider";
 export default function PropertyClient({
   property,
 }: {
-  property: Property;
+  property: Property & { isUnlocked?: boolean };
 }) {
   const [activeImage, setActiveImage] = useState(0);
   const [saved, setSaved] = useState(false);
   const [userId, setUserId] = useState<string | null>(null);
-  const [unlocked, setUnlocked] = useState(false);
+
+  // server should send this
+  const [unlocked, setUnlocked] = useState(property.isUnlocked || false);
+
+  const [checkingUnlock, setCheckingUnlock] = useState(true);
+  const [unlocking, setUnlocking] = useState(false);
 
   const { showToast } = useToast();
 
+  // GET USER
   useEffect(() => {
     const getUser = async () => {
       const {
@@ -32,111 +38,117 @@ export default function PropertyClient({
     getUser();
   }, []);
 
-  //if contact is alrwady unlocked
+  // FALLBACK CHECK (in case property.isUnlocked wasn’t passed)
   useEffect(() => {
-    if (!userId || !property?.id) return;
-  
+    if (!userId || !property?.id) {
+      setCheckingUnlock(false);
+      return;
+    }
+
     const checkUnlock = async () => {
-      const { data, error } = await supabase
+      const { data } = await supabase
         .from("contact_unlocks")
-        .select("*")
-        .eq("user_id", String(userId))
+        .select("id")
+        .eq("user_id", userId)
         .eq("property_id", Number(property.id))
         .maybeSingle();
-  
-      console.log("UNLOCK CHECK:", data);
-      console.log("UNLOCK ERROR:", error);
-  
-      if (data) {
-        setUnlocked(true);
-      } else {
-        setUnlocked(false);
-      }
+
+      setUnlocked(!!data);
+      setCheckingUnlock(false);
     };
-  
+
     checkUnlock();
   }, [userId, property.id]);
 
-  //unlock handler
+  // HANDLE UNLOCK (Monnify)
   const handleUnlock = async () => {
     if (!userId) {
       showToast("Login first to unlock contact.");
       return;
     }
-  
-    const confirmed = confirm(
-      "Unlock landlord contact for ₦500?"
-    );
-  
+
+    if (unlocking) return; // anti-double-click
+
+    const confirmed = confirm("Unlock landlord contact for ₦500?");
     if (!confirmed) return;
-  
-    // TEMP: simulate payment success
-    const { error } = await supabase
-      .from("contact_unlocks")
-      .insert([
-        {
-          user_id: userId,
-          property_id: property.id,
-          payment_method: "paystack",
+
+    try {
+      setUnlocking(true);
+
+      const res = await fetch("/api/unlock/initiate", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
         },
-      ]);
-  
-    if (error) {
-      alert(error.message);
-      return;
+        body: JSON.stringify({
+          userId,
+          propertyId: property.id,
+          amount: 500,
+        }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        showToast(data.message || "Failed to initialize payment.");
+        setUnlocking(false);
+        return;
+      }
+
+      // redirect to monnify checkout
+      if (data.paymentUrl) {
+        window.location.href = data.paymentUrl;
+      }
+    } catch (error) {
+      console.log(error);
+      showToast("Something went wrong.");
+      setUnlocking(false);
     }
-  
-    setUnlocked(true);
   };
 
+  // SAVE PROPERTY
   useEffect(() => {
     if (!userId) return;
+
     fetch(`/api/saved?userId=${userId}`)
       .then((res) => res.json())
       .then((data) => {
         const isSaved = data.some(
-          (item: { property_id: string }) => item.property_id === property.id
+          (item: { property_id: string }) =>
+            item.property_id === property.id
         );
         setSaved(isSaved);
       });
   }, [userId, property.id]);
 
-  
-
   return (
     <div className="min-h-screen bg-white text-gray-900">
-
       {/* HERO IMAGE */}
       <div className="w-full h-[460px] relative">
         <Image
           src={
-            (property.images && property.images.length > 0
+            (property.images?.length
               ? property.images[activeImage]
               : property.image_url || property.image) || "/placeholder.jpg"
           }
           alt={property.title}
           fill
+          sizes="100vw"
           className="object-cover"
           priority
         />
 
-        {/* gradient */}
         <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
 
-        {/* ⬅️ BACK BUTTON */}
+        {/* BACK BUTTON */}
         <button
           onClick={() => window.history.back()}
-          className="
-            absolute top-4 left-4
-            bg-white/90 hover:bg-white
-            p-2 rounded-full shadow-md
-            transition
-          "
+          className="absolute top-4 left-4 bg-white/90 hover:bg-white p-2 rounded-full shadow-md transition"
         >
           ←
         </button>
 
-        {/* ❤️ SAVE BUTTON */}
+        {/* SAVE BUTTON */}
         <button
           onClick={async () => {
             const res = await fetch("/api/save", {
@@ -151,13 +163,7 @@ export default function PropertyClient({
             const data = await res.json();
             setSaved(data.saved);
           }}
-          className="
-            absolute top-4 right-4
-            bg-white/90 hover:bg-white
-            p-2 rounded-full shadow-md
-            transition
-            hover:scale-105 active:scale-95
-          "
+          className="absolute top-4 right-4 bg-white/90 hover:bg-white p-2 rounded-full shadow-md transition"
         >
           <Heart
             size={20}
@@ -173,16 +179,15 @@ export default function PropertyClient({
           <div
             key={i}
             onClick={() => setActiveImage(i)}
-            className={`
-              relative h-16 w-20 flex-shrink-0 rounded-lg cursor-pointer
-              border transition overflow-hidden
-              ${activeImage === i ? "border-[#FF6B6B]" : "border-gray-200"}
-            `}
+            className={`relative h-16 w-20 flex-shrink-0 rounded-lg cursor-pointer border transition overflow-hidden ${
+              activeImage === i ? "border-[#FF6B6B]" : "border-gray-200"
+            }`}
           >
             <Image
               src={img}
               alt=""
               fill
+              sizes="80px"
               className="object-cover"
             />
           </div>
@@ -191,15 +196,10 @@ export default function PropertyClient({
 
       {/* CONTENT */}
       <div className="max-w-5xl mx-auto px-6 py-10">
-        {/* TITLE + PRICE */}
         <div className="flex justify-between items-start">
           <div>
-            <h1 className="text-3xl font-semibold tracking-tight">
-              {property.title}
-            </h1>
-            <p className="text-sm text-gray-500 mt-1">
-              {property.category}
-            </p>
+            <h1 className="text-3xl font-semibold">{property.title}</h1>
+            <p className="text-sm text-gray-500 mt-1">{property.category}</p>
           </div>
 
           <div className="bg-[#FF6B6B] text-white px-5 py-2 rounded-full text-lg font-semibold shadow-md">
@@ -207,19 +207,17 @@ export default function PropertyClient({
           </div>
         </div>
 
-        {/* CORAL LINE */}
         <div className="w-16 h-[3px] bg-[#FF6B6B] rounded-full mt-6" />
 
         {/* DESCRIPTION */}
         <div className="mt-8">
           <h2 className="text-lg font-medium mb-2">About this place</h2>
-
-          <p className="text-gray-600 leading-relaxed text-[15px]">
+          <p className="text-gray-600">
             {property.description || "No description provided."}
           </p>
         </div>
 
-        {/* AMENITIES SECTION */}
+        {/* AMENITIES */}
         <div className="mt-10">
           <h2 className="text-lg font-medium mb-4">Amenities</h2>
 
@@ -227,11 +225,10 @@ export default function PropertyClient({
             {(property.amenities || []).map((item: string, index: number) => {
               const Icon = amenityIcons[item] || null;
 
-
               return (
                 <div
                   key={index}
-                  className="flex items-center gap-2 px-4 py-2 rounded-full border bg-gray-50 hover:border-[#FF6B6B] hover:text-[#FF6B6B] transition"
+                  className="flex items-center gap-2 px-4 py-2 rounded-full border bg-gray-50"
                 >
                   {Icon && <Icon size={16} />}
                   <span className="text-sm capitalize">{item}</span>
@@ -244,48 +241,44 @@ export default function PropertyClient({
         {/* LOCATION */}
         <div className="mt-10 bg-white border rounded-2xl p-5 shadow-sm mb-[60px]">
           <h2 className="text-sm font-medium mb-2">Location</h2>
-
           <p className="text-sm text-gray-500">
-            {property.latitude ?? property.lat}, {property.longitude ?? property.lng}
+            {property.latitude ?? property.lat},{" "}
+            {property.longitude ?? property.lng}
           </p>
         </div>
 
-        {/* cta button */}
+        {/* CTA */}
         <div className="fixed bottom-0 left-0 w-full bg-white border-t shadow-lg px-6 py-4 flex items-center justify-between z-[1000]">
           <div>
-            <p className="text-sm text-gray-500">Interested in this property?</p>
-            <p className="text-base font-semibold text-gray-900">
+            <p className="text-sm text-gray-500">
+              Interested in this property?
+            </p>
+            <p className="text-base font-semibold">
               ₦{property.price.toLocaleString()}
             </p>
           </div>
 
-          {unlocked ? (
+          {checkingUnlock ? (
+            <button className="bg-gray-300 text-white px-6 py-3 rounded-full">
+              Checking...
+            </button>
+          ) : unlocked ? (
             <a
               href={`tel:${property.landlord_phone}`}
-              className="
-                bg-green-500 hover:bg-green-600
-                text-white px-6 py-3
-                rounded-full font-medium
-                transition
-              "
+              className="bg-green-500 hover:bg-green-600 text-white px-6 py-3 rounded-full"
             >
               Call Landlord
             </a>
           ) : (
             <button
               onClick={handleUnlock}
-              className="
-                bg-[#FF6B6B] hover:bg-[#ff5252]
-                text-white px-6 py-3
-                rounded-full font-medium
-                transition
-              "
+              disabled={unlocking}
+              className="bg-[#FF6B6B] hover:bg-[#ff5252] text-white px-6 py-3 rounded-full disabled:opacity-50"
             >
-              Unlock Contact — ₦500
+              {unlocking ? "Redirecting..." : "Unlock Contact — ₦500"}
             </button>
           )}
         </div>
-
       </div>
     </div>
   );
