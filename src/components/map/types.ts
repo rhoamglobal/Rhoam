@@ -13,4 +13,6 @@ export type Property = {
     lng?: number;
     image?: string;
     landlord_phone: string;
+    school_tag: string
+    location: string
   };

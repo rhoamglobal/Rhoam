@@ -14,13 +14,14 @@ import MapAutoFit from "./MapAutoFit";
 import { useDebounce } from "@/hooks/useDebounce";
 import { usePropertySearch } from "@/hooks/usePropertySearch";
 import { Property } from "./types";
-import SearchThisAreaButton from "./search/SearchThisAreaButton";
+
 import RememberMapView from "./RememberMapView";
 
 import { detectSchoolFromSearch } from "@/lib/detectSchool";
 
   // ✅ school search HERE
 import FlyToSchool from "./search/FlyToSchool";
+import FlyToProperty from "./search/FlyToProperty";
 import { useMapEvents } from "react-leaflet";
 
 // @for clustering
@@ -46,11 +47,16 @@ function MapBoundsListener({ setBounds }: { setBounds: (bounds: LatLngBounds) =>
 type Props = {
   category: string;
   search: string;
+  flyTarget: {
+    latitude: number;
+    longitude: number;
+  } | null;
 };
 
-export default function MapClient({ category, search }: Props) {
+export default function MapClient({ category, search, flyTarget }: Props) {
   const [selected, setSelected] = useState<Property | null>(null);
   const [bounds, setBounds] = useState<LatLngBounds | null>(null);
+
 
   // ✅ debounce search HERE
   const debouncedSearch = useDebounce(search, 400);
@@ -59,6 +65,8 @@ export default function MapClient({ category, search }: Props) {
   // ✅ parse search 
   const [maxPrice, setMaxPrice] = useState<number | undefined>(undefined);
   const [, setActiveCategory] = useState(category);
+  
+
 
   // ✅ detect school 
   
@@ -90,6 +98,7 @@ export default function MapClient({ category, search }: Props) {
         <CloseOnMapClick onClose={() => setSelected(null)} />
 
         <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+        <FlyToProperty target={flyTarget} />
 
         <RememberMapView />
         <MapBoundsListener setBounds={setBounds} />
@@ -148,6 +157,7 @@ export default function MapClient({ category, search }: Props) {
               />
             ))}
         </MarkerClusterGroup>
+        
           
       </MapContainer>
 

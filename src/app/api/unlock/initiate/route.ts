@@ -50,7 +50,7 @@ export async function POST(req: Request) {
           paymentDescription: "Property contact unlock",
           currencyCode: "NGN",
           contractCode: process.env.MONNIFY_CONTRACT_CODE,
-          redirectUrl: `${process.env.NEXT_PUBLIC_BASE_URL}/payment-success`,
+          redirectUrl: `${process.env.NEXT_PUBLIC_BASE_URL}/payment-success?reference=${paymentReference}`,
           paymentMethods: ["CARD", "ACCOUNT_TRANSFER"],
         }),
       }

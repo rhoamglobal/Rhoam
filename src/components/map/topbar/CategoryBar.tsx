@@ -23,7 +23,7 @@ export const CATEGORIES = [
 
 export default function CategoryBar({ active, setActive }: Props) {
   return (
-    <div className="absolute top-[78px] left-0 w-full z-[1000]">
+    <div className="absolute top-[78px] left-0 w-full z-[900]">
       <div className="flex gap-4 overflow-x-auto px-6 py-3 scrollbar-hide">
         {CATEGORIES.map(({ name, icon: Icon }) => {
           const isActive = active === name;
