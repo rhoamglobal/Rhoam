@@ -2,9 +2,25 @@
 
 import { useEffect, useState } from "react";
 import AdminRoute from "@/components/auth/AdminRoute";
+import Link from "next/link";
+import Image from "next/image";
+
+interface RecentProperty {
+  id: string;
+  title: string;
+  price: number;
+  image_url: string;
+}
+
+interface Stats {
+  propertyCount: number;
+  userCount: number;
+  savedCount: number;
+  recentProperties: RecentProperty[];
+}
 
 export default function AdminPage() {
-  const [stats, setStats] = useState({
+  const [stats, setStats] = useState<Stats>({
     propertyCount: 0,
     userCount: 0,
     savedCount: 0,
@@ -76,19 +92,19 @@ export default function AdminPage() {
   
           <div className="flex flex-wrap gap-3">
   
-            <a
+            <Link
               href="/admin/add-property"
               className="px-5 py-3 rounded-2xl bg-[#ff5a5f] text-white font-medium"
             >
               Add Property
-            </a>
+            </Link>
   
-            <a
+            <Link
               href="/admin/properties"
               className="px-5 py-3 rounded-2xl bg-gray-100 font-medium"
             >
               Manage Properties
-            </a>
+            </Link>
   
           </div>
   
@@ -116,18 +132,21 @@ export default function AdminPage() {
                 No properties yet
               </p>
             ) : (
-              stats.recentProperties?.map((property: any) => (
+              stats.recentProperties?.map((property) => (
                 <div
                   key={property.id}
                   className="flex items-center gap-4 p-3 rounded-2xl hover:bg-gray-50"
                 >
   
                   {property.image_url ? (
-                    <img
-                      src={property.image_url}
-                      alt={property.title}
-                      className="w-16 h-16 rounded-xl object-cover"
-                    />
+                    <div className="relative w-16 h-16">
+                      <Image
+                        src={property.image_url}
+                        alt={property.title}
+                        fill
+                        className="rounded-xl object-cover"
+                      />
+                    </div>
                   ) : (
                     <div className="w-16 h-16 rounded-xl bg-gray-100" />
                   )}

@@ -3,7 +3,6 @@
 import { useEffect } from "react";
 import { useMap } from "react-leaflet";
 import { SCHOOLS } from "../schools";
-import L, { LatLngBounds } from "leaflet";
 import { parseSearch } from "./parseSearch";
 
 type Props = {

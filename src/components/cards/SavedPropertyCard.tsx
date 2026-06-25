@@ -5,6 +5,7 @@ import { Heart } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/components/providers/AuthProvider";
 import { toggleSaved } from "@/lib/saved";
+import Image from "next/image";
 
 
 
@@ -36,11 +37,13 @@ export default function SavedPropertyCard({
       "
     >
       {/* IMAGE WRAPPER */}
-      <div className="relative overflow-hidden rounded-2xl bg-gray-100">
-        <img
-          src={property.images?.[0]}
+      <div className="relative h-64 overflow-hidden rounded-2xl bg-gray-100">
+        <Image
+          src={property.images?.[0] || property.image_url || "/placeholder.jpg"}
+          alt={property.title}
+          fill
           className="
-            h-64 w-full object-cover
+            object-cover
             transition-transform duration-500
             group-hover:scale-105
           "

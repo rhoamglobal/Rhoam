@@ -41,8 +41,8 @@ export default function PropertyClient({
   // FALLBACK CHECK (in case property.isUnlocked wasn’t passed)
   useEffect(() => {
     if (!userId || !property?.id) {
-      setCheckingUnlock(false);
-      return;
+      const timer = setTimeout(() => setCheckingUnlock(false), 0);
+      return () => clearTimeout(timer);
     }
 
     const checkUnlock = async () => {

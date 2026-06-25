@@ -17,7 +17,7 @@ export default function ProtectedRoute({
     if (!loading && !user) {
       router.push("/onboarding");
     }
-  }, [user, loading]);
+  }, [user, loading, router]);
 
   if (loading || !user) {
     return (

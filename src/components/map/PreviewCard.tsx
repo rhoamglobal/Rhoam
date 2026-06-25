@@ -53,8 +53,6 @@ export default function PreviewCard({
     setSaved(state);
   };
 
-  let distanceInfo: string | null = null;
-
   if (property && school) {
     const km = getDistanceKm(
       property.latitude,
@@ -64,7 +62,8 @@ export default function PreviewCard({
     );
 
     const minutes = kmToWalkMinutes(km);
-    distanceInfo = `${minutes} mins walk to ${school.name} gate`;
+    // TODO: Use distanceInfo in the UI
+    console.log(`${minutes} mins walk to ${school.name} gate`);
   }
 
   

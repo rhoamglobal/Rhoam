@@ -1,4 +1,4 @@
-export function getAuthErrorMessage(error: any) {
+export function getAuthErrorMessage(error: { message?: string }) {
     const msg = error?.message?.toLowerCase() || "";
   
     if (msg.includes("invalid login")) {

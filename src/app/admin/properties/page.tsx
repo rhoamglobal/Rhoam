@@ -5,6 +5,7 @@ import { supabase } from "@/lib/supabase";
 import ConfirmModal from "@/components/ConfirmModal";
 import { useToast } from "@/components/ToastProvider";
 import Link from "next/link";
+import Image from "next/image";
 
 type Property = {
   id: number;
@@ -34,7 +35,10 @@ export default function AdminPropertiesPage() {
   };
 
   useEffect(() => {
-    loadProperties();
+    const fetchProps = async () => {
+      await loadProperties();
+    };
+    fetchProps();
   }, []);
 
   // STEP 1: open modal instead of deleting directly
@@ -94,11 +98,14 @@ export default function AdminPropertiesPage() {
             <div className="flex">
 
               {property.image_url ? (
-                <img
-                  src={property.image_url}
-                  alt={property.title}
-                  className="w-40 h-40 object-cover"
-                />
+                <div className="relative w-40 h-40">
+                  <Image
+                    src={property.image_url}
+                    alt={property.title}
+                    fill
+                    className="object-cover"
+                  />
+                </div>
               ) : (
                 <div className="w-40 h-40 bg-gray-100 flex items-center justify-center text-gray-400">
                   No Image
