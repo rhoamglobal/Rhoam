@@ -1,11 +1,12 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import AdminRoute from "@/components/auth/AdminRoute";
 import { useToast } from "@/components/ToastProvider";
 import { PROPERTY_CATEGORIES } from "@/lib/categories";
+import Image from "next/image";
 
 
 export default function EditPropertyPage() {
@@ -31,11 +32,7 @@ export default function EditPropertyPage() {
   //add cover page and images
   const [galleryImages, setGalleryImages] = useState<string[]>([]);
 
-  useEffect(() => {
-    fetchProperty();
-  }, []);
-
-  const fetchProperty = async () => {
+  const fetchProperty = useCallback(async () => {
     const { data, error } = await supabase
       .from("properties")
       .select("*")
@@ -43,7 +40,7 @@ export default function EditPropertyPage() {
       .single();
 
     if (error) {
-      showToast(error);
+      showToast(error.message);
       return;
     }
 
@@ -61,7 +58,14 @@ export default function EditPropertyPage() {
     );
 
     setLoading(false);
-  };
+  }, [params.id, showToast]);
+
+  useEffect(() => {
+    const fetch = async () => {
+      await fetchProperty();
+    };
+    fetch();
+  }, [fetchProperty]);
   const removeGalleryImage = (
     imageUrl: string
   ) => {
@@ -256,11 +260,14 @@ export default function EditPropertyPage() {
               </label>
 
               {imageUrl && (
-                <img
-                  src={imageUrl}
-                  alt=""
-                  className="w-48 h-48 rounded-2xl object-cover mb-4"
-                />
+                <div className="relative w-48 h-48 mb-4">
+                  <Image
+                    src={imageUrl}
+                    alt=""
+                    fill
+                    className="rounded-2xl object-cover"
+                  />
+                </div>
               )}
 
               <input
@@ -297,11 +304,14 @@ export default function EditPropertyPage() {
                   key={index}
                   className="relative"
                 >
-                  <img
-                    src={img}
-                    alt=""
-                    className="h-32 w-full rounded-2xl object-cover"
-                  />
+                  <div className="relative h-32 w-full">
+                    <Image
+                      src={img}
+                      alt=""
+                      fill
+                      className="rounded-2xl object-cover"
+                    />
+                  </div>
 
                   <button
                     type="button"

@@ -18,7 +18,6 @@ export default function AddPropertyPage() {
   const [latitude, setLatitude] = useState("");
   const [longitude, setLongitude] = useState("");
 
-  const [imageUrl, setImageUrl] = useState("");
   const [landlordPhone, setLandlordPhone] = useState("");
 
 

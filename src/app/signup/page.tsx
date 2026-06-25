@@ -15,15 +15,15 @@ export default function SignupPage() {
   const [loading, setLoading] = useState(false);
 
   const [errorMsg, setErrorMsg] = useState("");
-  const [isOnline, setIsOnline] = useState(true);
+  const [isOnline, setIsOnline] = useState(() =>
+    typeof window !== "undefined" ? navigator.onLine : true
+  );
 
   const [emailError, setEmailError] = useState("");
   const [passwordError, setPasswordError] = useState("");
   const [shake, setShake] = useState(false);
 
   useEffect(() => {
-    setIsOnline(navigator.onLine);
-
     const online = () => setIsOnline(true);
     const offline = () => setIsOnline(false);
 

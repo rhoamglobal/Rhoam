@@ -4,12 +4,14 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import AdminRoute from "@/components/auth/AdminRoute";
 
-export default function AdminUsersPage() {
-  const [users, setUsers] = useState<any[]>([]);
+interface Profile {
+  id: string;
+  email: string;
+  created_at: string;
+}
 
-  useEffect(() => {
-    loadUsers();
-  }, []);
+export default function AdminUsersPage() {
+  const [users, setUsers] = useState<Profile[]>([]);
 
   const loadUsers = async () => {
     const { data } = await supabase
@@ -21,6 +23,13 @@ export default function AdminUsersPage() {
 
     setUsers(data || []);
   };
+
+  useEffect(() => {
+    const fetchUsers = async () => {
+      await loadUsers();
+    };
+    fetchUsers();
+  }, []);
 
   return (
     <AdminRoute>

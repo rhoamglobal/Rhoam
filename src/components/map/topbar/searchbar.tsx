@@ -25,10 +25,6 @@ export default function SearchBar({
 
   const wrapperRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    setInput(search);
-  }, [search]);
-
   // close when clicked outside
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
@@ -52,8 +48,8 @@ export default function SearchBar({
   // fetch properties
   useEffect(() => {
     if (!input.trim()) {
-      setProperties([]);
-      return;
+      const timer = setTimeout(() => setProperties([]), 0);
+      return () => clearTimeout(timer);
     }
 
     const fetchSuggestions = async () => {
