@@ -126,8 +126,14 @@ export default function PreviewCard({
               ₦{property.price.toLocaleString()} / year
             </span>
 
+            {distanceInfo && (
+              <p className="text-xs text-[#FF6B6B] font-medium">
+                {distanceInfo}
+              </p>
+            )}
+
             <p className="text-xs text-gray-500">
-              address
+              {property.title}
             </p>
 
             <button onClick={() => router.push(`/property/${property.id}`)}>

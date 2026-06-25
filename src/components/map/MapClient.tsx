@@ -14,7 +14,6 @@ import MapAutoFit from "./MapAutoFit";
 import { useDebounce } from "@/hooks/useDebounce";
 import { usePropertySearch } from "@/hooks/usePropertySearch";
 import { Property } from "./types";
-import SearchThisAreaButton from "./search/SearchThisAreaButton";
 import RememberMapView from "./RememberMapView";
 
 import { detectSchoolFromSearch } from "@/lib/detectSchool";
