@@ -11,6 +11,7 @@ type Property = {
   title: string;
   price: number;
   image_url: string;
+  is_verified: boolean;
 };
 
 export default function AdminPropertiesPage() {
@@ -28,7 +29,7 @@ export default function AdminPropertiesPage() {
     const loadInitialProperties = async () => {
       const { data } = await supabase
         .from("properties")
-        .select("id,title,price,image_url")
+        .select("id,title,price,image_url,is_verified")
         .order("created_at", { ascending: false });
 
       if (active && data) {
@@ -46,7 +47,7 @@ export default function AdminPropertiesPage() {
   const loadProperties = async () => {
     const { data } = await supabase
       .from("properties")
-      .select("id,title,price,image_url")
+      .select("id,title,price,image_url,is_verified")
       .order("created_at", { ascending: false });
 
     if (data) {
@@ -58,6 +59,31 @@ export default function AdminPropertiesPage() {
   const requestDelete = (id: number) => {
     setSelectedId(id);
     setConfirmOpen(true);
+  };
+  const toggleVerification = async (
+    id: number,
+    currentState: boolean
+  ) => {
+    const { error } = await supabase
+      .from("properties")
+      .update({
+        is_verified: !currentState,
+      })
+      .eq("id", id);
+  
+    if (error) {
+      showToast("Failed to update verification", "error");
+      return;
+    }
+  
+    showToast(
+      !currentState
+        ? "Property verified"
+        : "Verification removed",
+      "success"
+    );
+  
+    loadProperties();
   };
 
   // STEP 2: actual delete action
@@ -150,6 +176,23 @@ export default function AdminPropertiesPage() {
                 >
                   Edit
                 </Link>
+                <button
+  onClick={() =>
+    toggleVerification(
+      property.id,
+      property.is_verified
+    )
+  }
+  className={`px-5 py-2 rounded-xl font-medium ${
+    property.is_verified
+      ? "bg-emerald-50 text-emerald-600"
+      : "bg-gray-100 text-gray-700"
+  }`}
+>
+  {property.is_verified
+    ? "Remove Verification"
+    : "Verify"}
+</button>
 
                   {/* UPDATED DELETE BUTTON */}
                   <button

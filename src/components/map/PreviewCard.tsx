@@ -6,7 +6,7 @@ import Image from "next/image";
 import { Property } from "./types";
 import { useEffect, useState } from "react";
 import { isSaved, toggleSaved } from "@/lib/saved";
-import { Heart } from "lucide-react";
+import { Heart, CheckCircle2 } from "lucide-react";
 import { useAuth } from "@/components/providers/AuthProvider";
 
 import { getDistanceKm, kmToWalkMinutes } from "@/lib/distance";
@@ -117,7 +117,16 @@ export default function PreviewCard({
           </div>
         </div>
           <div className="info">
-            <h3>{property.title}</h3>
+          <div className="flex items-center gap-2">
+          <h3>{property.title}</h3>
+
+          {property.is_verified && (
+            <span className="flex items-center gap-1 px-2 py-1 rounded-full bg-emerald-50 text-emerald-600 text-xs font-medium">
+              <CheckCircle2 size={13} />
+              Verified
+            </span>
+          )}
+        </div>
 
             {/* coral branding */}
             <h2 style={{ color: "#ff5a5f" }}>{property.category}</h2>

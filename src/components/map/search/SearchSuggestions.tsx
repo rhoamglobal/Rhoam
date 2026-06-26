@@ -10,6 +10,7 @@ import {
   MapPin,
   Navigation,
   Sparkles,
+  CheckCircle2,
 } from "lucide-react";
 
 type Props = {
@@ -152,9 +153,18 @@ export default function SearchSuggestions({
                   </span>
 
                   <span className="min-w-0">
+                  <div className="flex items-center gap-2">
                     <span className="block truncate text-sm font-semibold text-gray-950">
                       {property.title}
                     </span>
+
+                    {property.is_verified && (
+                      <CheckCircle2
+                        size={14}
+                        className="text-emerald-500 shrink-0"
+                      />
+                    )}
+                  </div>
 
                     <span className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-gray-500">
                       <span className="font-semibold text-[#ff5a5f]">

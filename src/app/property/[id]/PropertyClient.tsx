@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import Image from "next/image";
 import { amenityIcons } from "@/lib/amenities";
 import { Property } from "@/components/map/types";
-import { Heart } from "lucide-react";
+import { Heart, CheckCircle2 } from "lucide-react";
 import { supabase } from "@/lib/supabaseClient";
 import { useToast } from "@/components/ToastProvider";
 
@@ -202,7 +202,18 @@ export default function PropertyClient({
       <div className="max-w-5xl mx-auto px-6 py-10">
         <div className="flex justify-between items-start">
           <div>
-            <h1 className="text-3xl font-semibold">{property.title}</h1>
+          <div className="flex items-center gap-3 flex-wrap">
+            <h1 className="text-3xl font-semibold">
+              {property.title}
+            </h1>
+
+            {property.is_verified && (
+              <span className="flex items-center gap-1 px-3 py-1 rounded-full bg-emerald-50 text-emerald-600 text-sm font-medium border border-emerald-100">
+                <CheckCircle2 size={14} />
+                Verified by Rhoam
+              </span>
+            )}
+          </div>
             <p className="text-sm text-gray-500 mt-1">{property.category}</p>
           </div>
 

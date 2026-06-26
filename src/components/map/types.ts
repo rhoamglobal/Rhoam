@@ -15,4 +15,5 @@ export type Property = {
     landlord_phone: string;
     school_tag: string
     location: string
+    is_verified?: boolean;
   };
