@@ -4,23 +4,37 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import AdminRoute from "@/components/auth/AdminRoute";
 
+type Profile = {
+  id: string;
+  email: string;
+  created_at: string;
+};
+
 export default function AdminUsersPage() {
-  const [users, setUsers] = useState<any[]>([]);
+  const [users, setUsers] = useState<Profile[]>([]);
 
   useEffect(() => {
+    let active = true;
+
+    const loadUsers = async () => {
+      const { data } = await supabase
+        .from("profiles")
+        .select("id,email,created_at")
+        .order("created_at", {
+          ascending: false,
+        });
+
+      if (active) {
+        setUsers(data || []);
+      }
+    };
+
     loadUsers();
+
+    return () => {
+      active = false;
+    };
   }, []);
-
-  const loadUsers = async () => {
-    const { data } = await supabase
-      .from("profiles")
-      .select("*")
-      .order("created_at", {
-        ascending: false,
-      });
-
-    setUsers(data || []);
-  };
 
   return (
     <AdminRoute>

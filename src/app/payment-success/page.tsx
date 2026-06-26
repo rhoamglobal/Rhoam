@@ -1,9 +1,17 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 
 export default function PaymentSuccess() {
+  return (
+    <Suspense fallback={<PaymentStatus loading />}>
+      <PaymentSuccessContent />
+    </Suspense>
+  );
+}
+
+function PaymentSuccessContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
 
@@ -42,10 +50,28 @@ export default function PaymentSuccess() {
   }, [reference]);
 
   return (
-    <div className="min-h-screen flex flex-col justify-center items-center px-6">
+    <PaymentStatus
+      loading={loading}
+      success={success}
+      onHome={() => router.push("/")}
+    />
+  );
+}
+
+function PaymentStatus({
+  loading,
+  success = false,
+  onHome,
+}: {
+  loading: boolean;
+  success?: boolean;
+  onHome?: () => void;
+}) {
+  return (
+    <div className="flex min-h-screen flex-col items-center justify-center px-6">
       {loading ? (
         <>
-          <h1 className="text-2xl font-bold mb-3">
+          <h1 className="mb-3 text-2xl font-bold">
             Verifying payment...
           </h1>
           <p className="text-gray-500">
@@ -54,34 +80,34 @@ export default function PaymentSuccess() {
         </>
       ) : success ? (
         <>
-          <h1 className="text-3xl font-bold mb-4">
-            Contact Unlocked 🎉
+          <h1 className="mb-4 text-3xl font-bold">
+            Contact Unlocked
           </h1>
 
-          <p className="text-gray-600 mb-6">
+          <p className="mb-6 text-gray-600">
             Your payment has been confirmed successfully.
           </p>
 
           <button
-            onClick={() => router.push("/")}
-            className="bg-[#FF6B6B] text-white px-6 py-3 rounded-full"
+            onClick={onHome}
+            className="rounded-full bg-[#FF6B6B] px-6 py-3 text-white"
           >
             Go Back Home
           </button>
         </>
       ) : (
         <>
-          <h1 className="text-3xl font-bold mb-4">
+          <h1 className="mb-4 text-3xl font-bold">
             Verification Failed
           </h1>
 
-          <p className="text-gray-600 mb-6">
+          <p className="mb-6 text-gray-600">
             We could not verify your payment.
           </p>
 
           <button
-            onClick={() => router.push("/")}
-            className="bg-[#FF6B6B] text-white px-6 py-3 rounded-full"
+            onClick={onHome}
+            className="rounded-full bg-[#FF6B6B] px-6 py-3 text-white"
           >
             Go Back Home
           </button>

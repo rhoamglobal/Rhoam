@@ -32,36 +32,44 @@ export default function EditPropertyPage() {
   const [galleryImages, setGalleryImages] = useState<string[]>([]);
 
   useEffect(() => {
+    let active = true;
+
+    const fetchProperty = async () => {
+      const { data, error } = await supabase
+        .from("properties")
+        .select("*")
+        .eq("id", params.id)
+        .single();
+
+      if (!active) return;
+
+      if (error) {
+        showToast(error.message);
+        return;
+      }
+
+      setTitle(data.title || "");
+      setDescription(data.description || "");
+      setPrice(String(data.price || ""));
+      setCategory(data.category || "");
+      setImageUrl(data.image_url || "");
+      setGalleryImages(data.images || []);
+
+      setAmenities(
+        Array.isArray(data.amenities)
+          ? data.amenities.join(", ")
+          : ""
+      );
+
+      setLoading(false);
+    };
+
     fetchProperty();
-  }, []);
 
-  const fetchProperty = async () => {
-    const { data, error } = await supabase
-      .from("properties")
-      .select("*")
-      .eq("id", params.id)
-      .single();
-
-    if (error) {
-      showToast(error);
-      return;
-    }
-
-    setTitle(data.title || "");
-    setDescription(data.description || "");
-    setPrice(String(data.price || ""));
-    setCategory(data.category || "");
-    setImageUrl(data.image_url || "");
-    setGalleryImages(data.images || []);
-
-    setAmenities(
-      Array.isArray(data.amenities)
-        ? data.amenities.join(", ")
-        : ""
-    );
-
-    setLoading(false);
-  };
+    return () => {
+      active = false;
+    };
+  }, [params.id, showToast]);
   const removeGalleryImage = (
     imageUrl: string
   ) => {

@@ -20,7 +20,9 @@ export default function PropertyClient({
   // server should send this
   const [unlocked, setUnlocked] = useState(property.isUnlocked || false);
 
-  const [checkingUnlock, setCheckingUnlock] = useState(true);
+  const [checkingUnlock, setCheckingUnlock] = useState(
+    !property.isUnlocked
+  );
   const [unlocking, setUnlocking] = useState(false);
 
   const { showToast } = useToast();
@@ -33,15 +35,17 @@ export default function PropertyClient({
       } = await supabase.auth.getUser();
 
       setUserId(user?.id || null);
+      if (!user || !property?.id) {
+        setCheckingUnlock(false);
+      }
     };
 
     getUser();
-  }, []);
+  }, [property?.id]);
 
   // FALLBACK CHECK (in case property.isUnlocked wasn’t passed)
   useEffect(() => {
     if (!userId || !property?.id) {
-      setCheckingUnlock(false);
       return;
     }
 

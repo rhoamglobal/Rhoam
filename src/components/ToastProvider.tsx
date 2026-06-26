@@ -1,17 +1,24 @@
 "use client";
 
 import { createContext, useContext, useState } from "react";
+import type { ReactNode } from "react";
 
-const ToastContext = createContext<any>(null);
+type ToastType = "error" | "success";
 
-export function ToastProvider({ children }: any) {
+type ToastContextValue = {
+  showToast: (message: string, type?: ToastType) => void;
+};
+
+const ToastContext = createContext<ToastContextValue | null>(null);
+
+export function ToastProvider({ children }: { children: ReactNode }) {
   const [toast, setToast] = useState<{
     message: string;
-    type: "error" | "success";
+    type: ToastType;
     visible: boolean;
   } | null>(null);
 
-  const showToast = (message: string, type: "error" | "success" = "error") => {
+  const showToast = (message: string, type: ToastType = "error") => {
     setToast({ message, type, visible: true });
 
     setTimeout(() => {
@@ -36,4 +43,12 @@ export function ToastProvider({ children }: any) {
   );
 }
 
-export const useToast = () => useContext(ToastContext);
+export const useToast = () => {
+  const context = useContext(ToastContext);
+
+  if (!context) {
+    throw new Error("useToast must be used inside ToastProvider");
+  }
+
+  return context;
+};

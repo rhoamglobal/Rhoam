@@ -15,7 +15,9 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
 
   const [errorMsg, setErrorMsg] = useState("");
-  const [isOnline, setIsOnline] = useState(true);
+  const [isOnline, setIsOnline] = useState(() =>
+    typeof navigator === "undefined" ? true : navigator.onLine
+  );
 
   const [emailError, setEmailError] = useState("");
   const [passwordError, setPasswordError] = useState("");
@@ -23,8 +25,6 @@ export default function LoginPage() {
 
   // 🌐 NETWORK DETECTION
   useEffect(() => {
-    setIsOnline(navigator.onLine);
-
     const online = () => setIsOnline(true);
     const offline = () => setIsOnline(false);
 

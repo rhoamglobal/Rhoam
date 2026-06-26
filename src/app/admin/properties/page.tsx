@@ -22,20 +22,37 @@ export default function AdminPropertiesPage() {
 
   const { showToast } = useToast();
 
+  useEffect(() => {
+    let active = true;
+
+    const loadInitialProperties = async () => {
+      const { data } = await supabase
+        .from("properties")
+        .select("id,title,price,image_url")
+        .order("created_at", { ascending: false });
+
+      if (active && data) {
+        setProperties(data);
+      }
+    };
+
+    loadInitialProperties();
+
+    return () => {
+      active = false;
+    };
+  }, []);
+
   const loadProperties = async () => {
     const { data } = await supabase
       .from("properties")
-      .select("*")
+      .select("id,title,price,image_url")
       .order("created_at", { ascending: false });
 
     if (data) {
       setProperties(data);
     }
   };
-
-  useEffect(() => {
-    loadProperties();
-  }, []);
 
   // STEP 1: open modal instead of deleting directly
   const requestDelete = (id: number) => {
