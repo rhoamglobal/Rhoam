@@ -19,7 +19,7 @@ type UnlockedProperty = {
     landlord_phone: string;
     school_tag: string;
     location: string;
-  }[];
+  };
 };
 
 export default function UnlockedPage() {
@@ -35,30 +35,29 @@ export default function UnlockedPage() {
     const fetchUnlocked = async () => {
       if (!user) return;
 
-      const { data, error } = await supabase
-        .from("contact_unlocks")
-        .select(`
-          id,
-          property_id,
-          properties (
-            id,
-            title,
-            price,
-            image_url,
-            landlord_phone,
-            school_tag,
-            location
-          )
-        `)
-        .eq("user_id", user.id)
-        .order("created_at", { ascending: false });
+      const { data } = await supabase
+    .from("contact_unlocks")
+    .select(`
+      id,
+      property_id,
+      properties (
+        id,
+        title,
+        price,
+        image_url,
+        images,
+        landlord_phone,
+        school_tag,
+        location
+      )
+    `)
+  .returns<UnlockedProperty[]>();
 
-      console.log("UNLOCKED:", data);
-      console.log("ERROR:", error);
+    console.log("UNLOCKED:", data);
 
-      if (data) {
-        setProperties(data as UnlockedProperty[]);
-      }
+    if (data) {
+      setProperties(data);
+    }
 
       setLoading(false);
     };
@@ -100,11 +99,11 @@ export default function UnlockedPage() {
 
       <div className="space-y-4">
       {properties.map((item) => {
-        const property = item.properties[0];
+      const property = item.properties;
 
-        if (!property) return null;
+      if (!property) return null;
 
-        return (
+      return (
             <div
               key={item.id}
               className="bg-white rounded-3xl overflow-hidden shadow-sm border border-gray-100"
@@ -113,7 +112,7 @@ export default function UnlockedPage() {
               <Image
                 src={
                     (property.images?.length
-                    ? property.images[0]
+                    ? property.images?.[0]
                     : property.image_url || property.images?.[0]) || "/placeholder.jpg"
                 }
                 alt={property.title}
