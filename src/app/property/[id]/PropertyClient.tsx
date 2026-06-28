@@ -7,6 +7,11 @@ import { Property } from "@/components/map/types";
 import { Heart, CheckCircle2 } from "lucide-react";
 import { supabase } from "@/lib/supabaseClient";
 import { useToast } from "@/components/ToastProvider";
+import { schools } from "@/lib/schools";
+import {
+  getDistanceKm,
+  kmToWalkMinutes,
+} from "@/lib/distance";
 
 export default function PropertyClient({
   property,
@@ -26,6 +31,27 @@ export default function PropertyClient({
   const [unlocking, setUnlocking] = useState(false);
 
   const { showToast } = useToast();
+
+  //distance to school
+  const matchedSchool = schools.find(
+    (s) =>
+      s.name.toLowerCase() === property.school_tag.toLowerCase()
+  );
+  
+  let distanceInfo = null;
+  
+  if (matchedSchool) {
+    const km = getDistanceKm(
+      property.latitude,
+      property.longitude,
+      matchedSchool.lat,
+      matchedSchool.lng
+    );
+  
+    const minutes = kmToWalkMinutes(km);
+  
+    distanceInfo = `${minutes} mins walk to ${matchedSchool.name}`;
+  }
 
   // GET USER
   useEffect(() => {
@@ -216,13 +242,20 @@ export default function PropertyClient({
           </div>
             <p className="text-sm text-gray-500 mt-1">{property.category}</p>
           </div>
+          
 
           <div className="bg-[#FF6B6B] text-white px-5 py-2 rounded-full text-lg font-semibold shadow-md">
             ₦{property.price.toLocaleString()}
           </div>
+          
         </div>
 
         <div className="w-16 h-[3px] bg-[#FF6B6B] rounded-full mt-6" />
+        {distanceInfo && (
+  <p className="text-sm text-[#ff5a5f] mt-2 font-medium">
+    {distanceInfo}
+  </p>
+)}
 
         {/* DESCRIPTION */}
         <div className="mt-8">

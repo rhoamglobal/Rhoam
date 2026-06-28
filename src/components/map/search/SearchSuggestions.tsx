@@ -170,8 +170,7 @@ export default function SearchSuggestions({
                       <span className="font-semibold text-[#ff5a5f]">
                         NGN {property.price.toLocaleString()}
                       </span>
-                      <span>{property.school_tag}</span>
-                      <span>{property.location}</span>
+                      <span>{property.school_tag} • {property.location}</span>
                     </span>
                   </span>
                 </button>
