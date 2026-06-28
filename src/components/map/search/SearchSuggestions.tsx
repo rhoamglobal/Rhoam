@@ -25,6 +25,7 @@ type Props = {
     name: string;
     lat: number;
     lng: number;
+    key: string;
   }[];
   locations: {
     name: string;
