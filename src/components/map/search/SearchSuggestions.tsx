@@ -21,7 +21,7 @@ import {
 import { schools } from "@/lib/schools";
 
 type Props = {
-  schools: {
+  school: {
     name: string;
     lat: number;
     lng: number;
@@ -41,7 +41,7 @@ type Props = {
 };
 
 export default function SearchSuggestions({
-  schools,
+  school,
   locations,
   properties,
   onFlyTo,
@@ -157,7 +157,7 @@ export default function SearchSuggestions({
                   property.school_tag.toLowerCase()
               );
 
-              let distanceLabel = null;
+              let walkTime = null;
 
               if (matchedSchool) {
                 const km = getDistanceKm(
@@ -167,9 +167,7 @@ export default function SearchSuggestions({
                   matchedSchool.lng
                 );
 
-                const mins = kmToWalkMinutes(km);
-
-                distanceLabel = `${mins} mins walk`;
+                walkTime = kmToWalkMinutes(km);
               }
 
               return (
@@ -214,9 +212,9 @@ export default function SearchSuggestions({
                           {property.school_tag} • {property.location}
                         </span>
 
-                        {distanceLabel && (
+                        {walkTime  && (
                           <span className="rounded-full bg-[#fff1f1] px-2 py-0.5 text-[10px] font-medium text-[#ff5a5f]">
-                            {distanceLabel}
+                             {walkTime} mins walk
                           </span>
                         )}
                       </div>

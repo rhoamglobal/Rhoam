@@ -4,7 +4,7 @@ export const schools = [
       name: "ESUT",
       lat: 6.30624,
       lng: 7.53812,
-      aliases: ["esut", "esut agani", "esut gate", "agani"],
+      aliases: ["esut", "esut abgani", "esut gate", "abgani", "esut front gate"],
     },
     {
       key: "UNN",
