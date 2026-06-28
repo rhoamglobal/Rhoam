@@ -1,261 +1,207 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { Heart, LogOut, Home } from "lucide-react";
+import {
+  Heart,
+  LogOut,
+  Phone,
+  Mail,
+
+} from "lucide-react";
 import { useState, useEffect } from "react";
 
 import { useAuth } from "@/components/providers/AuthProvider";
 import { supabase } from "@/lib/supabase";
-
-// protected routes
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
 
 export default function ProfilePage() {
   const { user } = useAuth();
   const router = useRouter();
-  
 
-
+  const [savedCount, setSavedCount] = useState(0);
+  const [unlockCount, setUnlockCount] = useState(0);
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
     router.push("/login");
   };
-  const [savedCount, setSavedCount] = useState(0);
+
   useEffect(() => {
-    const fetchSavedCount = async () => {
+    const fetchStats = async () => {
       if (!user) return;
-  
-      const { count } = await supabase
+
+      // saved count
+      const { count: saved } = await supabase
         .from("saved_properties")
         .select("*", {
           count: "exact",
           head: true,
         })
         .eq("user_id", user.id);
-  
-      setSavedCount(count || 0);
-    };
-  
-    fetchSavedCount();
-  }, [user]);
 
-  
-  
+      // unlocked count
+      const { count: unlocked } = await supabase
+        .from("contact_unlocks")
+        .select("*", {
+          count: "exact",
+          head: true,
+        })
+        .eq("user_id", user.id);
+
+      setSavedCount(saved || 0);
+      setUnlockCount(unlocked || 0);
+    };
+
+    fetchStats();
+  }, [user]);
 
   if (!user) {
     return (
-        <ProtectedRoute>
-    <div className="h-screen flex flex-col items-center justify-center bg-[#f8f8f8]">
-      
-      {/* Logo Loader */}
-      <div className="relative flex items-center justify-center">
-        
-        {/* Outer pulse ring */}
-        <div className="absolute w-20 h-20 rounded-full bg-[#ff5a5f]/20 animate-ping" />
-
-        {/* Main icon */}
-        <div
-          className="
-            w-16 h-16 rounded-2xl
-            bg-[#ff5a5f]
-            flex items-center justify-center
-            shadow-lg
-          "
-        >
-          <Home className="text-white" size={28} />
+      <ProtectedRoute>
+        <div className="h-screen flex items-center justify-center">
+          Loading...
         </div>
-      </div>
-
-      {/* Brand name */}
-      <h2 className="mt-6 text-2xl font-bold text-gray-900">
-        Rhoam
-      </h2>
-
-      {/* Animated dots */}
-      <div className="flex gap-2 mt-3">
-        <span className="w-2 h-2 bg-[#ff5a5f] rounded-full animate-bounce" />
-        <span
-          className="w-2 h-2 bg-[#ff5a5f] rounded-full animate-bounce"
-          style={{ animationDelay: "0.2s" }}
-        />
-        <span
-          className="w-2 h-2 bg-[#ff5a5f] rounded-full animate-bounce"
-          style={{ animationDelay: "0.4s" }}
-        />
-      </div>
-
-      <p className="mt-4 text-gray-500 text-sm">
-        Loading your profile...
-      </p>
-    </div>
-  </ProtectedRoute>
+      </ProtectedRoute>
     );
   }
+
   const displayName =
-  user.email?.split("@")[0] || "User";
+    user.email?.split("@")[0] || "User";
 
   return (
-    
-      <div className="min-h-screen bg-[#f8f8f8] pb-28 px-5">
-        
-        {/* Profile Hero */}
-        <div className="bg-[#ff5a5f] px-6 pt-16 pb-10 rounded-b-[40px] text-white shadow-xl">
-              <div className="flex items-center gap-4">
-                {/* Avatar */}
-                <div className="w-20 h-20 rounded-full bg-white text-[#ff5a5f]
-                  flex items-center justify-center text-3xl font-bold shadow-lg">
-                  {user.email?.charAt(0).toUpperCase()}
-                </div>
+    <div className="min-h-screen bg-[#f8f8f8] pb-28 px-5">
 
-                <div>
-                  <p className="text-white/80 text-sm">
-                    Welcome back
-                  </p>
+      {/* HERO */}
+      <div className="bg-[#ff5a5f] px-6 pt-16 pb-10 rounded-b-[40px] text-white shadow-xl">
+        <div className="flex items-center gap-4">
+          <div className="w-20 h-20 rounded-full bg-white text-[#ff5a5f]
+            flex items-center justify-center text-3xl font-bold shadow-lg">
+            {user.email?.charAt(0).toUpperCase()}
+          </div>
 
-                  <h1 className="text-3xl font-bold">
-                    {displayName}
-                  </h1>
-
-                  <p className="text-white/90 mt-1">
-                    {user.email}
-                  </p>
-                </div>
-              </div>
-            </div>
-
-        {/* Stats */}
-        <div className="grid grid-cols-2 gap-4 mt-6">
-          
-          <div className="bg-white rounded-3xl p-5 shadow-sm border border-gray-100">
-            <p className="text-gray-500 text-sm mb-2">
-              Saved Homes
+          <div>
+            <p className="text-white/80 text-sm">
+              Welcome back
             </p>
 
-            <h2 className="text-4xl font-bold text-[#ff5a5f]">
-              {savedCount}
-            </h2>
-          </div>
+            <h1 className="text-3xl font-bold">
+              {displayName}
+            </h1>
 
-          <div className="bg-white rounded-3xl p-5 shadow-sm border border-gray-100">
-            <p className="text-gray-500 text-sm mb-2">
-              Viewed
+            <p className="text-white/90 mt-1">
+              {user.email}
             </p>
-
-            <h2 className="text-4xl font-bold text-[#ff5a5f]">
-              {savedCount}
-            </h2>
           </div>
         </div>
+      </div>
 
-        {/* Quick Actions */}
-        <div className="mt-8 space-y-4">
+      {/* STATS */}
+      <div className="grid grid-cols-2 gap-4 mt-6">
 
-          {/* Saved */}
-          <button
-            onClick={() => router.push("/saved")}
-            className="
-              w-full bg-white rounded-3xl p-5
-              shadow-sm border border-gray-100
-              flex items-center justify-between
-            "
-          >
-            <div className="flex items-center gap-4">
-              <Heart className="text-[#ff5a5f]" size={20} />
-              <span className="font-medium text-gray-900">
-                Saved Properties
-              </span>
-            </div>
-
-            <span className="text-gray-400 text-xl">›</span>
-          </button>
-
-          {/* Settings */}
-          <button
-            className="
-              w-full bg-white rounded-3xl p-5
-              shadow-sm border border-gray-100
-              flex items-center justify-between
-            "
-          >
-            <span className="font-medium text-gray-900">
-              Account Settings
-            </span>
-
-            <span className="text-gray-400 text-xl">›</span>
-          </button>
-
-          {/* Help */}
-          <button
-            className="
-              w-full bg-white rounded-3xl p-5
-              shadow-sm border border-gray-100
-              flex items-center justify-between
-            "
-          >
-            <span className="font-medium text-gray-900">
-              Help & Support
-            </span>
-
-            <span className="text-gray-400 text-xl">›</span>
-          </button>
-        </div>
-
-        {/* Landlord CTA */}
-        <div
-          className="
-            mt-8 bg-gradient-to-br from-[#ff5a5f] to-[#ff7b7f]
-            rounded-[32px] p-6 text-white shadow-xl
-          "
-        >
-          <div className="flex items-center gap-4 mb-4">
-            <div className="bg-white/20 p-3 rounded-2xl">
-              <Home />
-            </div>
-
-            <h2 className="text-xl font-bold">
-              Earn With Rhoam
-            </h2>
-          </div>
-
-          <p className="text-white/90 leading-relaxed mb-5">
-            List your property on Rhoam and connect directly with
-            students searching for accommodation.
+        <div className="bg-white rounded-3xl p-5 shadow-sm border border-gray-100">
+          <p className="text-gray-500 text-sm mb-2">
+            Saved Homes
           </p>
 
-          <button
-            className="
-              bg-white text-[#ff5a5f]
-              px-5 py-3 rounded-2xl
-              font-semibold shadow-md
-            "
-          >
-            Start Listing
-          </button>
+          <h2 className="text-4xl font-bold text-[#ff5a5f]">
+            {savedCount}
+          </h2>
         </div>
 
-        {/* Logout */}
-        <div className="mt-8">
-          <button
-            onClick={handleLogout}
-            className="
-              w-full bg-white rounded-3xl p-5
-              shadow-sm border border-gray-100
-              flex items-center justify-center gap-3
-              text-red-500 font-semibold
-            "
-          >
-            <LogOut size={20} />
-            Logout
-          </button>
-        </div>
+        <div
+          onClick={() => router.push("/profile/unlocked")}
+          className="bg-white rounded-3xl p-5 shadow-sm border border-gray-100 cursor-pointer"
+        >
+          <p className="text-gray-500 text-sm mb-2">
+            Unlocked Contacts
+          </p>
 
-        {/* Version */}
-        <div className="text-center text-gray-400 text-sm mt-6">
-          Rhoam v1.0
+          <h2 className="text-4xl font-bold text-[#ff5a5f]">
+            {unlockCount}
+          </h2>
         </div>
-
       </div>
-    
+
+      {/* QUICK ACTIONS */}
+      <div className="mt-8 space-y-4">
+
+        <button
+          onClick={() => router.push("/saved")}
+          className="w-full bg-white rounded-3xl p-5 shadow-sm border border-gray-100 flex items-center justify-between"
+        >
+          <div className="flex items-center gap-4">
+            <Heart className="text-[#ff5a5f]" size={20} />
+            <span className="font-medium text-gray-900">
+              Saved Properties
+            </span>
+          </div>
+          <span className="text-gray-400 text-xl">›</span>
+        </button>
+
+        <button
+          onClick={() => router.push("/profile/unlocked")}
+          className="w-full bg-white rounded-3xl p-5 shadow-sm border border-gray-100 flex items-center justify-between"
+        >
+          <div className="flex items-center gap-4">
+            <Phone className="text-[#ff5a5f]" size={20} />
+            <span className="font-medium text-gray-900">
+              My Unlocks
+            </span>
+          </div>
+          <span className="text-gray-400 text-xl">›</span>
+        </button>
+      </div>
+
+      {/* COMPANY CONTACT */}
+      <div className="mt-8 bg-white rounded-3xl p-5 shadow-sm border border-gray-100">
+        <h2 className="font-semibold text-gray-900 mb-4">
+          Contact Rhoam
+        </h2>
+
+        <div className="space-y-4">
+
+          <a
+            href="mailto:support@rhoam.com"
+            className="flex items-center gap-3 text-gray-700"
+          >
+            <Mail className="text-[#ff5a5f]" size={18} />
+            rhoam.global@gmail.com
+          </a>
+
+          <a
+            href="https://instagram.com"
+            target="_blank"
+            className="flex items-center gap-3 text-gray-700"
+          >
+            
+            Instagram
+          </a>
+
+          <a
+            href="https://x.com/rhoam_global"
+            target="_blank"
+            className="flex items-center gap-3 text-gray-700"
+          >
+            X (Twitter)
+          </a>
+        </div>
+      </div>
+
+      {/* LOGOUT */}
+      <div className="mt-8">
+        <button
+          onClick={handleLogout}
+          className="w-full bg-white rounded-3xl p-5 shadow-sm border border-gray-100 flex items-center justify-center gap-3 text-red-500 font-semibold"
+        >
+          <LogOut size={20} />
+          Logout
+        </button>
+      </div>
+
+      <div className="text-center text-gray-400 text-sm mt-6">
+        Rhoam v1.0
+      </div>
+
+    </div>
   );
 }
