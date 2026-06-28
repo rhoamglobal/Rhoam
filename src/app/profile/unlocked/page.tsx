@@ -8,18 +8,18 @@ import Image from "next/image";
 import { Phone, ArrowRight, Home } from "lucide-react";
 
 type UnlockedProperty = {
-  id: string;
-  property_id: number;
+  id: number;
+  property_id: string;
   properties: {
-    id: number;
+    id: string;
     title: string;
     price: number;
     image_url: string;
-    images:string;
+    images?: string[];
     landlord_phone: string;
     school_tag: string;
     location: string;
-  };
+  }[];
 };
 
 export default function UnlockedPage() {
@@ -99,10 +99,12 @@ export default function UnlockedPage() {
       </h1>
 
       <div className="space-y-4">
-        {properties.map((item) => {
-          const property = item.properties;
+      {properties.map((item) => {
+        const property = item.properties[0];
 
-          return (
+        if (!property) return null;
+
+        return (
             <div
               key={item.id}
               className="bg-white rounded-3xl overflow-hidden shadow-sm border border-gray-100"
@@ -112,7 +114,7 @@ export default function UnlockedPage() {
                 src={
                     (property.images?.length
                     ? property.images[0]
-                    : property.image_url || property.images[0]) || "/placeholder.jpg"
+                    : property.image_url || property.images?.[0]) || "/placeholder.jpg"
                 }
                 alt={property.title}
                 fill
