@@ -20,7 +20,7 @@ import RememberMapView from "./RememberMapView";
 import { detectSchoolFromSearch } from "@/lib/detectSchool";
 
   // ✅ school search HERE
-import FlyToSchool from "./search/FlyToSchool";
+
 import FlyToProperty from "./search/FlyToProperty";
 import { useMapEvents } from "react-leaflet";
 
@@ -103,11 +103,7 @@ export default function MapClient({ category, search, flyTarget }: Props) {
         <RememberMapView />
         <MapBoundsListener setBounds={setBounds} />
         
-        <FlyToSchool
-          search={search}
-          setCategory={setActiveCategory}
-          setMaxPrice={setMaxPrice}
-        />
+
         
         <MapAutoFit properties={properties} />
  
@@ -162,7 +158,7 @@ export default function MapClient({ category, search, flyTarget }: Props) {
       </MapContainer>
 
 
-<PreviewCard property={selected} school={detectedSchool} />
+<PreviewCard property={selected} />
     </div>
   );
 }

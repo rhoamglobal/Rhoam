@@ -1,20 +1,20 @@
 export const schools = [
     {
-      key: "esut",
+      key: "ESUT",
       name: "ESUT",
       lat: 6.30624,
       lng: 7.53812,
       aliases: ["esut", "esut agani", "esut gate", "agani"],
     },
     {
-      key: "unn",
+      key: "UNN",
       name: "UNN",
       lat: 6.8663,
       lng: 7.4087,
       aliases: ["unn", "university of nigeria nsukka", "nsukka"],
     },
     {
-      key: "unizik",
+      key: "UNIZIK",
       name: "UNIZIK",
       lat: 6.2485,
       lng: 7.1153,
