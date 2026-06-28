@@ -252,10 +252,10 @@ export default function PropertyClient({
 
         <div className="w-16 h-[3px] bg-[#FF6B6B] rounded-full mt-6" />
         {distanceInfo && (
-  <p className="text-sm text-[#ff5a5f] mt-2 font-medium">
-    {distanceInfo}
-  </p>
-)}
+          <p className="text-sm text-[#ff5a5f] mt-2 font-medium">
+            {distanceInfo}
+          </p>
+        )}
 
         {/* DESCRIPTION */}
         <div className="mt-8">

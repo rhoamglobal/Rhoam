@@ -174,7 +174,7 @@ export default function SearchBar({
 
         {isFocused && (
           <SearchSuggestions
-            school={schoolMatches}
+          schoolSuggestions={schoolMatches}
             locations={locationMatches}
             properties={visibleProperties}
             onFlyTo={(target) => {

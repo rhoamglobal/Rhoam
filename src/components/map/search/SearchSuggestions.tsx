@@ -21,18 +21,18 @@ import {
 import { schools } from "@/lib/schools";
 
 type Props = {
-  school: {
+  schoolSuggestions?: {
     name: string;
     lat: number;
     lng: number;
     key: string;
   }[];
-  locations: {
+  locations?: {
     name: string;
     lat: number;
     lng: number;
   }[];
-  properties: Property[];
+  properties?: Property[];
   onFlyTo: (target: {
     latitude: number;
     longitude: number;
@@ -41,19 +41,21 @@ type Props = {
 };
 
 export default function SearchSuggestions({
-  school,
-  locations,
-  properties,
+  schoolSuggestions = [],
+  locations = [],
+  properties = [],
   onFlyTo,
   onPreview,
 }: Props) {
   const router = useRouter();
 
   const resultCount =
-    schools.length + locations.length + properties.length;
+    schoolSuggestions.length +
+    locations.length +
+    properties.length;
 
   if (
-    !schools.length &&
+    !schoolSuggestions.length &&
     !locations.length &&
     !properties.length
   ) {
@@ -76,11 +78,11 @@ export default function SearchSuggestions({
 
       <div className="space-y-1 px-2 pb-2">
         {/* SCHOOLS */}
-        {schools.length > 0 && (
+        {schoolSuggestions.length > 0 && (
           <SuggestionGroup title="Schools">
-            {schools.map((school) => (
+            {schoolSuggestions.map((school) => (
               <button
-                key={school.name}
+                key={school.key}
                 onClick={() =>
                   onFlyTo({
                     latitude: school.lat,
@@ -151,15 +153,20 @@ export default function SearchSuggestions({
         {properties.length > 0 && (
           <SuggestionGroup title="Listings">
             {properties.map((property) => {
+              // match against full school dataset
               const matchedSchool = schools.find(
                 (school) =>
                   school.key.toLowerCase() ===
-                  property.school_tag.toLowerCase()
+                  (property.school_tag ?? "").toLowerCase()
               );
 
-              let walkTime = null;
+              let walkTime: string | null = null;
 
-              if (matchedSchool) {
+              if (
+                matchedSchool &&
+                property.latitude &&
+                property.longitude
+              ) {
                 const km = getDistanceKm(
                   property.latitude,
                   property.longitude,
@@ -167,7 +174,7 @@ export default function SearchSuggestions({
                   matchedSchool.lng
                 );
 
-                walkTime = kmToWalkMinutes(km);
+                walkTime = `${kmToWalkMinutes(km)} mins walk`;
               }
 
               return (
@@ -212,9 +219,9 @@ export default function SearchSuggestions({
                           {property.school_tag} • {property.location}
                         </span>
 
-                        {walkTime  && (
+                        {walkTime && (
                           <span className="rounded-full bg-[#fff1f1] px-2 py-0.5 text-[10px] font-medium text-[#ff5a5f]">
-                             {walkTime} mins walk
+                            {walkTime}
                           </span>
                         )}
                       </div>

@@ -6,6 +6,7 @@ import { supabase } from "@/lib/supabase";
 import AdminRoute from "@/components/auth/AdminRoute";
 import { useToast } from "@/components/ToastProvider";
 import { PROPERTY_CATEGORIES } from "@/lib/categories";
+import { schools } from "@/lib/schools";
 
 
 export default function EditPropertyPage() {
@@ -19,6 +20,8 @@ export default function EditPropertyPage() {
   const [description, setDescription] = useState("");
   const [price, setPrice] = useState("");
   const [category, setCategory] = useState("");
+  const [schoolTag, setSchoolTag] = useState("");
+  const [location, setLocation] = useState(""); 
 
   const [imageUrl, setImageUrl] = useState("");
 
@@ -52,6 +55,8 @@ export default function EditPropertyPage() {
       setDescription(data.description || "");
       setPrice(String(data.price || ""));
       setCategory(data.category || "");
+      setSchoolTag(data.school_tag || "");
+      setLocation(data.location || "");
       setImageUrl(data.image_url || "");
       setGalleryImages(data.images || []);
 
@@ -147,6 +152,8 @@ export default function EditPropertyPage() {
         description,
         price: Number(price),
         category,
+        school_tag: schoolTag,
+        location,
       
         image_url: updatedImageUrl,
       
@@ -181,179 +188,233 @@ export default function EditPropertyPage() {
 
   return (
     <AdminRoute>
-      <div className="min-h-screen bg-[#f8f8f8] p-6 pb-[60px]">
+      <div className="min-h-screen bg-[#f8f8f8] pb-28">
+      <div className="max-w-3xl mx-auto px-4 sm:px-6 py-5">
 
-        <div className="max-w-3xl mx-auto">
-
-          <h1 className="text-4xl font-bold mb-8">
+        {/* HEADER */}
+        <div className="mb-6 sticky top-0 z-20 bg-[#f8f8f8]/90 backdrop-blur-md py-3">
+          <h1 className="text-2xl sm:text-4xl font-bold text-gray-900">
             Edit Property
           </h1>
 
-          <div className="bg-white rounded-3xl p-6 shadow-sm space-y-5">
+          <p className="text-sm text-gray-500 mt-1">
+            Update listing details, media and amenities
+          </p>
+        </div>
 
-            <div>
-              <label className="block mb-2 font-medium">
-                Title
-              </label>
+        {/* FORM CARD */}
+        <div className="bg-white rounded-[28px] shadow-sm border border-gray-100 overflow-hidden">
 
-              <input
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                className="w-full border rounded-2xl p-4"
-              />
-            </div>
+          <div className="p-4 sm:p-6 space-y-6">
 
-            <div>
-              <label className="block mb-2 font-medium">
-                Description
-              </label>
+            {/* BASIC DETAILS */}
+            <div className="space-y-5">
+              <h2 className="text-sm font-semibold uppercase tracking-wide text-gray-400">
+                Basic Info
+              </h2>
 
-              <textarea
-                rows={5}
-                value={description}
-                onChange={(e) =>
-                  setDescription(e.target.value)
-                }
-                className="w-full border rounded-2xl p-4"
-              />
-            </div>
+              <div>
+                <label className="block mb-2 text-sm font-medium">
+                  Title
+                </label>
 
-            <div>
-              <label className="block mb-2 font-medium">
-                Price
-              </label>
-
-              <input
-                type="number"
-                value={price}
-                onChange={(e) =>
-                  setPrice(e.target.value)
-                }
-                className="w-full border rounded-2xl p-4"
-              />
-            </div>
-
-            <div>
-              <label className="block mb-2 font-medium">
-                Category
-              </label>
-
-              <select
-                value={category}
-                onChange={(e) => setCategory(e.target.value)}
-                className="w-full border rounded-2xl p-4 bg-white"
-              >
-                <option value="">
-                  Select Category
-                </option>
-
-                {PROPERTY_CATEGORIES.map((cat) => (
-                  <option
-                    key={cat}
-                    value={cat}
-                  >
-                    {cat}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div>
-              <label className="block mb-2 font-medium">
-                Replace Cover Image
-              </label>
-
-              {imageUrl && (
-                <img
-                  src={imageUrl}
-                  alt=""
-                  className="w-48 h-48 rounded-2xl object-cover mb-4"
+                <input
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                  className="w-full border border-gray-200 rounded-2xl p-4 focus:outline-none focus:border-[#ff5a5f]"
                 />
-              )}
+              </div>
 
-              <input
-                type="file"
-                accept="image/*"
-                onChange={(e) =>
-                  setCoverImage(e.target.files?.[0] || null)
-                }
-                className="w-full border rounded-2xl p-4"
-              />
-            </div>
+              <div>
+                <label className="block mb-2 text-sm font-medium">
+                  Description
+                </label>
 
-            <div>
-              <label className="block mb-2 font-medium">
-                Gallery Images
-              </label>
+                <textarea
+                  rows={5}
+                  value={description}
+                  onChange={(e) =>
+                    setDescription(e.target.value)
+                  }
+                  className="w-full border border-gray-200 rounded-2xl p-4 focus:outline-none focus:border-[#ff5a5f]"
+                />
+              </div>
 
-              <input
-                multiple
-                type="file"
-                accept="image/*"
-                onChange={(e) =>
-                  setGalleryFiles(
-                    Array.from(e.target.files || [])
-                  )
-                }
-                className="w-full border rounded-2xl p-4"
-              />
-            </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block mb-2 text-sm font-medium">
+                    Price
+                  </label>
 
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4">
-              {galleryImages.map((img, index) => (
-                <div
-                  key={index}
-                  className="relative"
-                >
-                  <img
-                    src={img}
-                    alt=""
-                    className="h-32 w-full rounded-2xl object-cover"
+                  <input
+                    type="number"
+                    value={price}
+                    onChange={(e) =>
+                      setPrice(e.target.value)
+                    }
+                    className="w-full border border-gray-200 rounded-2xl p-4"
                   />
-
-                  <button
-                    type="button"
-                    onClick={() => removeGalleryImage(img)}
-                    className="
-                      absolute
-                      top-2
-                      right-2
-                      bg-red-500
-                      text-white
-                      px-2
-                      py-1
-                      rounded-lg
-                      text-sm
-                    "
-                  >
-                    ✕
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => setImageUrl(img)}
-                    className="
-                      absolute
-                      bottom-2
-                      left-2
-                      bg-black/70
-                      text-white
-                      px-2
-                      py-1
-                      rounded-lg
-                      text-xs
-                    "
-                  >
-                    Set Cover
-                  </button>
                 </div>
-              ))}
+
+                <div>
+                  <label className="block mb-2 text-sm font-medium">
+                    Category
+                  </label>
+
+                  <select
+                    value={category}
+                    onChange={(e) =>
+                      setCategory(e.target.value)
+                    }
+                    className="w-full border border-gray-200 rounded-2xl p-4 bg-white"
+                  >
+                    <option value="">Select Category</option>
+
+                    {PROPERTY_CATEGORIES.map((cat) => (
+                      <option key={cat} value={cat}>
+                        {cat}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
             </div>
 
-            <div>
-              <label className="block mb-2 font-medium">
+            {/* LOCATION */}
+            <div className="space-y-5 border-t pt-6">
+              <h2 className="text-sm font-semibold uppercase tracking-wide text-gray-400">
+                Location
+              </h2>
+
+              <div>
+                <label className="block mb-2 text-sm font-medium">
+                  School Tag
+                </label>
+
+                <select
+                  value={schoolTag}
+                  onChange={(e) =>
+                    setSchoolTag(e.target.value)
+                  }
+                  className="w-full border border-gray-200 rounded-2xl p-4 bg-white"
+                >
+                  <option value="">Select School</option>
+
+                  {schools.map((school) => (
+                    <option
+                      key={school.key}
+                      value={school.name}
+                    >
+                      {school.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="block mb-2 text-sm font-medium">
+                  Location
+                </label>
+
+                <input
+                  value={location}
+                  onChange={(e) =>
+                    setLocation(e.target.value)
+                  }
+                  placeholder="Agbani, Independence Layout..."
+                  className="w-full border border-gray-200 rounded-2xl p-4"
+                />
+              </div>
+            </div>
+
+            {/* MEDIA */}
+            <div className="space-y-5 border-t pt-6">
+              <h2 className="text-sm font-semibold uppercase tracking-wide text-gray-400">
+                Media
+              </h2>
+
+              <div>
+                <label className="block mb-2 text-sm font-medium">
+                  Cover Image
+                </label>
+
+                {imageUrl && (
+                  <img
+                    src={imageUrl}
+                    alt=""
+                    className="w-full h-56 sm:h-72 rounded-3xl object-cover mb-4"
+                  />
+                )}
+
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) =>
+                    setCoverImage(
+                      e.target.files?.[0] || null
+                    )
+                  }
+                  className="w-full border border-dashed border-gray-300 rounded-2xl p-4"
+                />
+              </div>
+
+              <div>
+                <label className="block mb-2 text-sm font-medium">
+                  Gallery Images
+                </label>
+
+                <input
+                  multiple
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) =>
+                    setGalleryFiles(
+                      Array.from(e.target.files || [])
+                    )
+                  }
+                  className="w-full border border-dashed border-gray-300 rounded-2xl p-4"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+                {galleryImages.map((img, index) => (
+                  <div
+                    key={index}
+                    className="relative"
+                  >
+                    <img
+                      src={img}
+                      alt=""
+                      className="h-28 sm:h-32 w-full rounded-2xl object-cover"
+                    />
+
+                    <button
+                      type="button"
+                      onClick={() =>
+                        removeGalleryImage(img)
+                      }
+                      className="absolute top-2 right-2 bg-red-500 text-white w-7 h-7 rounded-full text-sm"
+                    >
+                      ✕
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => setImageUrl(img)}
+                      className="absolute bottom-2 left-2 bg-black/70 text-white px-2 py-1 rounded-lg text-[10px]"
+                    >
+                      Set Cover
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* AMENITIES */}
+            <div className="space-y-5 border-t pt-6">
+              <h2 className="text-sm font-semibold uppercase tracking-wide text-gray-400">
                 Amenities
-              </label>
+              </h2>
 
               <input
                 value={amenities}
@@ -361,22 +422,27 @@ export default function EditPropertyPage() {
                   setAmenities(e.target.value)
                 }
                 placeholder="WiFi, Security, Water, Parking"
-                className="w-full border rounded-2xl p-4"
+                className="w-full border border-gray-200 rounded-2xl p-4"
               />
             </div>
+          </div>
+        </div>
 
+        {/* STICKY SAVE BUTTON */}
+        <div className="fixed bottom-0 left-0 w-full bg-white border-t p-4 z-30">
+          <div className="max-w-3xl mx-auto">
             <button
               onClick={handleUpdate}
               disabled={saving}
-              className="w-full bg-[#ff5a5f] text-white py-4 rounded-2xl font-semibold"
+              className="w-full bg-[#ff5a5f] text-white py-4 rounded-2xl font-semibold shadow-lg"
             >
               {saving ? "Saving..." : "Update Property"}
             </button>
-
           </div>
         </div>
 
       </div>
+    </div>
     </AdminRoute>
   );
 }
