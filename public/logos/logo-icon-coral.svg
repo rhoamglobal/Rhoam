@@ -1,0 +1,6 @@
+<svg width="60" height="60" viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="60" height="60" rx="16" fill="#FF5A5F"/>
+  <!-- Stylized House/R Icon -->
+  <path d="M15 45V25L30 15L45 25V45H35V32H25V45H15Z" fill="white"/>
+  <path d="M30 22C32.2091 22 34 20.2091 34 18C34 15.7909 32.2091 14 30 14C27.7909 14 26 15.7909 26 18C26 20.2091 27.7909 22 30 22Z" fill="white" fill-opacity="0.3"/>
+</svg>

@@ -1,0 +1,8 @@
+<svg width="280" height="80" viewBox="0 0 280 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Icon Part -->
+  <rect x="10" y="10" width="60" height="60" rx="16" fill="#FF5A5F"/>
+  <path d="M25 55V35L40 25L55 35V55H45V42H35V55H25Z" fill="white"/>
+
+  <!-- Text Part -->
+  <text x="85" y="52" fill="#FF5A5F" font-family="system-ui, -apple-system, sans-serif" font-weight="bold" font-size="44">Rhoam</text>
+</svg>
