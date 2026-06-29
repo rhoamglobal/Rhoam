@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import Image from "next/image";
 import { amenityIcons } from "@/lib/amenities";
 import { Property } from "@/components/map/types";
-import { Heart, CheckCircle2 } from "lucide-react";
+import { Heart, CheckCircle2, Bed, PersonStanding } from "lucide-react";
 import { supabase } from "@/lib/supabaseClient";
 import { useToast } from "@/components/ToastProvider";
 import { schools } from "@/lib/schools";
@@ -12,6 +12,7 @@ import {
   getDistanceKm,
   kmToWalkMinutes,
 } from "@/lib/distance";
+import { address } from "framer-motion/client";
 
 export default function PropertyClient({
   property,
@@ -250,7 +251,9 @@ export default function PropertyClient({
             ₦{property.price.toLocaleString()}
           </div>
           
+          
         </div>
+        
 
         <div className="w-16 h-[3px] bg-[#FF6B6B] rounded-full mt-6" />
         {distanceInfo && (
@@ -266,6 +269,19 @@ export default function PropertyClient({
             {property.description || "No description provided."}
           </p>
         </div>
+        <div className="flex gap-3 mt-4 flex-wrap">
+            {property.room_count && (
+              <span className="flex items-center gap-1 px-3 py-1 rounded-full bg-[#ff5a5f]-50 text-[#ff5a5f]-600 text-sm font-medium border border-[#ff5a5f]-100">
+              <Bed size={14} />{property.room_count} Rooms
+            </span>
+            )}
+
+            {property.occupants_per_room && (
+              <span className="flex items-center gap-1 px-3 py-1 rounded-full bg-[#ff5a5f]-50 text-[#ff5a5f]-600 text-sm font-medium border border-[#ff5a5f]-100">
+              <PersonStanding size={14} />{property.occupants_per_room} per room
+            </span>
+            )}
+          </div>
 
         {/* AMENITIES */}
         <div className="mt-10">
@@ -288,12 +304,11 @@ export default function PropertyClient({
           </div>
         </div>
 
-        {/* LOCATION */}
+        {/* address */}
         <div className="mt-10 bg-white border rounded-2xl p-5 shadow-sm mb-[60px]">
-          <h2 className="text-sm font-medium mb-2">Location</h2>
+          <h2 className="text-sm font-medium mb-2">Address</h2>
           <p className="text-sm text-gray-500">
-            {property.latitude ?? property.lat},{" "}
-            {property.longitude ?? property.lng}
+            {property.address}
           </p>
         </div>
         

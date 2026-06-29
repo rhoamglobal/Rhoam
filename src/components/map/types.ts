@@ -13,7 +13,12 @@ export type Property = {
     lng?: number;
     image?: string;
     landlord_phone: string;
-    school_tag: string
-    location: string
+    school_tag: string;
+    location: string;
     is_verified?: boolean;
+    address: string;
+
+    room_count?: number;
+    occupants_per_room?: number;
+    bathroom_count?: number;
   };

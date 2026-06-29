@@ -18,12 +18,17 @@ export default function EditPropertyPage() {
 
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
+  const [address, setAddress] = useState("");
   const [price, setPrice] = useState("");
   const [category, setCategory] = useState("");
   const [schoolTag, setSchoolTag] = useState("");
   const [location, setLocation] = useState(""); 
 
   const [imageUrl, setImageUrl] = useState("");
+
+  // room count
+  const [roomCount, setRoomCount] = useState("");
+  const [occupantsPerRoom, setOccupantsPerRoom] = useState("");
 
   const [amenities, setAmenities] = useState("");
   const { showToast } = useToast();
@@ -33,6 +38,7 @@ export default function EditPropertyPage() {
   const [galleryFiles, setGalleryFiles] = useState<File[]>([]);
   //add cover page and images
   const [galleryImages, setGalleryImages] = useState<string[]>([]);
+  
 
   useEffect(() => {
     let active = true;
@@ -53,12 +59,15 @@ export default function EditPropertyPage() {
 
       setTitle(data.title || "");
       setDescription(data.description || "");
+      setAddress(data.address || "");
       setPrice(String(data.price || ""));
       setCategory(data.category || "");
       setSchoolTag(data.school_tag || "");
       setLocation(data.location || "");
       setImageUrl(data.image_url || "");
       setGalleryImages(data.images || []);
+      setRoomCount(String(data.room_count || ""));
+      setOccupantsPerRoom(String(data.occupants_per_room || ""));
 
       setAmenities(
         Array.isArray(data.amenities)
@@ -150,6 +159,7 @@ export default function EditPropertyPage() {
       .update({
         title,
         description,
+        address,
         price: Number(price),
         category,
         school_tag: schoolTag,
@@ -158,6 +168,8 @@ export default function EditPropertyPage() {
         image_url: updatedImageUrl,
       
         images: finalGallery,
+        room_count: Number(roomCount),
+        occupants_per_room: Number(occupantsPerRoom),
       
         amenities: amenities
           .split(",")
@@ -188,7 +200,7 @@ export default function EditPropertyPage() {
 
   return (
     <AdminRoute>
-      <div className="min-h-screen bg-[#f8f8f8] pb-28">
+      <div className="min-h-screen bg-[#f8f8f8] pb-30">
       <div className="max-w-3xl mx-auto px-4 sm:px-6 py-5">
 
         {/* HEADER */}
@@ -239,6 +251,20 @@ export default function EditPropertyPage() {
                   className="w-full border border-gray-200 rounded-2xl p-4 focus:outline-none focus:border-[#ff5a5f]"
                 />
               </div>
+              <div>
+                <label className="block mb-2 text-sm font-medium">
+                  Address
+                </label>
+
+                <textarea
+                  rows={5}
+                  value={address}
+                  onChange={(e) =>
+                    setAddress(e.target.value)
+                  }
+                  className="w-full border border-gray-200 rounded-2xl p-4 focus:outline-none focus:border-[#ff5a5f]"
+                />
+              </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
@@ -254,6 +280,37 @@ export default function EditPropertyPage() {
                     }
                     className="w-full border border-gray-200 rounded-2xl p-4"
                   />
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block mb-2 font-medium">
+                      Number of Rooms
+                    </label>
+
+                    <input
+                      type="number"
+                      value={roomCount}
+                      onChange={(e) =>
+                        setRoomCount(e.target.value)
+                      }
+                      className="w-full border rounded-2xl p-4"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block mb-2 font-medium">
+                      Occupants Per Room
+                    </label>
+
+                    <input
+                      type="number"
+                      value={occupantsPerRoom}
+                      onChange={(e) =>
+                        setOccupantsPerRoom(e.target.value)
+                      }
+                      className="w-full border rounded-2xl p-4"
+                    />
+                  </div>
                 </div>
 
                 <div>
@@ -429,7 +486,7 @@ export default function EditPropertyPage() {
         </div>
 
         {/* STICKY SAVE BUTTON */}
-        <div className="fixed bottom-0 left-0 w-full bg-white border-t p-4 z-30">
+        <div className="fixed bottom-13 left-0 w-full   p-4 z-30">
           <div className="max-w-3xl mx-auto">
             <button
               onClick={handleUpdate}
