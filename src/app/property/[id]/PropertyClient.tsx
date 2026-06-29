@@ -271,13 +271,21 @@ export default function PropertyClient({
         </div>
         <div className="flex gap-3 mt-4 flex-wrap">
             {property.room_count && (
-              <span className="flex items-center gap-1 px-3 py-1 rounded-full bg-[#ff5a5f]-50 text-[#ff5a5f]-600 text-sm font-medium border border-[#ff5a5f]-100">
+              <span className="flex items-center 
+              gap-1 px-3 py-1 rounded-full 
+              bg-[#FF6B6B]-50 text-[#FF6B6B]-600 
+              text-sm font-medium border 
+              border-[#FF6B6B]-100">
               <Bed size={14} />{property.room_count} Rooms
             </span>
             )}
 
             {property.occupants_per_room && (
-              <span className="flex items-center gap-1 px-3 py-1 rounded-full bg-[#ff5a5f]-50 text-[#ff5a5f]-600 text-sm font-medium border border-[#ff5a5f]-100">
+              <span className="flex items-center 
+              gap-1 px-3 py-1 rounded-full 
+              bg-[#FF6B6B]-50 text-[#FF6B6B]-600 
+              text-sm font-medium border 
+              border-[#FF6B6B]-100">
               <PersonStanding size={14} />{property.occupants_per_room} per room
             </span>
             )}

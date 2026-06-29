@@ -20,4 +20,11 @@ export const schools = [
       lng: 7.1153,
       aliases: ["unizik", "awka", "nnamdi azikiwe university"],
     },
+    {
+      key: "UNILAG",
+      name: "UNILAG",
+      lat: 6.5178,
+      lng: 3.3955,
+      aliases: ["unilag", "lagos", "university of lagos"],
+    },
   ];
