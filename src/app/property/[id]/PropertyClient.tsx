@@ -15,8 +15,10 @@ import {
 
 export default function PropertyClient({
   property,
+  nearbyProperties,
 }: {
   property: Property & { isUnlocked?: boolean };
+  nearbyProperties: Property[];
 }) {
   const [activeImage, setActiveImage] = useState(0);
   const [saved, setSaved] = useState(false);
@@ -152,7 +154,7 @@ export default function PropertyClient({
   }, [userId, property.id]);
 
   return (
-    <div className="min-h-screen bg-white text-gray-900">
+    <div className="min-h-screen bg-white text-gray-900 pb-[50]">
       {/* HERO IMAGE */}
       <div className="w-full h-[460px] relative">
         <Image
@@ -294,7 +296,79 @@ export default function PropertyClient({
             {property.longitude ?? property.lng}
           </p>
         </div>
+        
+        {/* NEARBY PROPERTIES */}
+        {nearbyProperties.length > 0 && (
+          <div className="mt-14">
+            <div className="flex items-center justify-between mb-5">
+              <h2 className="text-lg font-semibold tracking-tight text-gray-900">
+                More near {property.school_tag}
+              </h2>
 
+              <span className="text-xs text-gray-400">
+                {nearbyProperties.length} available
+              </span>
+            </div>
+
+            <div className="flex gap-4 overflow-x-auto pb-2 snap-x snap-mandatory scrollbar-hide">
+              {nearbyProperties.map((item) => (
+                <div
+                  key={item.id}
+                  onClick={() =>
+                    window.location.href = `/property/${item.id}`
+                  }
+                  className="
+                    min-w-[260px]
+                    max-w-[260px]
+                    snap-start
+                    cursor-pointer
+                    rounded-3xl
+                    overflow-hidden
+                    bg-white
+                    border border-gray-100
+                    shadow-[0_4px_20px_rgba(0,0,0,0.04)]
+                    hover:shadow-[0_8px_30px_rgba(0,0,0,0.08)]
+                    transition-all duration-300
+                  "
+                >
+                  {/* IMAGE */}
+                  <div className="relative h-44 w-full bg-gray-100 overflow-hidden">
+                    <Image
+                      src={
+                        item.images?.length
+                          ? item.images[0]
+                          : item.image_url || "/placeholder.jpg"
+                      }
+                      alt={item.title}
+                      fill
+                      sizes="260px"
+                      className="object-cover"
+                    />
+                  </div>
+
+                  {/* INFO */}
+                  <div className="p-4">
+                    <h3 className="font-medium text-sm text-gray-900 truncate">
+                      {item.title}
+                    </h3>
+
+                    <p className="text-[#ff5a5f] font-semibold text-sm mt-2">
+                      ₦{item.price.toLocaleString()}
+                    </p>
+
+                    <p className="text-xs text-gray-400 mt-1 truncate">
+                      {item.location}
+                    </p>
+
+                    <div className="mt-3 inline-flex items-center rounded-full bg-gray-50 px-3 py-1 text-[11px] text-gray-500">
+                      {item.category}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
         {/* CTA */}
         <div className="fixed bottom-0 left-0 w-full bg-white border-t shadow-lg px-6 py-4 flex items-center justify-between z-[1000]">
           <div>

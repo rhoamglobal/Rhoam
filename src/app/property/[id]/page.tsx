@@ -11,6 +11,7 @@ export default async function PropertyPage({
 }) {
   const { id } = await params;
 
+  // Fetch current property
   const { data: property } = await supabaseAdmin
     .from("properties")
     .select("*")
@@ -19,5 +20,18 @@ export default async function PropertyPage({
 
   if (!property) return notFound();
 
-  return <PropertyClient property={property} />;
+  // Fetch nearby properties (same school, exclude current)
+  const { data: nearbyProperties } = await supabaseAdmin
+    .from("properties")
+    .select("*")
+    .eq("school_tag", property.school_tag)
+    .neq("id", property.id)
+    .limit(4);
+
+  return (
+    <PropertyClient
+      property={property}
+      nearbyProperties={nearbyProperties || []}
+    />
+  );
 }

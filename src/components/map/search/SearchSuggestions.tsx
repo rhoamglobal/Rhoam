@@ -154,10 +154,12 @@ export default function SearchSuggestions({
           <SuggestionGroup title="Listings">
             {properties.map((property) => {
               // match against full school dataset
+              const propertySchoolTag =
+                property.school_tag?.toLowerCase() || "";
+
               const matchedSchool = schools.find(
                 (school) =>
-                  school.key.toLowerCase() ===
-                  (property.school_tag ?? "").toLowerCase()
+                  school.key.toLowerCase() === propertySchoolTag
               );
 
               let walkTime: string | null = null;
