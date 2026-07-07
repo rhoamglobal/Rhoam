@@ -56,7 +56,6 @@ export function usePropertySearch({
     fetch(url)
       .then((res) => res.json())
       .then((data) => {
-        console.log("API RESPONSE:", data);
         setProperties(Array.isArray(data) ? data : []);
       })
       .catch((err) => {

@@ -83,7 +83,7 @@ export default function MapClient({ category, search, flyTarget }: Props) {
 
   const { user } = useAuth();
 
-  console.log(user);
+
   
 
   return (

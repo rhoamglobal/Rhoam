@@ -8,7 +8,7 @@ import ProtectedRoute from "@/components/auth/ProtectedRoute";
 
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/components/providers/AuthProvider";
-import { Undo2 } from "lucide-react";
+
 
 export const dynamic = "force-dynamic";
 

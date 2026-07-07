@@ -18,6 +18,9 @@ export type Property = {
     is_verified?: boolean;
     address: string;
 
+    is_available: boolean;
+    is_visible: boolean;
+
     room_count?: number;
     occupants_per_room?: number;
     bathroom_count?: number;

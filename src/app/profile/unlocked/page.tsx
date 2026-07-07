@@ -53,7 +53,7 @@ export default function UnlockedPage() {
     `)
   .returns<UnlockedProperty[]>();
 
-    console.log("UNLOCKED:", data);
+    
 
     if (data) {
       setProperties(data);

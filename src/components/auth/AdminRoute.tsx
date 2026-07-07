@@ -35,7 +35,7 @@ export default function AdminRoute({
           .eq("user_id", user.id)
           .single();
 
-          console.log("SUPABASE DATA", data);
+
           console.log("SUPABASE ERROR", error);
 
 

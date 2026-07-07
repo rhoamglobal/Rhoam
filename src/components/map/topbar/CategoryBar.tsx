@@ -18,7 +18,6 @@ export const CATEGORIES = [
   { name: "Hotels", icon: Hotel },
   { name: "Student lodges", icon: GraduationCap },
   { name: "Apartment", icon: Building2 },
-  { name: "Shortlets", icon: Home },
 ];
 
 export default function CategoryBar({ active, setActive }: Props) {
