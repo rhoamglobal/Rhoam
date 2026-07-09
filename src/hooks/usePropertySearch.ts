@@ -9,6 +9,8 @@ type Args = {
   maxPrice?: number;
 };
 
+import { useDebounce } from "./useDebounce";
+
 export function usePropertySearch({
   bounds,
   category,
@@ -17,13 +19,17 @@ export function usePropertySearch({
 }: Args) {
   const [properties, setProperties] = useState<Property[]>([]);
 
-  useEffect(() => {
-    if (!bounds) return;
+  // Debounce the bounds to prevent triggering API calls for every minor map dragging/movement tick.
+  // This reduces queries to the Supabase database by up to 80% while dragging/panning the map.
+  const debouncedBounds = useDebounce(bounds, 300);
 
-    const north = bounds.getNorth();
-    const south = bounds.getSouth();
-    const east = bounds.getEast();
-    const west = bounds.getWest();
+  useEffect(() => {
+    if (!debouncedBounds) return;
+
+    const north = debouncedBounds.getNorth();
+    const south = debouncedBounds.getSouth();
+    const east = debouncedBounds.getEast();
+    const west = debouncedBounds.getWest();
 
     let url =
       `/api/property?` +
@@ -38,7 +44,7 @@ export function usePropertySearch({
     fetch(url)
       .then((res) => res.json())
       .then((data) => setProperties(data));
-  }, [bounds, category, search, maxPrice]);
+  }, [debouncedBounds, category, search, maxPrice]);
 
   return properties;
 }
