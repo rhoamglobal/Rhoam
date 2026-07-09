@@ -92,6 +92,7 @@ export default function MapClient({ category, search, flyTarget }: Props) {
         center={[6.30624, 7.53812]}
         zoom={13}
         scrollWheelZoom
+        preferCanvas={true}
         style={{ height: "100%", width: "100%" }}
       >
         
