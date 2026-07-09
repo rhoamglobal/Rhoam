@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
-import AdminRoute from "@/components/auth/AdminRoute";
 import { useToast } from "@/components/ToastProvider";
 import { PROPERTY_CATEGORIES } from "@/lib/categories";
 import { schools } from "@/lib/schools";
@@ -199,8 +198,7 @@ export default function EditPropertyPage() {
   }
 
   return (
-    <AdminRoute>
-      <div className="min-h-screen bg-[#f8f8f8] pb-30">
+    <div className="min-h-screen bg-[#f8f8f8] pb-30">
       <div className="max-w-3xl mx-auto px-4 sm:px-6 py-5">
 
         {/* HEADER */}
@@ -500,6 +498,5 @@ export default function EditPropertyPage() {
 
       </div>
     </div>
-    </AdminRoute>
   );
 }

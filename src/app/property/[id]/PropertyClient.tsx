@@ -114,9 +114,7 @@ export default function PropertyClient({
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          userId,
           propertyId: property.id,
-          amount: 500,
         }),
       });
 
@@ -143,7 +141,7 @@ export default function PropertyClient({
   useEffect(() => {
     if (!userId) return;
 
-    fetch(`/api/saved?userId=${userId}`)
+    fetch(`/api/saved`)
       .then((res) => res.json())
       .then((data) => {
         const isSaved = data.some(
@@ -188,7 +186,6 @@ export default function PropertyClient({
               method: "POST",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({
-                userId,
                 propertyId: property.id,
               }),
             });

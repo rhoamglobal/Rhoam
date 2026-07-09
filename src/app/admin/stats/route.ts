@@ -1,6 +1,17 @@
+import { NextResponse } from "next/server";
 import { supabaseAdmin as supabase } from "@/lib/supabaseAdmin";
+import { getAuthenticatedUser, isAdminUser } from "@/lib/supabaseServer";
 
 export async function GET() {
+  const { user } = await getAuthenticatedUser();
+
+  if (!user || !(await isAdminUser(user.id))) {
+    return NextResponse.json(
+      { error: "Not authorized" },
+      { status: 403 }
+    );
+  }
+
   const { count: propertyCount } = await supabase
     .from("properties")
     .select("*", { count: "exact", head: true });
@@ -19,7 +30,7 @@ export async function GET() {
     .order("created_at", { ascending: false })
     .limit(5);
 
-  return Response.json({
+  return NextResponse.json({
     propertyCount: propertyCount || 0,
     userCount: userCount || 0,
     savedCount: savedCount || 0,

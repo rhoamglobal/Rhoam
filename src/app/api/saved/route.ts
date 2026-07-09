@@ -1,13 +1,18 @@
 import { NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabaseAdmin";
+import { getAuthenticatedUser } from "@/lib/supabaseServer";
 
-export async function GET(req: Request) {
-  const { searchParams } = new URL(req.url);
-  const userId = searchParams.get("userId");
+export async function GET() {
+  const { user } = await getAuthenticatedUser();
 
-  if (!userId) {
-    return NextResponse.json({ error: "Missing userId" }, { status: 400 });
+  if (!user) {
+    return NextResponse.json(
+      { error: "You must be logged in to view saved properties." },
+      { status: 401 }
+    );
   }
+
+  const userId = user.id;
 
   const { data: saved } = await supabaseAdmin
     .from("saved_properties")

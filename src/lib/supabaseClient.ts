@@ -1,6 +1,5 @@
-import { createClient } from "@supabase/supabase-js";
-
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "https://placeholder.supabase.co";
-const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "placeholder-key";
-
-export const supabase = createClient(supabaseUrl, supabaseKey);
+// Kept only so existing imports of "@/lib/supabaseClient" keep working.
+// This used to be a duplicate client definition — now it's just an alias
+// for the single browser client in "@/lib/supabase". Prefer importing
+// from "@/lib/supabase" in new code.
+export { supabase } from "./supabase";

@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import AdminRoute from "@/components/auth/AdminRoute";
 import Link from "next/link";
 
 type RecentProperty = {
@@ -27,14 +26,13 @@ export default function AdminPage() {
   });
 
   useEffect(() => {
-    fetch("/api/admin/stats")
+    fetch("/admin/stats")
       .then((res) => res.json())
       .then(setStats);
   }, []);
 
   return (
-    <AdminRoute>
-      <div className="min-h-screen bg-[#f8f8f8] p-6">
+    <div className="min-h-screen bg-[#f8f8f8] p-6">
   
         {/* Header */}
         <div className="mb-8">
@@ -166,6 +164,5 @@ export default function AdminPage() {
         </div>
   
       </div>
-    </AdminRoute>
   );
 }

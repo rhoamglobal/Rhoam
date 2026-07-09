@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
-import AdminRoute from "@/components/auth/AdminRoute";
 
 type Profile = {
   id: string;
@@ -37,8 +36,7 @@ export default function AdminUsersPage() {
   }, []);
 
   return (
-    <AdminRoute>
-      <div className="p-6">
+    <div className="p-6">
 
         <h1 className="text-4xl font-bold mb-8">
           Users
@@ -74,6 +72,5 @@ export default function AdminUsersPage() {
 
         </div>
       </div>
-    </AdminRoute>
   );
 }

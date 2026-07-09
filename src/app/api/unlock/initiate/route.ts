@@ -1,15 +1,31 @@
 import { NextResponse } from "next/server";
+import { getAuthenticatedUser } from "@/lib/supabaseServer";
+import { UNLOCK_FEE_NGN } from "@/lib/config";
 
 export async function POST(req: Request) {
   try {
-    const { userId, propertyId, amount } = await req.json();
+    // Who is actually logged in — never trust a userId from the request body.
+    const { user } = await getAuthenticatedUser();
 
-    if (!userId || !propertyId) {
+    if (!user) {
+      return NextResponse.json(
+        { message: "You must be logged in to unlock a contact." },
+        { status: 401 }
+      );
+    }
+
+    const { propertyId } = await req.json();
+
+    if (!propertyId) {
       return NextResponse.json(
         { message: "Missing required fields" },
         { status: 400 }
       );
     }
+
+    const userId = user.id;
+    // Fixed server-side price. The client can no longer set this itself.
+    const amount = UNLOCK_FEE_NGN;
 
     // STEP 1: Authenticate with Monnify
     const auth = Buffer.from(
@@ -27,7 +43,6 @@ export async function POST(req: Request) {
     );
 
     const tokenData = await tokenRes.json();
-
     const accessToken = tokenData.responseBody.accessToken;
 
     // STEP 2: Generate payment reference
@@ -44,8 +59,8 @@ export async function POST(req: Request) {
         },
         body: JSON.stringify({
           amount,
-          customerName: "Property User",
-          customerEmail: `${userId}@rentedville.com`,
+          customerName: user.user_metadata?.full_name || "Property User",
+          customerEmail: user.email,
           paymentReference,
           paymentDescription: "Property contact unlock",
           currencyCode: "NGN",
