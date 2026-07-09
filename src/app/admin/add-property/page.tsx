@@ -5,6 +5,7 @@ import { supabase } from "@/lib/supabase";
 import { useToast } from "@/components/ToastProvider";
 import { PROPERTY_CATEGORIES } from "@/lib/categories";
 import { compressImage } from "@/lib/compressImage";
+import { schools } from "@/lib/schools";
 
 export default function AddPropertyPage() {
   const [loading, setLoading] = useState(false);
@@ -21,6 +22,16 @@ export default function AddPropertyPage() {
 
   const [imageUrl, setImageUrl] = useState("");
   const [landlordPhone, setLandlordPhone] = useState("");
+  const [address, setAddress] = useState("");
+  const [schoolTag, setSchoolTag] = useState("");
+  const [location, setLocation] = useState("");
+
+  const [roomCount, setRoomCount] = useState("");
+  const [occupantsPerRoom, setOccupantsPerRoom] = useState("");
+
+  const [amenities, setAmenities] = useState("");
+
+  const [galleryFiles, setGalleryFiles] = useState<File[]>([]);
 
 
   
@@ -49,6 +60,7 @@ export default function AddPropertyPage() {
       setLoading(false);
       return;
     }
+    
   
       const { data } = supabase.storage
         .from("property-images")
@@ -56,6 +68,26 @@ export default function AddPropertyPage() {
   
       imageUrl = data.publicUrl;
     }
+    const galleryUrls: string[] = [];
+
+    for (const file of galleryFiles) {
+      const fileName = `properties/${Date.now()}-${file.name}`;
+
+      const compressed = await compressImage(file);
+
+      const { error } = await supabase.storage
+        .from("property-images")
+        .upload(fileName, compressed);
+
+      if (!error) {
+        const { data } = supabase.storage
+          .from("property-images")
+          .getPublicUrl(fileName);
+
+        galleryUrls.push(data.publicUrl);
+      }
+    }
+    
   
     const { error } = await supabase
       .from("properties")
@@ -63,19 +95,37 @@ export default function AddPropertyPage() {
         {
           title,
           description,
+          address,
+        
           category,
+          school_tag: schoolTag,
+          location,
+        
           price: Number(price),
-  
+        
+          room_count: Number(roomCount),
+          occupants_per_room: Number(
+            occupantsPerRoom
+          ),
+        
           latitude: Number(latitude),
           longitude: Number(longitude),
+        
           landlord_phone: landlordPhone,
-  
+        
           image_url: imageUrl,
-          images: [imageUrl],
-  
-          amenities: [],
-        },
-      ]);
+        
+          images: [
+            imageUrl,
+            ...galleryUrls,
+          ],
+        
+          amenities: amenities
+            .split(",")
+            .map((x) => x.trim())
+            .filter(Boolean),
+        }
+        ]);
 
     setLoading(false);
   
@@ -111,6 +161,32 @@ export default function AddPropertyPage() {
           className="w-full border p-4 rounded-2xl"
         />
 
+        <div className="grid grid-cols-2 gap-4">
+
+        <input
+          type="number"
+          placeholder="Rooms"
+          value={roomCount}
+          onChange={(e) =>
+            setRoomCount(e.target.value)
+          }
+          className="border p-4 rounded-2xl"
+        />
+
+        <input
+          type="number"
+          placeholder="Occupants / Room"
+          value={occupantsPerRoom}
+          onChange={(e) =>
+            setOccupantsPerRoom(
+              e.target.value
+            )
+          }
+          className="border p-4 rounded-2xl"
+        />
+
+        </div>
+
         <select
           value={category}
           onChange={(e) => setCategory(e.target.value)}
@@ -130,11 +206,50 @@ export default function AddPropertyPage() {
           ))}
         </select>
 
+        <select
+          value={schoolTag}
+          onChange={(e) =>
+            setSchoolTag(e.target.value)
+          }
+          className="w-full border rounded-2xl p-4 bg-white"
+        >
+          <option value="">
+            Select School
+          </option>
+
+          {schools.map((school) => (
+            <option
+              key={school.key}
+              value={school.name}
+            >
+              {school.name}
+            </option>
+          ))}
+        </select>
+
+        <input
+          placeholder="Location"
+          value={location}
+          onChange={(e) =>
+            setLocation(e.target.value)
+          }
+          className="w-full border p-4 rounded-2xl"
+        />
+
         <textarea
           placeholder="Description"
           value={description}
           onChange={(e) => setDescription(e.target.value)}
           className="w-full border p-4 rounded-2xl h-32"
+        />
+
+        <textarea
+          placeholder="Address"
+          value={address}
+          onChange={(e) =>
+            setAddress(e.target.value)
+          }
+          className="w-full border p-4 rounded-2xl h-24"
         />
 
         <input
@@ -151,6 +266,8 @@ export default function AddPropertyPage() {
           className="w-full border p-4 rounded-2xl"
         />
 
+
+<label > image cover</label>
         <input
           type="file"
           accept="image/*"
@@ -159,6 +276,30 @@ export default function AddPropertyPage() {
               setImage(e.target.files[0]);
             }
           }}
+          className="w-full border p-4 rounded-2xl"
+        />
+
+        <label > image gallery</label>
+        <input
+          multiple
+          type="file"
+          accept="image/*"
+          onChange={(e) =>
+            setGalleryFiles(
+              Array.from(
+                e.target.files || []
+              )
+            )
+          }
+          className="w-full border p-4 rounded-2xl"
+        />
+
+        <input
+          placeholder="WiFi, Security, Water..."
+          value={amenities}
+          onChange={(e) =>
+            setAmenities(e.target.value)
+          }
           className="w-full border p-4 rounded-2xl"
         />
 
