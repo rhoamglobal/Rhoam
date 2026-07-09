@@ -6,6 +6,7 @@ import { supabase } from "@/lib/supabase";
 import { useToast } from "@/components/ToastProvider";
 import { PROPERTY_CATEGORIES } from "@/lib/categories";
 import { schools } from "@/lib/schools";
+import { compressImage } from "@/lib/compressImage";
 
 
 export default function EditPropertyPage() {
@@ -101,11 +102,15 @@ export default function EditPropertyPage() {
     if (coverImage) {
       const fileName =
         Date.now() + "-" + coverImage.name;
-
+    
+      const compressed = await compressImage(
+        coverImage
+      );
+    
       const { error: uploadError } =
         await supabase.storage
           .from("property-images")
-          .upload(fileName, coverImage);
+          .upload(fileName, compressed);
 
       if (uploadError) {
         alert(uploadError.message);
@@ -125,11 +130,14 @@ export default function EditPropertyPage() {
     for (const file of galleryFiles) {
       const fileName =
         Date.now() + "-" + file.name;
-
+    
+      const compressed =
+        await compressImage(file);
+    
       const { error } =
         await supabase.storage
           .from("property-images")
-          .upload(fileName, file);
+          .upload(fileName, compressed);
 
       if (!error) {
         const { data } =

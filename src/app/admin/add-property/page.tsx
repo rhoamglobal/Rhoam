@@ -4,6 +4,7 @@ import { useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { useToast } from "@/components/ToastProvider";
 import { PROPERTY_CATEGORIES } from "@/lib/categories";
+import { compressImage } from "@/lib/compressImage";
 
 export default function AddPropertyPage() {
   const [loading, setLoading] = useState(false);
@@ -34,18 +35,20 @@ export default function AddPropertyPage() {
     let imageUrl = "";
   
     if (image) {
-      const fileName = `${Date.now()}-${image.name}`;
+      const fileName = `properties/${Date.now()}.webp`;
   
-      const { error: uploadError } = await supabase.storage
-        .from("property-images")
-        .upload(fileName, image);
+      // Compress image before uploading
+    const compressed = await compressImage(image);
 
-  
-      if (uploadError) {
-        showToast(uploadError.message);
-        setLoading(false);
-        return;
-      }
+    const { error: uploadError } = await supabase.storage
+      .from("property-images")
+      .upload(fileName, compressed);
+
+    if (uploadError) {
+      showToast(uploadError.message);
+      setLoading(false);
+      return;
+    }
   
       const { data } = supabase.storage
         .from("property-images")
