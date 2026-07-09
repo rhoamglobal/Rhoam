@@ -6,13 +6,20 @@ import {
   LogOut,
   Phone,
   Mail,
-
 } from "lucide-react";
+import {
+  FaInstagram,
+  FaFacebook,
+  FaXTwitter,
+  FaWhatsapp,
+} from "react-icons/fa6";
 import { useState, useEffect } from "react";
 
 import { useAuth } from "@/components/providers/AuthProvider";
 import { supabase } from "@/lib/supabase";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
+
+const CONTACT_EMAIL = "rhoam.global@gmail.com";
 
 export default function ProfilePage() {
   const { user } = useAuth();
@@ -65,124 +72,131 @@ export default function ProfilePage() {
     );
   }
 
-  const displayName =
-    user.email?.split("@")[0] || "User";
+  const displayName = user.email?.split("@")[0] || "User";
 
   return (
     <div className="min-h-screen bg-[#f8f8f8] pb-28 px-5">
-
       {/* HERO */}
-      <div className="bg-[#ff5a5f] px-6 pt-16 pb-10 rounded-b-[40px] text-white shadow-xl">
+      <div className="bg-[#ff5a5f] px-6 pt-16 pb-10 rounded-b-[40px] text-white shadow-xl shadow-[#ff5a5f]/20">
         <div className="flex items-center gap-4">
-          <div className="w-20 h-20 rounded-full bg-white text-[#ff5a5f]
-            flex items-center justify-center text-3xl font-bold shadow-lg">
+          <div
+            className="
+              w-20 h-20 rounded-full
+              bg-white text-[#ff5a5f]
+              flex items-center justify-center
+              text-3xl font-bold
+              shadow-lg
+              ring-4 ring-white/25
+            "
+          >
             {user.email?.charAt(0).toUpperCase()}
           </div>
 
           <div>
-            <p className="text-white/80 text-sm">
-              Welcome back
-            </p>
+            <p className="text-white/80 text-sm">Welcome back</p>
 
-            <h1 className="text-3xl font-bold">
+            <h1 className="text-3xl font-bold tracking-tight">
               {displayName}
             </h1>
 
-            <p className="text-white/90 mt-1">
-              {user.email}
-            </p>
+            <p className="text-white/90 mt-1 text-sm">{user.email}</p>
           </div>
         </div>
       </div>
 
       {/* STATS */}
-      <div className="grid grid-cols-2 gap-4 mt-6">
-
-        <div className="bg-white rounded-3xl p-5 shadow-sm border border-gray-100">
-          <p className="text-gray-500 text-sm mb-2">
+      <div className="grid grid-cols-2 gap-4 -mt-2 pt-8">
+        <button
+          onClick={() => router.push("/saved")}
+          className="
+            bg-white rounded-3xl p-5 text-left
+            shadow-sm border border-gray-100
+            hover:shadow-md hover:-translate-y-0.5
+            transition-all duration-200
+          "
+        >
+          <div className="flex items-center gap-2 text-gray-500 text-sm mb-2">
+            <Heart size={14} className="text-[#ff5a5f]" />
             Saved Homes
-          </p>
+          </div>
 
           <h2 className="text-4xl font-bold text-[#ff5a5f]">
             {savedCount}
           </h2>
-        </div>
-
-        <div
-          onClick={() => router.push("/profile/unlocked")}
-          className="bg-white rounded-3xl p-5 shadow-sm border border-gray-100 cursor-pointer"
-        >
-          <p className="text-gray-500 text-sm mb-2">
-            Unlocked Contacts
-          </p>
-
-          <h2 className="text-4xl font-bold text-[#ff5a5f]">
-            {unlockCount}
-          </h2>
-        </div>
-      </div>
-
-      {/* QUICK ACTIONS */}
-      <div className="mt-8 space-y-4">
-
-        <button
-          onClick={() => router.push("/saved")}
-          className="w-full bg-white rounded-3xl p-5 shadow-sm border border-gray-100 flex items-center justify-between"
-        >
-          <div className="flex items-center gap-4">
-            <Heart className="text-[#ff5a5f]" size={20} />
-            <span className="font-medium text-gray-900">
-              Saved Properties
-            </span>
-          </div>
-          <span className="text-gray-400 text-xl">›</span>
         </button>
 
         <button
           onClick={() => router.push("/profile/unlocked")}
-          className="w-full bg-white rounded-3xl p-5 shadow-sm border border-gray-100 flex items-center justify-between"
+          className="
+            bg-white rounded-3xl p-5 text-left
+            shadow-sm border border-gray-100
+            hover:shadow-md hover:-translate-y-0.5
+            transition-all duration-200
+          "
         >
-          <div className="flex items-center gap-4">
-            <Phone className="text-[#ff5a5f]" size={20} />
-            <span className="font-medium text-gray-900">
-              My Unlocks
-            </span>
+          <div className="flex items-center gap-2 text-gray-500 text-sm mb-2">
+            <Phone size={14} className="text-[#ff5a5f]" />
+            Unlocked Contacts
           </div>
-          <span className="text-gray-400 text-xl">›</span>
+
+          <h2 className="text-4xl font-bold text-[#ff5a5f]">
+            {unlockCount}
+          </h2>
         </button>
       </div>
 
       {/* COMPANY CONTACT */}
       <div className="mt-8 bg-white rounded-3xl p-5 shadow-sm border border-gray-100">
-        <h2 className="font-semibold text-gray-900 mb-4">
-          Contact Rhoam
-        </h2>
+        <h2 className="font-semibold text-gray-900 mb-4">Contact Rhoam</h2>
 
-        <div className="space-y-4">
-
+        <div className="space-y-1">
           <a
-            href="mailto:support@rhoam.com"
-            className="flex items-center gap-3 text-gray-700"
+            href={`mailto:${CONTACT_EMAIL}`}
+            className="
+              flex items-center gap-3 text-gray-700
+              -mx-2 px-2 py-2.5 rounded-xl
+              hover:bg-gray-50
+              transition
+            "
           >
-            <Mail className="text-[#ff5a5f]" size={18} />
-            rhoam.global@gmail.com
+            <span className="h-8 w-8 rounded-full bg-[#ff5a5f]/8 flex items-center justify-center shrink-0">
+              <Mail className="text-[#ff5a5f]" size={15} />
+            </span>
+            {CONTACT_EMAIL}
           </a>
 
           <a
             href="https://instagram.com"
             target="_blank"
-            className="flex items-center gap-3 text-gray-700"
+            rel="noopener noreferrer"
+            className="
+              flex items-center gap-3 text-gray-700
+              -mx-2 px-2 py-2.5 rounded-xl
+              hover:bg-gray-50
+              transition
+            "
           >
-            
-            Instagram
+            <span className="h-8 w-8 rounded-full bg-[#ff5a5f]/8 flex items-center justify-center shrink-0">
+              <FaInstagram className="text-[#ff5a5f]" size={15} />
+            </span>
+            Rhoam Global
           </a>
 
           <a
             href="https://x.com/rhoam_global"
             target="_blank"
-            className="flex items-center gap-3 text-gray-700"
+            rel="noopener noreferrer"
+            className="
+              flex items-center gap-3 text-gray-700
+              -mx-2 px-2 py-2.5 rounded-xl
+              hover:bg-gray-50
+              transition
+            "
           >
-            X (Twitter)
+            <span className="h-8 w-8 rounded-full bg-[#ff5a5f]/8 flex items-center justify-center shrink-0">
+              <FaXTwitter className="text-[#ff5a5f]" size={15} />
+            </span>
+            rhoam_global
           </a>
         </div>
       </div>
@@ -191,7 +205,14 @@ export default function ProfilePage() {
       <div className="mt-8">
         <button
           onClick={handleLogout}
-          className="w-full bg-white rounded-3xl p-5 shadow-sm border border-gray-100 flex items-center justify-center gap-3 text-red-500 font-semibold"
+          className="
+            w-full bg-white rounded-3xl p-5
+            shadow-sm border border-gray-100
+            flex items-center justify-center gap-3
+            text-red-500 font-semibold
+            hover:bg-red-50/50
+            transition
+          "
         >
           <LogOut size={20} />
           Logout
@@ -201,7 +222,6 @@ export default function ProfilePage() {
       <div className="text-center text-gray-400 text-sm mt-6">
         Rhoam v1.0
       </div>
-
     </div>
   );
 }

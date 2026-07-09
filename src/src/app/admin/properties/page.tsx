@@ -5,8 +5,7 @@ import { supabase } from "@/lib/supabase";
 import ConfirmModal from "@/components/ConfirmModal";
 import { useToast } from "@/components/ToastProvider";
 import Link from "next/link";
-import { Search, ChevronLeft, ChevronRight } from "lucide-react";
-import { useDebounce } from "@/hooks/useDebounce";
+import { Search } from "lucide-react";
 
 import {
   Pencil,
@@ -29,26 +28,8 @@ type Property = {
   is_visible: boolean;
 };
 
-const PAGE_SIZE = 20;
-
 export default function AdminPropertiesPage() {
   const [properties, setProperties] = useState<Property[]>([]);
-  const [page, setPage] = useState(0);
-  const [totalCount, setTotalCount] = useState(0);
-
-  // Dashboard summary counts — fetched separately (head-only count
-  // queries) so they stay accurate for the whole table, not just
-  // whatever page is currently loaded.
-  const [counts, setCounts] = useState({
-    total: 0,
-    verified: 0,
-    available: 0,
-    visible: 0,
-    hidden: 0,
-  });
-
-  const [search, setSearch] = useState("");
-  const debouncedSearch = useDebounce(search, 400);
 
   // modal state
   const [confirmOpen, setConfirmOpen] = useState(false);
@@ -56,11 +37,13 @@ export default function AdminPropertiesPage() {
 
   const { showToast } = useToast();
 
-  const loadProperties = async () => {
-    let query = supabase
-      .from("properties")
-      .select(
-        `
+  useEffect(() => {
+    let active = true;
+
+    const loadInitialProperties = async () => {
+      const { data } = await supabase
+        .from("properties")
+        .select(`
           id,
           title,
           price,
@@ -68,68 +51,39 @@ export default function AdminPropertiesPage() {
           is_verified,
           is_available,
           is_visible
-        `,
-        { count: "exact" }
-      )
-      .order("created_at", { ascending: false })
-      .range(page * PAGE_SIZE, page * PAGE_SIZE + PAGE_SIZE - 1);
+        `)
+        .order("created_at", { ascending: false });
 
-    if (debouncedSearch) {
-      query = query.ilike("title", `%${debouncedSearch}%`);
-    }
+      if (active && data) {
+        setProperties(data);
+      }
+    };
 
-    const { data, count } = await query;
+    loadInitialProperties();
+
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  const loadProperties = async () => {
+    const { data } = await supabase
+      .from("properties")
+      .select(`
+        id,
+        title,
+        price,
+        image_url,
+        is_verified,
+        is_available,
+        is_visible
+      `)
+      .order("created_at", { ascending: false });
 
     if (data) {
       setProperties(data);
-      setTotalCount(count || 0);
     }
   };
-
-  const loadCounts = async () => {
-    const [total, verified, available, visible] = await Promise.all([
-      supabase
-        .from("properties")
-        .select("*", { count: "exact", head: true }),
-      supabase
-        .from("properties")
-        .select("*", { count: "exact", head: true })
-        .eq("is_verified", true),
-      supabase
-        .from("properties")
-        .select("*", { count: "exact", head: true })
-        .eq("is_available", true),
-      supabase
-        .from("properties")
-        .select("*", { count: "exact", head: true })
-        .eq("is_visible", true),
-    ]);
-
-    const totalPropCount = total.count || 0;
-    const visibleCount = visible.count || 0;
-
-    setCounts({
-      total: totalPropCount,
-      verified: verified.count || 0,
-      available: available.count || 0,
-      visible: visibleCount,
-      hidden: totalPropCount - visibleCount,
-    });
-  };
-
-  // Reset to page 1 whenever the search term changes.
-  useEffect(() => {
-    setPage(0);
-  }, [debouncedSearch]);
-
-  useEffect(() => {
-    loadProperties();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [page, debouncedSearch]);
-
-  useEffect(() => {
-    loadCounts();
-  }, []);
 
   // STEP 1: open modal instead of deleting directly
   const requestDelete = (id: number) => {
@@ -160,7 +114,6 @@ export default function AdminPropertiesPage() {
     );
   
     loadProperties();
-    loadCounts();
   };
 
   const toggleAvailability = async (
@@ -187,7 +140,6 @@ export default function AdminPropertiesPage() {
     );
   
     loadProperties();
-    loadCounts();
   };
   
   const toggleVisibility = async (
@@ -214,7 +166,6 @@ export default function AdminPropertiesPage() {
     );
   
     loadProperties();
-    loadCounts();
   };
 
   // STEP 2: actual delete action
@@ -234,11 +185,35 @@ export default function AdminPropertiesPage() {
     showToast("Property deleted successfully", "success");
 
     loadProperties();
-    loadCounts();
 
     setConfirmOpen(false);
     setSelectedId(null);
   };
+
+  const [search, setSearch] = useState("");
+
+  const filteredProperties = properties.filter((property) =>
+    property.title
+      .toLowerCase()
+      .includes(search.toLowerCase())
+  );
+  const totalListings = properties.length;
+
+  const verifiedCount = properties.filter(
+    (p) => p.is_verified
+  ).length;
+
+  const availableCount = properties.filter(
+    (p) => p.is_available
+  ).length;
+
+  const visibleCount = properties.filter(
+    (p) => p.is_visible
+  ).length;
+
+  const hiddenCount = properties.filter(
+    (p) => !p.is_visible
+  ).length;
 
   return (
     <div className="min-h-screen bg-[#f8f8f8] p-6 pb-[80px]">
@@ -254,7 +229,7 @@ export default function AdminPropertiesPage() {
         
 
         <div className="bg-white px-5 py-3 rounded-2xl shadow-sm border">
-          {counts.total} Listings
+          {properties.length} Listings
         </div>
 
 
@@ -298,35 +273,35 @@ export default function AdminPropertiesPage() {
 
   <DashboardCard
     title="Listings"
-    value={counts.total}
+    value={totalListings}
     color="bg-[#ff5a5f]"
     icon={<Home size={26} />}
   />
 
   <DashboardCard
     title="Verified"
-    value={counts.verified}
+    value={verifiedCount}
     color="bg-emerald-500"
     icon={<ShieldCheck size={26} />}
   />
 
   <DashboardCard
     title="Visible"
-    value={counts.visible}
+    value={visibleCount}
     color="bg-sky-500"
     icon={<Eye size={26} />}
   />
 
   <DashboardCard
     title="Available"
-    value={counts.available}
+    value={availableCount}
     color="bg-green-500"
     icon={<Home size={26} />}
   />
 
   <DashboardCard
     title="Hidden"
-    value={counts.hidden}
+    value={hiddenCount}
     color="bg-gray-700"
     icon={<EyeOff size={26} />}
   />
@@ -334,7 +309,7 @@ export default function AdminPropertiesPage() {
 </div>
 
 </div>
-  {properties.map((property) => (
+  {filteredProperties.map((property) => (
 
     
     <div
@@ -528,51 +503,6 @@ export default function AdminPropertiesPage() {
     </div>
   ))}
 </div>
-
-      {/* PAGINATION */}
-      {totalCount > PAGE_SIZE && (
-        <div className="flex items-center justify-between mt-8 bg-white rounded-2xl shadow-sm border p-4">
-          <button
-            onClick={() => setPage((p) => Math.max(0, p - 1))}
-            disabled={page === 0}
-            className="
-              flex items-center gap-1
-              px-4 py-2 rounded-xl
-              text-sm font-medium
-              disabled:opacity-40 disabled:cursor-not-allowed
-              hover:bg-gray-100
-              transition
-            "
-          >
-            <ChevronLeft size={16} />
-            Previous
-          </button>
-
-          <p className="text-sm text-gray-500">
-            Page {page + 1} of {Math.max(1, Math.ceil(totalCount / PAGE_SIZE))}
-          </p>
-
-          <button
-            onClick={() =>
-              setPage((p) =>
-                (p + 1) * PAGE_SIZE < totalCount ? p + 1 : p
-              )
-            }
-            disabled={(page + 1) * PAGE_SIZE >= totalCount}
-            className="
-              flex items-center gap-1
-              px-4 py-2 rounded-xl
-              text-sm font-medium
-              disabled:opacity-40 disabled:cursor-not-allowed
-              hover:bg-gray-100
-              transition
-            "
-          >
-            Next
-            <ChevronRight size={16} />
-          </button>
-        </div>
-      )}
 
       {/* ✅ CONFIRM MODAL */}
       <ConfirmModal

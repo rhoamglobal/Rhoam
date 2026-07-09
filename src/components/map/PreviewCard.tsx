@@ -6,7 +6,7 @@ import Image from "next/image";
 import { Property } from "./types";
 import { useEffect, useState } from "react";
 import { isSaved, toggleSaved } from "@/lib/saved";
-import { Heart, CheckCircle2 } from "lucide-react";
+import { Heart, CheckCircle2, MapPin, ArrowRight } from "lucide-react";
 import { useAuth } from "@/components/providers/AuthProvider";
 
 import { schools } from "@/lib/schools";
@@ -50,8 +50,7 @@ export default function PreviewCard({
 
   // auto-match school using school_tag
   const matchedSchool = schools.find(
-    (s) =>
-      s.name.toLowerCase() === property?.school_tag?.toLowerCase()
+    (s) => s.name.toLowerCase() === property?.school_tag?.toLowerCase()
   );
 
   let distanceInfo: string | null = null;
@@ -67,7 +66,7 @@ export default function PreviewCard({
 
     const minutes = kmToWalkMinutes(km);
 
-    distanceInfo = `${minutes} mins walk to ${matchedSchool.name}`;
+    distanceInfo = `${minutes} min walk to ${matchedSchool.name}`;
     distanceBadge = getDistanceBadge(minutes);
   }
 
@@ -79,95 +78,124 @@ export default function PreviewCard({
           initial={{ y: 100, x: "-50%", opacity: 0 }}
           animate={{ y: 0, x: "-50%", opacity: 1 }}
           exit={{ y: 120, x: "-50%", opacity: 0 }}
-          transition={{ duration: 0.35 }}
-          className="preview-card"
+          transition={{ type: "spring", stiffness: 320, damping: 30 }}
+          onClick={() => router.push(`/property/${property.id}`)}
+          className="
+            fixed bottom-10 left-1/2 z-[2000]
+            w-[min(360px,92vw)]
+            bg-white rounded-[28px]
+            overflow-hidden
+            shadow-[0_20px_60px_rgba(0,0,0,0.22)]
+            cursor-pointer
+            transition-transform duration-200
+            hover:-translate-y-0.5
+          "
         >
-          <div style={{ position: "relative" }}>
-            <div className="relative h-48 w-full">
-              <Image
-                src={
-                  property.images?.[0] ||
-                  property.image_url ||
-                  property.image ||
-                  "/placeholder.jpg"
-                }
-                alt={property.title}
-                fill
-                className="object-cover"
-              />
-            </div>
+          {/* IMAGE */}
+          <div className="relative h-44 w-full bg-gray-100">
+            <Image
+              src={
+                property.images?.[0] ||
+                property.image_url ||
+                property.image ||
+                "/placeholder.jpg"
+              }
+              alt={property.title}
+              fill
+              sizes="360px"
+              className="object-cover"
+            />
 
-            <div
-              onClick={handleSave}
-              style={{
-                position: "absolute",
-                top: 12,
-                right: 12,
-                background: "white",
-                borderRadius: "50%",
-                width: 40,
-                height: 40,
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                cursor: "pointer",
-                boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
-                zIndex: 10,
+            <div className="absolute inset-0 bg-gradient-to-t from-black/35 via-black/0 to-transparent" />
+
+            {/* SAVE BUTTON */}
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                handleSave();
               }}
+              className="
+                absolute top-3 right-3
+                h-10 w-10 rounded-full
+                bg-white/95 hover:bg-white
+                shadow-md
+                flex items-center justify-center
+                transition
+                z-10
+              "
+              aria-label={saved ? "Remove from saved" : "Save property"}
             >
               <Heart
-                size={20}
-                color={saved ? "#ff5a5f" : "#333"}
-                fill={saved ? "#ff5a5f" : "none"}
+                size={18}
+                color={saved ? "#FF6B6B" : "#374151"}
+                fill={saved ? "#FF6B6B" : "none"}
                 strokeWidth={2}
               />
+            </button>
+
+            {/* PRICE */}
+            <div className="absolute bottom-3 left-4 text-white">
+              <span className="text-xl font-bold drop-shadow-sm">
+                ₦{property.price.toLocaleString()}
+              </span>
+              <span className="text-xs text-white/80 ml-1">/ year</span>
             </div>
           </div>
 
-          <div className="info">
-            <div className="flex items-center gap-2">
-              <h3>{property.title}</h3>
+          {/* INFO */}
+          <div className="p-5">
+            <div className="flex items-center gap-2 flex-wrap">
+              <h3 className="text-base font-semibold text-gray-900 truncate">
+                {property.title}
+              </h3>
 
               {property.is_verified && (
-                <span className="flex items-center gap-1 px-2 py-1 rounded-full bg-emerald-50 text-emerald-600 text-xs font-medium">
-                  <CheckCircle2 size={13} />
+                <span className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-600 text-[11px] font-medium shrink-0">
+                  <CheckCircle2 size={11} />
                   Verified
                 </span>
               )}
             </div>
 
-            {/* coral branding */}
-            <h2 style={{ color: "#ff5a5f" }}>
+            <p className="text-xs text-[#ff5a5f] font-medium mt-1">
               {property.category}
-            </h2>
+            </p>
 
-            <span className="text-[#FF6B6B] font-semibold">
-              ₦{property.price.toLocaleString()} / year
-            </span>
-
-            {/* distance section */}
+            {/* distance */}
             {distanceInfo && (
               <div className="mt-3 flex items-center gap-2">
-                <span className="text-xs px-2 py-1 rounded-full bg-[#fff1f1] text-[#ff5a5f] font-medium">
+                <span className="text-[11px] px-2 py-1 rounded-full bg-[#fff1f1] text-[#ff5a5f] font-medium">
                   {distanceBadge}
                 </span>
 
-                <p className="text-xs text-gray-500">
+                <p className="text-xs text-gray-500 truncate">
                   {distanceInfo}
                 </p>
               </div>
             )}
 
-            <p className="text-xs text-gray-500 mt-2">
+            <p className="flex items-center gap-1 text-xs text-gray-400 mt-2 truncate">
+              <MapPin size={11} />
               {property.school_tag} • {property.location}
             </p>
 
             <button
-              onClick={() =>
-                router.push(`/property/${property.id}`)
-              }
+              onClick={(e) => {
+                e.stopPropagation();
+                router.push(`/property/${property.id}`);
+              }}
+              className="
+                w-full mt-4
+                py-3 rounded-2xl
+                bg-[#FF6B6B] hover:bg-[#ff5252]
+                text-white text-sm font-semibold
+                shadow-lg shadow-[#FF6B6B]/25
+                transition
+                flex items-center justify-center gap-1.5
+              "
             >
               View details
+              <ArrowRight size={14} />
             </button>
           </div>
         </motion.div>

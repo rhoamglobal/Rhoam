@@ -42,9 +42,7 @@ export async function GET(req: Request) {
     query = query.lte("price", Number(maxPrice));
   }
 
-  const { data, error } = await query
-    .order("created_at", { ascending: false })
-    .limit(300);
+  const { data, error } = await query;
 
   if (error) {
     return NextResponse.json(

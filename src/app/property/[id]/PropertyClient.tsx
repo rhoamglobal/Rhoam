@@ -4,15 +4,20 @@ import { useState, useEffect } from "react";
 import Image from "next/image";
 import { amenityIcons } from "@/lib/amenities";
 import { Property } from "@/components/map/types";
-import { Heart, CheckCircle2, Bed, PersonStanding } from "lucide-react";
+import {
+  Heart,
+  CheckCircle2,
+  Bed,
+  Users,
+  MapPin,
+  ChevronLeft,
+} from "lucide-react";
 import { supabase } from "@/lib/supabaseClient";
 import { useToast } from "@/components/ToastProvider";
 import { schools } from "@/lib/schools";
-import {
-  getDistanceKm,
-  kmToWalkMinutes,
-} from "@/lib/distance";
-import { address } from "framer-motion/client";
+import { getDistanceKm, kmToWalkMinutes } from "@/lib/distance";
+import { UNLOCK_FEE_NGN } from "@/lib/config";
+import UnlockModal from "@/components/UnlockModal";
 
 export default function PropertyClient({
   property,
@@ -32,17 +37,22 @@ export default function PropertyClient({
     !property.isUnlocked
   );
   const [unlocking, setUnlocking] = useState(false);
+  const [showUnlockModal, setShowUnlockModal] = useState(false);
 
   const { showToast } = useToast();
 
-  //distance to school
+  const images =
+    property.images?.length
+      ? property.images
+      : [property.image_url || property.image || "/placeholder.jpg"];
+
+  // distance to school
   const matchedSchool = schools.find(
-    (s) =>
-      s.name.toLowerCase() === property.school_tag.toLowerCase()
+    (s) => s.name.toLowerCase() === property.school_tag.toLowerCase()
   );
-  
-  let distanceInfo = null;
-  
+
+  let distanceInfo: string | null = null;
+
   if (matchedSchool) {
     const km = getDistanceKm(
       property.latitude,
@@ -50,10 +60,10 @@ export default function PropertyClient({
       matchedSchool.lat,
       matchedSchool.lng
     );
-  
+
     const minutes = kmToWalkMinutes(km);
-  
-    distanceInfo = `${minutes} mins walk to ${matchedSchool.name}`;
+
+    distanceInfo = `${minutes} min walk to ${matchedSchool.name}`;
   }
 
   // GET USER
@@ -72,7 +82,7 @@ export default function PropertyClient({
     getUser();
   }, [property?.id]);
 
-  // FALLBACK CHECK (in case property.isUnlocked wasn’t passed)
+  // FALLBACK CHECK (in case property.isUnlocked wasn't passed)
   useEffect(() => {
     if (!userId || !property?.id) {
       return;
@@ -94,16 +104,19 @@ export default function PropertyClient({
   }, [userId, property.id]);
 
   // HANDLE UNLOCK (Monnify)
-  const handleUnlock = async () => {
+  const requestUnlock = () => {
     if (!userId) {
       showToast("Login first to unlock contact.");
       return;
     }
 
-    if (unlocking) return; // anti-double-click
+    if (unlocking) return;
 
-    const confirmed = confirm("Unlock landlord contact for ₦500?");
-    if (!confirmed) return;
+    setShowUnlockModal(true);
+  };
+
+  const confirmUnlock = async () => {
+    if (unlocking) return; // anti-double-click
 
     try {
       setUnlocking(true);
@@ -123,6 +136,7 @@ export default function PropertyClient({
       if (!res.ok) {
         showToast(data.message || "Failed to initialize payment.");
         setUnlocking(false);
+        setShowUnlockModal(false);
         return;
       }
 
@@ -134,6 +148,7 @@ export default function PropertyClient({
       console.log(error);
       showToast("Something went wrong.");
       setUnlocking(false);
+      setShowUnlockModal(false);
     }
   };
 
@@ -145,23 +160,18 @@ export default function PropertyClient({
       .then((res) => res.json())
       .then((data) => {
         const isSaved = data.some(
-          (item: { property_id: string }) =>
-            item.property_id === property.id
+          (item: { id: string }) => item.id === property.id
         );
         setSaved(isSaved);
       });
   }, [userId, property.id]);
 
   return (
-    <div className="min-h-screen bg-white text-gray-900 pb-[50]">
+    <div className="min-h-screen bg-white text-gray-900 pb-[96px]">
       {/* HERO IMAGE */}
-      <div className="w-full h-[460px] relative">
+      <div className="w-full h-[300px] sm:h-[380px] relative bg-gray-100">
         <Image
-          src={
-            (property.images?.length
-              ? property.images[activeImage]
-              : property.image_url || property.image) || "/placeholder.jpg"
-          }
+          src={images[activeImage]}
           alt={property.title}
           fill
           sizes="100vw"
@@ -169,14 +179,22 @@ export default function PropertyClient({
           priority
         />
 
-        <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/45 via-black/0 to-black/10" />
 
         {/* BACK BUTTON */}
         <button
           onClick={() => window.history.back()}
-          className="absolute top-4 left-4 bg-white/90 hover:bg-white p-2 rounded-full shadow-md transition"
+          className="
+            absolute top-4 left-4
+            h-10 w-10 rounded-full
+            bg-white/95 hover:bg-white
+            shadow-md
+            flex items-center justify-center
+            transition
+          "
+          aria-label="Go back"
         >
-          ←
+          <ChevronLeft size={20} />
         </button>
 
         {/* SAVE BUTTON */}
@@ -193,133 +211,190 @@ export default function PropertyClient({
             const data = await res.json();
             setSaved(data.saved);
           }}
-          className="absolute top-4 right-4 bg-white/90 hover:bg-white p-2 rounded-full shadow-md transition"
+          className="
+            absolute top-4 right-4
+            h-10 w-10 rounded-full
+            bg-white/95 hover:bg-white
+            shadow-md
+            flex items-center justify-center
+            transition
+          "
+          aria-label={saved ? "Remove from saved" : "Save property"}
         >
           <Heart
-            size={20}
+            size={18}
             fill={saved ? "#FF6B6B" : "none"}
-            color={saved ? "#FF6B6B" : "gray"}
+            color={saved ? "#FF6B6B" : "#374151"}
           />
         </button>
+
+        {/* IMAGE COUNTER */}
+        {images.length > 1 && (
+          <div
+            className="
+              absolute bottom-4 right-4
+              px-3 py-1 rounded-full
+              bg-black/45 backdrop-blur-sm
+              text-white text-xs font-medium
+            "
+          >
+            {activeImage + 1} / {images.length}
+          </div>
+        )}
       </div>
 
       {/* THUMBNAILS */}
-      <div className="flex gap-2 px-6 mt-4 overflow-x-auto">
-        {(property.images || []).map((img: string, i: number) => (
-          <div
-            key={i}
-            onClick={() => setActiveImage(i)}
-            className={`relative h-16 w-20 flex-shrink-0 rounded-lg cursor-pointer border transition overflow-hidden ${
-              activeImage === i ? "border-[#FF6B6B]" : "border-gray-200"
-            }`}
-          >
-            <Image
-              src={img}
-              alt=""
-              fill
-              sizes="80px"
-              className="object-cover"
-            />
-          </div>
-        ))}
-      </div>
+      {images.length > 1 && (
+        <div className="flex gap-2 px-6 mt-4 py-1.5 overflow-x-auto scrollbar-hide">
+          {images.map((img: string, i: number) => (
+            <button
+              key={i}
+              onClick={() => setActiveImage(i)}
+              className={`relative h-16 w-20 flex-shrink-0 rounded-xl transition ${
+                activeImage === i
+                  ? "ring-2 ring-[#FF6B6B] ring-offset-2"
+                  : "opacity-60 hover:opacity-100"
+              }`}
+            >
+              <div className="relative h-full w-full rounded-xl overflow-hidden">
+                <Image
+                  src={img}
+                  alt=""
+                  fill
+                  sizes="80px"
+                  className="object-cover"
+                />
+              </div>
+            </button>
+          ))}
+        </div>
+      )}
 
       {/* CONTENT */}
       <div className="max-w-5xl mx-auto px-6 py-10">
-        <div className="flex justify-between items-start">
+        {/* TITLE + PRICE */}
+        <div className="flex justify-between items-start gap-4 flex-wrap">
           <div>
-          <div className="flex items-center gap-3 flex-wrap">
-            <h1 className="text-3xl font-semibold">
-              {property.title}
-            </h1>
+            <div className="flex items-center gap-3 flex-wrap">
+              <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight">
+                {property.title}
+              </h1>
 
-            {property.is_verified && (
-              <span className="flex items-center gap-1 px-3 py-1 rounded-full bg-emerald-50 text-emerald-600 text-sm font-medium border border-emerald-100">
-                <CheckCircle2 size={14} />
-                Verified by Rhoam
-              </span>
-            )}
-          </div>
-            <p className="text-sm text-gray-500 mt-1">{property.category}</p>
-          </div>
-          
+              {property.is_verified && (
+                <span className="flex items-center gap-1 px-3 py-1 rounded-full bg-emerald-50 text-emerald-600 text-xs font-medium border border-emerald-100">
+                  <CheckCircle2 size={13} />
+                  Verified by Rhoam
+                </span>
+              )}
+            </div>
 
-          <div className="bg-[#FF6B6B] text-white px-5 py-2 rounded-full text-lg font-semibold shadow-md">
+            <p className="text-sm text-gray-500 mt-1.5">
+              {property.category}
+            </p>
+          </div>
+
+          <div className="bg-[#FF6B6B] text-white px-5 py-2.5 rounded-full text-lg font-semibold shadow-lg shadow-[#FF6B6B]/25">
             ₦{property.price.toLocaleString()}
           </div>
-          
-          
         </div>
-        
 
-        <div className="w-16 h-[3px] bg-[#FF6B6B] rounded-full mt-6" />
         {distanceInfo && (
-          <p className="text-sm text-[#ff5a5f] mt-2 font-medium">
+          <div className="flex items-center gap-1.5 mt-4 text-sm text-gray-500">
+            <MapPin size={14} className="text-[#FF6B6B]" />
             {distanceInfo}
-          </p>
+          </div>
         )}
 
+        {/* QUICK FACTS */}
+        <div className="flex gap-3 mt-6 flex-wrap">
+          {property.room_count && (
+            <span
+              className="
+                flex items-center gap-1.5
+                px-4 py-2 rounded-full
+                bg-[#FF6B6B]/8 text-[#FF6B6B]
+                text-sm font-medium
+                border border-[#FF6B6B]/15
+              "
+            >
+              <Bed size={14} />
+              {property.room_count} {property.room_count === 1 ? "Room" : "Rooms"}
+            </span>
+          )}
+
+          {property.occupants_per_room && (
+            <span
+              className="
+                flex items-center gap-1.5
+                px-4 py-2 rounded-full
+                bg-[#FF6B6B]/8 text-[#FF6B6B]
+                text-sm font-medium
+                border border-[#FF6B6B]/15
+              "
+            >
+              <Users size={14} />
+              {property.occupants_per_room} per room
+            </span>
+          )}
+        </div>
+
         {/* DESCRIPTION */}
-        <div className="mt-8">
-          <h2 className="text-lg font-medium mb-2">About this place</h2>
-          <p className="text-gray-600">
+        <div className="mt-10 pt-8 border-t border-gray-100">
+          <h2 className="text-lg font-semibold mb-3">About this place</h2>
+          <p className="text-gray-600 leading-relaxed max-w-2xl">
             {property.description || "No description provided."}
           </p>
         </div>
-        <div className="flex gap-3 mt-4 flex-wrap">
-            {property.room_count && (
-              <span className="flex items-center 
-              gap-1 px-3 py-1 rounded-full 
-              bg-[#FF6B6B]-50 text-[#FF6B6B]-600 
-              text-sm font-medium border 
-              border-[#FF6B6B]-100">
-              <Bed size={14} />{property.room_count} Rooms
-            </span>
-            )}
-
-            {property.occupants_per_room && (
-              <span className="flex items-center 
-              gap-1 px-3 py-1 rounded-full 
-              bg-[#FF6B6B]-50 text-[#FF6B6B]-600 
-              text-sm font-medium border 
-              border-[#FF6B6B]-100">
-              <PersonStanding size={14} />{property.occupants_per_room} per room
-            </span>
-            )}
-          </div>
 
         {/* AMENITIES */}
-        <div className="mt-10">
-          <h2 className="text-lg font-medium mb-4">Amenities</h2>
+        {(property.amenities || []).length > 0 && (
+          <div className="mt-10 pt-8 border-t border-gray-100">
+            <h2 className="text-lg font-semibold mb-4">Amenities</h2>
 
-          <div className="flex flex-wrap gap-3">
-            {(property.amenities || []).map((item: string, index: number) => {
-              const Icon = amenityIcons[item] || null;
+            <div className="flex flex-wrap gap-2.5">
+              {(property.amenities || []).map(
+                (item: string, index: number) => {
+                  const Icon = amenityIcons[item] || null;
 
-              return (
-                <div
-                  key={index}
-                  className="flex items-center gap-2 px-4 py-2 rounded-full border bg-gray-50"
-                >
-                  {Icon && <Icon size={16} />}
-                  <span className="text-sm capitalize">{item}</span>
-                </div>
-              );
-            })}
+                  return (
+                    <div
+                      key={index}
+                      className="
+                        flex items-center gap-1.5
+                        px-3.5 py-2 rounded-full
+                        bg-[#FF6B6B]/8 text-[#FF6B6B]
+                        border border-[#FF6B6B]/15
+                        text-sm font-medium
+                      "
+                    >
+                      {Icon && <Icon size={13} />}
+                      <span className="capitalize">{item}</span>
+                    </div>
+                  );
+                }
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* ADDRESS */}
+        <div className="mt-10 pt-8 border-t border-gray-100">
+          <div className="bg-gray-50/60 border border-gray-100 rounded-2xl p-5">
+            <div className="flex items-center gap-2 mb-2">
+              <MapPin size={15} className="text-[#FF6B6B]" />
+              <h2 className="text-sm font-semibold text-gray-900">
+                Address
+              </h2>
+            </div>
+            <p className="text-sm text-gray-500 leading-relaxed">
+              {property.address}
+            </p>
           </div>
         </div>
 
-        {/* address */}
-        <div className="mt-10 bg-white border rounded-2xl p-5 shadow-sm mb-[60px]">
-          <h2 className="text-sm font-medium mb-2">Address</h2>
-          <p className="text-sm text-gray-500">
-            {property.address}
-          </p>
-        </div>
-        
         {/* NEARBY PROPERTIES */}
         {nearbyProperties.length > 0 && (
-          <div className="mt-14">
+          <div className="mt-14 pt-8 border-t border-gray-100">
             <div className="flex items-center justify-between mb-5">
               <h2 className="text-lg font-semibold tracking-tight text-gray-900">
                 More near {property.school_tag}
@@ -335,7 +410,7 @@ export default function PropertyClient({
                 <div
                   key={item.id}
                   onClick={() =>
-                    window.location.href = `/property/${item.id}`
+                    (window.location.href = `/property/${item.id}`)
                   }
                   className="
                     min-w-[260px]
@@ -389,39 +464,76 @@ export default function PropertyClient({
             </div>
           </div>
         )}
-        {/* CTA */}
-        <div className="fixed bottom-0 left-0 w-full bg-white border-t shadow-lg px-6 py-4 flex items-center justify-between z-[1000]">
-          <div>
-            <p className="text-sm text-gray-500">
-              Interested in this property?
-            </p>
-            <p className="text-base font-semibold">
-              ₦{property.price.toLocaleString()}
-            </p>
-          </div>
-
-          {checkingUnlock ? (
-            <button className="bg-gray-300 text-white px-6 py-3 rounded-full">
-              Checking...
-            </button>
-          ) : unlocked ? (
-            <a
-              href={`tel:${property.landlord_phone}`}
-              className="bg-green-500 hover:bg-green-600 text-white px-6 py-3 rounded-full"
-            >
-              Call Landlord
-            </a>
-          ) : (
-            <button
-              onClick={handleUnlock}
-              disabled={unlocking}
-              className="bg-[#FF6B6B] hover:bg-[#ff5252] text-white px-6 py-3 rounded-full disabled:opacity-50"
-            >
-              {unlocking ? "Redirecting..." : "Unlock Contact — ₦500"}
-            </button>
-          )}
-        </div>
       </div>
+
+      {/* CTA */}
+      <div
+        className="
+          fixed bottom-0 left-0 w-full
+          bg-white/95 backdrop-blur-sm border-t border-gray-100
+          shadow-[0_-8px_30px_rgba(0,0,0,0.06)]
+          px-6 py-3
+          flex items-center justify-between
+          z-[1000]
+          pb-[calc(env(safe-area-inset-bottom)+10px)]
+        "
+      >
+        <div>
+          <p className="text-xs text-gray-500">
+            Interested in this property?
+          </p>
+          <p className="text-base font-semibold">
+            ₦{property.price.toLocaleString()}
+          </p>
+        </div>
+
+        {checkingUnlock ? (
+          <button
+            disabled
+            className="bg-gray-200 text-gray-400 px-5 py-2.5 rounded-full font-medium"
+          >
+            Checking…
+          </button>
+        ) : unlocked ? (
+          <a
+            href={`tel:${property.landlord_phone}`}
+            className="
+              bg-green-500 hover:bg-green-600
+              text-white px-5 py-2.5 rounded-full
+              font-medium shadow-lg shadow-green-500/25
+              transition
+            "
+          >
+            Call Landlord
+          </a>
+        ) : (
+          <button
+            onClick={requestUnlock}
+            disabled={unlocking}
+            className="
+              bg-[#FF6B6B] hover:bg-[#ff5252]
+              text-white px-5 py-2.5 rounded-full
+              font-medium shadow-lg shadow-[#FF6B6B]/25
+              disabled:opacity-50
+              transition
+            "
+          >
+            {unlocking ? "Redirecting…" : `Unlock Contact — ₦${UNLOCK_FEE_NGN}`}
+          </button>
+        )}
+      </div>
+
+      <UnlockModal
+        open={showUnlockModal}
+        price={UNLOCK_FEE_NGN}
+        propertyTitle={property.title}
+        loading={unlocking}
+        onConfirm={confirmUnlock}
+        onCancel={() => {
+          if (unlocking) return;
+          setShowUnlockModal(false);
+        }}
+      />
     </div>
   );
 }
