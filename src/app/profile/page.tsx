@@ -189,7 +189,7 @@ export default function ProfilePage() {
             "
           >
             <span className="h-8 w-8 rounded-full bg-[#ff5a5f]/8 flex items-center justify-center shrink-0">
-              <FaInstagram className="text-[#ff5a5f]" size={15} />
+              <Mail className="text-[#ff5a5f]" size={15} />
             </span>
             X (Twitter)
           </a>
