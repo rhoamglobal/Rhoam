@@ -7,7 +7,7 @@ import {
   Phone,
   Mail,
 } from "lucide-react";
-import { FaInstagram, FaTwitter } from "react-icons/fa";
+import { FaInstagram, FaXTwitter } from "react-icons/fa6";
 import { useState, useEffect } from "react";
 
 import { useAuth } from "@/components/providers/AuthProvider";
@@ -189,7 +189,7 @@ export default function ProfilePage() {
             "
           >
             <span className="h-8 w-8 rounded-full bg-[#ff5a5f]/8 flex items-center justify-center shrink-0">
-              <FaTwitter className="text-[#ff5a5f]" size={15} />
+              <FaXTwitter className="text-[#ff5a5f]" size={15} />
             </span>
             X (Twitter)
           </a>
