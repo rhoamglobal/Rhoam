@@ -10,9 +10,7 @@ import {
 } from "lucide-react";
 import {
   FaInstagram,
-
   FaXTwitter,
-
 } from "react-icons/fa6";
 import { useState, useEffect } from "react";
 
