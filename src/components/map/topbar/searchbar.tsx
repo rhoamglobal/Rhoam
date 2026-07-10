@@ -1,15 +1,23 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import { AnimatePresence } from "framer-motion";
 import SearchSuggestions from "../search/SearchSuggestions";
+import SmartFilters, {
+  Filters,
+  emptyFilters,
+} from "./filters/SmartFilters";
 import { Property } from "../types";
 import { schools } from "@/lib/schools";
+import { useDebounce } from "@/hooks/useDebounce";
 import { Search, SlidersHorizontal, X } from "lucide-react";
 
 export default function SearchBar({
   search,
   setSearch,
   setFlyTarget,
+  filters,
+  setFilters,
 }: {
   search: string;
   setSearch: (v: string) => void;
@@ -19,10 +27,23 @@ export default function SearchBar({
       longitude: number;
     } | null
   ) => void;
+  filters: Filters;
+  setFilters: React.Dispatch<React.SetStateAction<Filters>>;
 }) {
   const [input, setInput] = useState(search);
   const [properties, setProperties] = useState<Property[]>([]);
   const [isFocused, setIsFocused] = useState(false);
+  const [loadingSuggestions, setLoadingSuggestions] = useState(false);
+  const [showFilters, setShowFilters] = useState(false);
+
+  const activeFilterCount =
+    (filters.minPrice ? 1 : 0) +
+    (filters.maxPrice ? 1 : 0) +
+    (filters.rooms && filters.rooms !== "Any" ? 1 : 0) +
+    (filters.availableOnly ? 1 : 0) +
+    (filters.amenities?.length || 0);
+
+  const debouncedInput = useDebounce(input, 300);
 
   const wrapperRef = useRef<HTMLDivElement>(null);
 
@@ -46,21 +67,34 @@ export default function SearchBar({
   }, []);
 
   useEffect(() => {
-    if (!input.trim()) {
+    if (!debouncedInput.trim()) {
+      setProperties([]);
+      setLoadingSuggestions(false);
       return;
     }
 
     let cancelled = false;
+    setLoadingSuggestions(true);
 
     const fetchSuggestions = async () => {
-      const res = await fetch(
-        `/api/search-suggestions?q=${encodeURIComponent(input)}`
-      );
+      try {
+        const res = await fetch(
+          `/api/search-suggestions?q=${encodeURIComponent(
+            debouncedInput
+          )}`
+        );
 
-      const data = await res.json();
+        if (!res.ok) throw new Error("Search request failed");
 
-      if (!cancelled) {
-        setProperties(data);
+        const data = await res.json();
+
+        if (!cancelled) {
+          setProperties(data);
+        }
+      } catch {
+        if (!cancelled) setProperties([]);
+      } finally {
+        if (!cancelled) setLoadingSuggestions(false);
       }
     };
 
@@ -69,7 +103,7 @@ export default function SearchBar({
     return () => {
       cancelled = true;
     };
-  }, [input]);
+  }, [debouncedInput]);
 
   const text = input.toLowerCase();
   const visibleProperties = useMemo(
@@ -164,29 +198,58 @@ export default function SearchBar({
 
           <button
             type="button"
-            onClick={submitSearch}
-            aria-label="Search"
-            className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-[#ff5a5f] text-white shadow-lg shadow-[#ff5a5f]/25 transition hover:bg-[#f24d52] active:scale-95"
+            onClick={() => setShowFilters(true)}
+            aria-label="Open filters"
+            className="relative grid h-11 w-11 shrink-0 place-items-center rounded-full bg-[#ff5a5f] text-white shadow-lg shadow-[#ff5a5f]/25 transition hover:bg-[#f24d52] active:scale-95"
           >
             <SlidersHorizontal size={18} />
+
+            {activeFilterCount > 0 && (
+              <span
+                className="
+                  absolute -top-1 -right-1
+                  h-5 w-5 rounded-full
+                  bg-gray-900 text-white
+                  text-[10px] font-bold
+                  flex items-center justify-center
+                  ring-2 ring-white
+                "
+              >
+                {activeFilterCount}
+              </span>
+            )}
           </button>
         </div>
 
-        {isFocused && (
-          <SearchSuggestions
-          schoolSuggestions={schoolMatches}
-            locations={locationMatches}
-            properties={visibleProperties}
-            onFlyTo={(target) => {
-              setFlyTarget(target);
-              setIsFocused(false);
-            }}
-            onPreview={() => {
-              setIsFocused(false);
-            }}
+        <AnimatePresence>
+          {isFocused && (
+            <SearchSuggestions
+              key="suggestions"
+              schoolSuggestions={schoolMatches}
+              locations={locationMatches}
+              properties={visibleProperties}
+              loading={loadingSuggestions}
+              onFlyTo={(target) => {
+                setFlyTarget(target);
+                setIsFocused(false);
+              }}
+              onPreview={() => {
+                setIsFocused(false);
+              }}
+            />
+          )}
+        </AnimatePresence>
+      </div>
+
+      <AnimatePresence>
+        {showFilters && (
+          <SmartFilters
+            filters={filters}
+            setFilters={setFilters}
+            onClose={() => setShowFilters(false)}
           />
         )}
-      </div>
+      </AnimatePresence>
     </div>
   );
 }

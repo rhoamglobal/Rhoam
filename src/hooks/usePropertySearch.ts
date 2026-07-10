@@ -1,19 +1,20 @@
 import { useEffect, useState } from "react";
 import { LatLngBounds } from "leaflet";
 import { Property } from "@/components/map/types";
+import { Filters } from "@/components/map/topbar/filters/SmartFilters";
 
 type Args = {
   bounds: LatLngBounds | null;
   category: string;
   search: string;
-  maxPrice?: number;
+  filters: Filters;
 };
 
 export function usePropertySearch({
   bounds,
   category,
   search,
-  maxPrice,
+  filters,
 }: Args) {
   const [properties, setProperties] = useState<Property[]>([]);
 
@@ -25,20 +26,37 @@ export function usePropertySearch({
     const east = bounds.getEast();
     const west = bounds.getWest();
 
-    let url =
-      `/api/property?` +
-      `north=${north}&south=${south}&east=${east}&west=${west}` +
-      `&category=${category}` +
-      `&search=${encodeURIComponent(search)}`;
+    const params = new URLSearchParams({
+      north: String(north),
+      south: String(south),
+      east: String(east),
+      west: String(west),
+      category,
+      search,
+    });
 
-    if (maxPrice) {
-      url += `&maxPrice=${maxPrice}`;
+    if (filters.minPrice) params.set("minPrice", filters.minPrice);
+    if (filters.maxPrice) params.set("maxPrice", filters.maxPrice);
+    if (filters.rooms && filters.rooms !== "Any") {
+      params.set("rooms", filters.rooms);
+    }
+    if (filters.availableOnly) params.set("availableOnly", "true");
+    if (filters.amenities?.length) {
+      params.set("amenities", filters.amenities.join(","));
     }
 
-    fetch(url)
+    let cancelled = false;
+
+    fetch(`/api/property?${params.toString()}`)
       .then((res) => res.json())
-      .then((data) => setProperties(data));
-  }, [bounds, category, search, maxPrice]);
+      .then((data) => {
+        if (!cancelled) setProperties(data);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [bounds, category, search, filters]);
 
   return properties;
 }

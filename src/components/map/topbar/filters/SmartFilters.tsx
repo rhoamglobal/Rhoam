@@ -1,26 +1,31 @@
 "use client";
 
+import { motion } from "framer-motion";
 import FilterSection from "./FilterSection";
-import SchoolSelector from "./SchoolSelector";
 import PriceRange from "./PriceRange";
 import RoomSelector from "./RoomSelector";
 import AmenitiesSelector from "./AmenitiesSelector";
+import { X } from "lucide-react";
 
-type Filters = {
-  category: string;
-  school: string;
+export type Filters = {
   minPrice: string;
   maxPrice: string;
   rooms: string;
   availableOnly: boolean;
-  amenities?: string[];
+  amenities: string[];
+};
+
+export const emptyFilters: Filters = {
+  minPrice: "",
+  maxPrice: "",
+  rooms: "",
+  availableOnly: false,
+  amenities: [],
 };
 
 type Props = {
   filters: Filters;
-  setFilters: React.Dispatch<
-    React.SetStateAction<Filters>
-  >;
+  setFilters: React.Dispatch<React.SetStateAction<Filters>>;
   onClose: () => void;
 };
 
@@ -32,19 +37,21 @@ export default function SmartFilters({
   return (
     <>
       {/* Background */}
-      <div
+      <motion.div
         onClick={onClose}
-        className="
-          fixed inset-0
-          bg-black/35
-          backdrop-blur-sm
-          z-[9998]
-          animate-in fade-in duration-200
-        "
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        transition={{ duration: 0.18 }}
+        className="fixed inset-0 bg-black/35 backdrop-blur-sm z-[9998]"
       />
 
       {/* Filter Card */}
-      <div
+      <motion.div
+        initial={{ opacity: 0, y: 24, scale: 0.97 }}
+        animate={{ opacity: 1, y: 0, scale: 1 }}
+        exit={{ opacity: 0, y: 16, scale: 0.98 }}
+        transition={{ type: "spring", stiffness: 380, damping: 32 }}
         className="
           fixed
           left-1/2
@@ -64,8 +71,6 @@ export default function SmartFilters({
           z-[9999]
 
           overflow-hidden
-
-          animate-in zoom-in-95 fade-in duration-200
         "
       >
         {/* HEADER */}
@@ -83,21 +88,24 @@ export default function SmartFilters({
           "
         >
           <div className="flex items-center justify-between">
-            <h2 className="text-2xl font-bold">
+            <h2 className="text-2xl font-bold text-gray-900">
               Filters
             </h2>
 
             <button
               onClick={onClose}
+              aria-label="Close filters"
               className="
                 h-10
                 w-10
                 rounded-full
                 bg-gray-100
                 hover:bg-gray-200
+                flex items-center justify-center
+                transition
               "
             >
-              ✕
+              <X size={18} />
             </button>
           </div>
         </div>
@@ -112,20 +120,6 @@ export default function SmartFilters({
             max-h-[70vh]
           "
         >
-          {/* SCHOOL */}
-
-          <FilterSection title="School">
-            <SchoolSelector
-              value={filters.school}
-              onChange={(school) =>
-                setFilters((prev) => ({
-                  ...prev,
-                  school,
-                }))
-              }
-            />
-          </FilterSection>
-
           {/* PRICE */}
 
           <FilterSection title="Price Range">
@@ -179,7 +173,7 @@ export default function SmartFilters({
 
           <FilterSection title="Availability">
             <label className="flex items-center justify-between">
-              <span className="font-medium">
+              <span className="font-medium text-gray-900">
                 Available only
               </span>
 
@@ -224,21 +218,12 @@ export default function SmartFilters({
           "
         >
           <button
-            onClick={() =>
-              setFilters({
-                category: "",
-                school: "",
-                minPrice: "",
-                maxPrice: "",
-                rooms: "",
-                availableOnly: false,
-                amenities: [],
-              })
-            }
+            onClick={() => setFilters(emptyFilters)}
             className="
               text-gray-500
               hover:text-black
               font-medium
+              transition
             "
           >
             Reset
@@ -261,13 +246,14 @@ export default function SmartFilters({
               shadow-[#ff5a5f]/30
 
               hover:scale-[1.02]
+              active:scale-95
               transition
             "
           >
             Apply Filters
           </button>
         </div>
-      </div>
+      </motion.div>
     </>
   );
 }

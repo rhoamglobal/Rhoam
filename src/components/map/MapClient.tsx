@@ -18,6 +18,7 @@ import { Property } from "./types";
 import RememberMapView from "./RememberMapView";
 
 import { detectSchoolFromSearch } from "@/lib/detectSchool";
+import { Filters, emptyFilters } from "./topbar/filters/SmartFilters";
 
   // ✅ school search HERE
 
@@ -47,25 +48,25 @@ function MapBoundsListener({ setBounds }: { setBounds: (bounds: LatLngBounds) =>
 type Props = {
   category: string;
   search: string;
+  filters?: Filters;
   flyTarget: {
     latitude: number;
     longitude: number;
   } | null;
 };
 
-export default function MapClient({ category, search, flyTarget }: Props) {
+export default function MapClient({
+  category,
+  search,
+  filters = emptyFilters,
+  flyTarget,
+}: Props) {
   const [selected, setSelected] = useState<Property | null>(null);
   const [bounds, setBounds] = useState<LatLngBounds | null>(null);
 
 
   // ✅ debounce search HERE
   const debouncedSearch = useDebounce(search, 400);
-
-
-  // ✅ parse search 
-  const [maxPrice, setMaxPrice] = useState<number | undefined>(undefined);
-  const [, setActiveCategory] = useState(category);
-  
 
 
   // ✅ detect school 
@@ -78,7 +79,7 @@ export default function MapClient({ category, search, flyTarget }: Props) {
     bounds,
     category,
     search: debouncedSearch,
-    maxPrice,
+    filters,
   });
 
   const { user } = useAuth();

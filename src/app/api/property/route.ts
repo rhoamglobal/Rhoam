@@ -10,11 +10,14 @@ export async function GET(req: Request) {
   const west = searchParams.get("west");
   const category = searchParams.get("category");
   const search = searchParams.get("search");
+  const minPrice = searchParams.get("minPrice");
   const maxPrice = searchParams.get("maxPrice");
-
+  const rooms = searchParams.get("rooms");
+  const availableOnly = searchParams.get("availableOnly");
+  const amenities = searchParams.get("amenities");
 
   // Base query (MUST be first)
-  let query = supabase.from("properties").select("*");
+  let query = supabase.from("properties").select("*").eq("is_active", true);
 
   // Map bounds filter (only apply if all exist)
   if (north && south && east && west) {
@@ -32,14 +35,47 @@ export async function GET(req: Request) {
 
   // Search filter (title + description)
   if (search) {
-    query = query.or(
-      `title.ilike.%${search}%,description.ilike.%${search}%`
-    );
+    const safeSearch = search.replace(/[,()]/g, " ").trim().slice(0, 100);
+    if (safeSearch) {
+      query = query.or(
+        `title.ilike.%${safeSearch}%,description.ilike.%${safeSearch}%`
+      );
+    }
   }
 
-  // Price filter (FIXED — now safe)
+  // Price filter
+  if (minPrice) {
+    query = query.gte("price", Number(minPrice));
+  }
+
   if (maxPrice) {
     query = query.lte("price", Number(maxPrice));
+  }
+
+  // Rooms filter — "4+" means 4 or more, anything else is an exact match
+  if (rooms) {
+    if (rooms === "4+") {
+      query = query.gte("room_count", 4);
+    } else {
+      query = query.eq("room_count", Number(rooms));
+    }
+  }
+
+  // Availability filter
+  if (availableOnly === "true") {
+    query = query.eq("is_available", true);
+  }
+
+  // Amenities filter — property must have ALL selected amenities
+  if (amenities) {
+    const amenityList = amenities
+      .split(",")
+      .map((a) => a.trim())
+      .filter(Boolean);
+
+    if (amenityList.length) {
+      query = query.contains("amenities", amenityList);
+    }
   }
 
   const { data, error } = await query

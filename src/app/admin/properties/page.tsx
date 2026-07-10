@@ -17,6 +17,8 @@ import {
   EyeOff,
   Home,
   Hotel,
+  Power,
+  PowerOff,
 } from "lucide-react";
 
 type Property = {
@@ -27,6 +29,7 @@ type Property = {
   is_verified: boolean;
   is_available: boolean;
   is_visible: boolean;
+  is_active: boolean;
 };
 
 const PAGE_SIZE = 20;
@@ -45,6 +48,7 @@ export default function AdminPropertiesPage() {
     available: 0,
     visible: 0,
     hidden: 0,
+    active: 0,
   });
 
   const [search, setSearch] = useState("");
@@ -67,7 +71,8 @@ export default function AdminPropertiesPage() {
           image_url,
           is_verified,
           is_available,
-          is_visible
+          is_visible,
+          is_active
         `,
         { count: "exact" }
       )
@@ -87,23 +92,28 @@ export default function AdminPropertiesPage() {
   };
 
   const loadCounts = async () => {
-    const [total, verified, available, visible] = await Promise.all([
-      supabase
-        .from("properties")
-        .select("*", { count: "exact", head: true }),
-      supabase
-        .from("properties")
-        .select("*", { count: "exact", head: true })
-        .eq("is_verified", true),
-      supabase
-        .from("properties")
-        .select("*", { count: "exact", head: true })
-        .eq("is_available", true),
-      supabase
-        .from("properties")
-        .select("*", { count: "exact", head: true })
-        .eq("is_visible", true),
-    ]);
+    const [total, verified, available, visible, active] =
+      await Promise.all([
+        supabase
+          .from("properties")
+          .select("*", { count: "exact", head: true }),
+        supabase
+          .from("properties")
+          .select("*", { count: "exact", head: true })
+          .eq("is_verified", true),
+        supabase
+          .from("properties")
+          .select("*", { count: "exact", head: true })
+          .eq("is_available", true),
+        supabase
+          .from("properties")
+          .select("*", { count: "exact", head: true })
+          .eq("is_visible", true),
+        supabase
+          .from("properties")
+          .select("*", { count: "exact", head: true })
+          .eq("is_active", true),
+      ]);
 
     const totalPropCount = total.count || 0;
     const visibleCount = visible.count || 0;
@@ -114,6 +124,7 @@ export default function AdminPropertiesPage() {
       available: available.count || 0,
       visible: visibleCount,
       hidden: totalPropCount - visibleCount,
+      active: active.count || 0,
     });
   };
 
@@ -213,6 +224,36 @@ export default function AdminPropertiesPage() {
       "success"
     );
   
+    loadProperties();
+    loadCounts();
+  };
+
+  // Controls whether the property appears on the map or in search at
+  // all — separate from is_visible (which only toggles the "Available"
+  // display badge shown on a listing that's still findable).
+  const toggleActive = async (
+    id: number,
+    currentState: boolean
+  ) => {
+    const { error } = await supabase
+      .from("properties")
+      .update({
+        is_active: !currentState,
+      })
+      .eq("id", id);
+
+    if (error) {
+      showToast("Failed to update listing status", "error");
+      return;
+    }
+
+    showToast(
+      !currentState
+        ? "Property is now live on the map"
+        : "Property removed from map & search",
+      "success"
+    );
+
     loadProperties();
     loadCounts();
   };
@@ -331,6 +372,13 @@ export default function AdminPropertiesPage() {
     icon={<EyeOff size={26} />}
   />
 
+  <DashboardCard
+    title="Active"
+    value={counts.active}
+    color="bg-[#ff5a5f]"
+    icon={<Power size={26} />}
+  />
+
 </div>
 
 </div>
@@ -421,6 +469,18 @@ export default function AdminPropertiesPage() {
                   : "Hidden"}
               </span>
 
+              <span
+                className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                  property.is_active
+                    ? "bg-emerald-50 text-emerald-700"
+                    : "bg-red-50 text-red-500"
+                }`}
+              >
+                {property.is_active
+                  ? "Active"
+                  : "Inactive"}
+              </span>
+
             </div>
 
           </div>
@@ -436,6 +496,31 @@ export default function AdminPropertiesPage() {
             >
               <Pencil size={18} />
             </Link>
+
+            <button
+              onClick={() =>
+                toggleActive(
+                  property.id,
+                  property.is_active
+                )
+              }
+              className={`w-11 h-11 rounded-2xl flex items-center justify-center transition ${
+                property.is_active
+                  ? "bg-emerald-50 text-emerald-700"
+                  : "bg-red-50 text-red-500"
+              }`}
+              title={
+                property.is_active
+                  ? "Take off map & search"
+                  : "Put back on map & search"
+              }
+            >
+              {property.is_active ? (
+                <Power size={18} />
+              ) : (
+                <PowerOff size={18} />
+              )}
+            </button>
 
             <button
               onClick={() =>

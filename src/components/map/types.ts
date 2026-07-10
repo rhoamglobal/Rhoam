@@ -20,6 +20,7 @@ export type Property = {
 
     is_available: boolean;
     is_visible: boolean;
+    is_active: boolean;
 
     room_count?: number;
     occupants_per_room?: number;

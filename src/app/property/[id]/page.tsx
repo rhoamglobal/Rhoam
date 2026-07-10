@@ -20,11 +20,16 @@ export default async function PropertyPage({
 
   if (!property) return notFound();
 
+  // A property taken off the map/search shouldn't still be reachable by
+  // someone who has (or guesses) the old link.
+  if (!property.is_active) return notFound();
+
   // Fetch nearby properties (same school, exclude current)
   const { data: nearbyProperties } = await supabaseAdmin
     .from("properties")
     .select("*")
     .eq("school_tag", property.school_tag)
+    .eq("is_active", true)
     .neq("id", property.id)
     .limit(4);
 
