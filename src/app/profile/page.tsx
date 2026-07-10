@@ -6,9 +6,8 @@ import {
   LogOut,
   Phone,
   Mail,
-  Instagram,
-  Twitter,
 } from "lucide-react";
+import { FaInstagram, FaTwitter } from "react-icons/fa";
 import { useState, useEffect } from "react";
 
 import { useAuth } from "@/components/providers/AuthProvider";
@@ -173,7 +172,7 @@ export default function ProfilePage() {
             "
           >
             <span className="h-8 w-8 rounded-full bg-[#ff5a5f]/8 flex items-center justify-center shrink-0">
-              <Instagram className="text-[#ff5a5f]" size={15} />
+              <FaInstagram className="text-[#ff5a5f]" size={15} />
             </span>
             Instagram
           </a>
@@ -190,7 +189,7 @@ export default function ProfilePage() {
             "
           >
             <span className="h-8 w-8 rounded-full bg-[#ff5a5f]/8 flex items-center justify-center shrink-0">
-              <Twitter className="text-[#ff5a5f]" size={15} />
+              <FaTwitter className="text-[#ff5a5f]" size={15} />
             </span>
             X (Twitter)
           </a>
