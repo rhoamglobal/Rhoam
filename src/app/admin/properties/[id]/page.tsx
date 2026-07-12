@@ -31,6 +31,11 @@ export default function EditPropertyPage() {
   const [occupantsPerRoom, setOccupantsPerRoom] = useState("");
 
   const [amenities, setAmenities] = useState("");
+  const [landlordPhone, setLandlordPhone] = useState("");
+  const [landlordWhatsapp, setLandlordWhatsapp] = useState("");
+  const [caretakerName, setCaretakerName] = useState("");
+  const [caretakerPhone, setCaretakerPhone] = useState("");
+  const [caretakerWhatsapp, setCaretakerWhatsapp] = useState("");
   const { showToast } = useToast();
   //add cover page and images
   const [coverImage, setCoverImage] = useState<File | null>(null);
@@ -74,6 +79,12 @@ export default function EditPropertyPage() {
           ? data.amenities.join(", ")
           : ""
       );
+
+      setLandlordPhone(data.landlord_phone || "");
+      setLandlordWhatsapp(data.landlord_whatsapp || "");
+      setCaretakerName(data.caretaker_name || "");
+      setCaretakerPhone(data.caretaker_phone || "");
+      setCaretakerWhatsapp(data.caretaker_whatsapp || "");
 
       setLoading(false);
     };
@@ -182,6 +193,11 @@ export default function EditPropertyPage() {
           .split(",")
           .map((x) => x.trim())
           .filter(Boolean),
+        landlord_phone: landlordPhone,
+        landlord_whatsapp: landlordWhatsapp || null,
+        caretaker_name: caretakerName || null,
+        caretaker_phone: caretakerPhone || null,
+        caretaker_whatsapp: caretakerWhatsapp || null,
       })
       .eq("id", params.id);
 
@@ -485,6 +501,62 @@ export default function EditPropertyPage() {
                   setAmenities(e.target.value)
                 }
                 placeholder="WiFi, Security, Water, Parking"
+                className="w-full border border-gray-200 rounded-2xl p-4"
+              />
+            </div>
+
+            {/* LANDLORD CONTACT */}
+            <div className="space-y-5 border-t pt-6">
+              <h2 className="text-sm font-semibold uppercase tracking-wide text-gray-400">
+                Landlord Contact
+              </h2>
+
+              <input
+                value={landlordPhone}
+                onChange={(e) =>
+                  setLandlordPhone(e.target.value)
+                }
+                placeholder="Landlord Phone"
+                className="w-full border border-gray-200 rounded-2xl p-4"
+              />
+
+              <input
+                value={landlordWhatsapp}
+                onChange={(e) =>
+                  setLandlordWhatsapp(e.target.value)
+                }
+                placeholder="Landlord WhatsApp (e.g. 2348012345678)"
+                className="w-full border border-gray-200 rounded-2xl p-4"
+              />
+
+              <p className="text-sm text-gray-400 pt-2">
+                Caretaker (optional)
+              </p>
+
+              <input
+                value={caretakerName}
+                onChange={(e) =>
+                  setCaretakerName(e.target.value)
+                }
+                placeholder="Caretaker Name"
+                className="w-full border border-gray-200 rounded-2xl p-4"
+              />
+
+              <input
+                value={caretakerPhone}
+                onChange={(e) =>
+                  setCaretakerPhone(e.target.value)
+                }
+                placeholder="Caretaker Phone"
+                className="w-full border border-gray-200 rounded-2xl p-4"
+              />
+
+              <input
+                value={caretakerWhatsapp}
+                onChange={(e) =>
+                  setCaretakerWhatsapp(e.target.value)
+                }
+                placeholder="Caretaker WhatsApp (e.g. 2348012345678)"
                 className="w-full border border-gray-200 rounded-2xl p-4"
               />
             </div>

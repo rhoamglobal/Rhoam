@@ -52,11 +52,24 @@ function PaymentSuccessContent() {
     verifyPayment();
   }, [reference]);
 
+  // Auto-advance to the unlocked contacts page shortly after a
+  // successful unlock, so the person doesn't have to tap through.
+  useEffect(() => {
+    if (!success) return;
+
+    const timer = setTimeout(() => {
+      router.push("/profile/unlocked");
+    }, 1800);
+
+    return () => clearTimeout(timer);
+  }, [success, router]);
+
   return (
     <PaymentStatus
       loading={loading}
       success={success}
       errorMessage={errorMessage}
+      onViewUnlocked={() => router.push("/profile/unlocked")}
       onHome={() => router.push("/")}
     />
   );
@@ -66,11 +79,13 @@ function PaymentStatus({
   loading,
   success = false,
   errorMessage,
+  onViewUnlocked,
   onHome,
 }: {
   loading: boolean;
   success?: boolean;
   errorMessage?: string | null;
+  onViewUnlocked?: () => void;
   onHome?: () => void;
 }) {
   return (
@@ -95,11 +110,15 @@ function PaymentStatus({
           </p>
 
           <button
-            onClick={onHome}
+            onClick={onViewUnlocked}
             className="rounded-full bg-[#FF6B6B] px-6 py-3 text-white"
           >
-            Go Back Home
+            View Unlocked Contact
           </button>
+
+          <p className="mt-4 text-xs text-gray-400">
+            Taking you there automatically…
+          </p>
         </>
       ) : (
         <>

@@ -5,7 +5,7 @@ import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/components/providers/AuthProvider";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
-import { Phone, ArrowRight, Home, CheckCircle2 } from "lucide-react";
+import { Phone, ArrowRight, Home, CheckCircle2, MessageCircle } from "lucide-react";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
 
 type UnlockedPropertyDetails = {
@@ -15,6 +15,10 @@ type UnlockedPropertyDetails = {
   image_url: string;
   images?: string[];
   landlord_phone: string;
+  landlord_whatsapp?: string;
+  caretaker_name?: string;
+  caretaker_phone?: string;
+  caretaker_whatsapp?: string;
   school_tag: string;
   location: string;
 };
@@ -66,6 +70,10 @@ export default function UnlockedPage() {
             image_url,
             images,
             landlord_phone,
+            landlord_whatsapp,
+            caretaker_name,
+            caretaker_phone,
+            caretaker_whatsapp,
             school_tag,
             location
           )
@@ -173,6 +181,12 @@ export default function UnlockedPage() {
 
                     <p className="text-sm font-medium text-gray-800 mt-3">
                       {property.landlord_phone}
+                      {property.landlord_whatsapp && (
+                        <span className="text-gray-400 font-normal">
+                          {" "}
+                          · WhatsApp: {property.landlord_whatsapp}
+                        </span>
+                      )}
                     </p>
 
                     <div className="flex gap-3 mt-5">
@@ -191,6 +205,28 @@ export default function UnlockedPage() {
                         Call
                       </a>
 
+                      {property.landlord_whatsapp && (
+                        <a
+                          href={`https://wa.me/${property.landlord_whatsapp.replace(
+                            /\D/g,
+                            ""
+                          )}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="
+                            flex-1 py-3 rounded-full
+                            bg-[#25D366] hover:bg-[#20bd5a]
+                            text-white font-medium
+                            shadow-lg shadow-[#25D366]/25
+                            flex items-center justify-center gap-2
+                            transition
+                          "
+                        >
+                          <MessageCircle size={16} />
+                          WhatsApp
+                        </a>
+                      )}
+
                       <button
                         onClick={() =>
                           router.push(`/property/${property.id}`)
@@ -208,6 +244,63 @@ export default function UnlockedPage() {
                         <ArrowRight size={16} />
                       </button>
                     </div>
+
+                    {(property.caretaker_phone ||
+                      property.caretaker_name) && (
+                      <div className="mt-4 pt-4 border-t border-gray-100">
+                        <p className="text-xs text-gray-400">
+                          Caretaker
+                          {property.caretaker_name
+                            ? ` · ${property.caretaker_name}`
+                            : ""}
+                        </p>
+
+                        {property.caretaker_phone && (
+                          <p className="text-sm font-medium text-gray-800 mt-1">
+                            {property.caretaker_phone}
+                          </p>
+                        )}
+
+                        <div className="flex gap-3 mt-3">
+                          {property.caretaker_phone && (
+                            <a
+                              href={`tel:${property.caretaker_phone}`}
+                              className="
+                                flex-1 py-2.5 rounded-full
+                                bg-green-500 hover:bg-green-600
+                                text-white text-sm font-medium
+                                flex items-center justify-center gap-2
+                                transition
+                              "
+                            >
+                              <Phone size={14} />
+                              Call
+                            </a>
+                          )}
+
+                          {property.caretaker_whatsapp && (
+                            <a
+                              href={`https://wa.me/${property.caretaker_whatsapp.replace(
+                                /\D/g,
+                                ""
+                              )}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="
+                                flex-1 py-2.5 rounded-full
+                                bg-[#25D366] hover:bg-[#20bd5a]
+                                text-white text-sm font-medium
+                                flex items-center justify-center gap-2
+                                transition
+                              "
+                            >
+                              <MessageCircle size={14} />
+                              WhatsApp
+                            </a>
+                          )}
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
               );

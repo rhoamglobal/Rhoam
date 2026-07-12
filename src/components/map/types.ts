@@ -13,6 +13,10 @@ export type Property = {
     lng?: number;
     image?: string;
     landlord_phone: string;
+    landlord_whatsapp?: string;
+    caretaker_name?: string;
+    caretaker_phone?: string;
+    caretaker_whatsapp?: string;
     school_tag: string;
     location: string;
     is_verified?: boolean;

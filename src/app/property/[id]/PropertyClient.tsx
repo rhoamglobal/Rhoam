@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { amenityIcons } from "@/lib/amenities";
 import { Property } from "@/components/map/types";
@@ -11,6 +12,8 @@ import {
   Users,
   MapPin,
   ChevronLeft,
+  Phone,
+  MessageCircle,
 } from "lucide-react";
 import { supabase } from "@/lib/supabaseClient";
 import { useToast } from "@/components/ToastProvider";
@@ -26,6 +29,13 @@ export default function PropertyClient({
   property: Property & { isUnlocked?: boolean };
   nearbyProperties: Property[];
 }) {
+  const waLink = property.landlord_whatsapp
+    ? `https://wa.me/${property.landlord_whatsapp.replace(/\D/g, "")}`
+    : null;
+
+  const caretakerWaLink = property.caretaker_whatsapp
+    ? `https://wa.me/${property.caretaker_whatsapp.replace(/\D/g, "")}`
+    : null;
   const [activeImage, setActiveImage] = useState(0);
   const [saved, setSaved] = useState(false);
   const [userId, setUserId] = useState<string | null>(null);
@@ -40,6 +50,7 @@ export default function PropertyClient({
   const [showUnlockModal, setShowUnlockModal] = useState(false);
 
   const { showToast } = useToast();
+  const router = useRouter();
 
   const images =
     property.images?.length
@@ -106,7 +117,7 @@ export default function PropertyClient({
   // HANDLE UNLOCK (Monnify)
   const requestUnlock = () => {
     if (!userId) {
-      showToast("Login first to unlock contact.");
+      router.push("/onboarding");
       return;
     }
 
@@ -377,6 +388,90 @@ export default function PropertyClient({
           </div>
         )}
 
+        {/* CONTACTS */}
+        {unlocked && (
+          <div className="mt-10 pt-8 border-t border-gray-100">
+            <h2 className="text-lg font-semibold mb-4">Contacts</h2>
+
+            <div className="space-y-3">
+              {/* Landlord */}
+              <div className="flex items-center justify-between gap-4 rounded-2xl border border-gray-100 bg-gray-50/60 p-4">
+                <div>
+                  <p className="text-xs text-gray-400">Landlord</p>
+                  <p className="text-sm font-medium text-gray-900 mt-0.5">
+                    {property.landlord_phone}
+                  </p>
+                </div>
+
+                <div className="flex gap-2 shrink-0">
+                  <a
+                    href={`tel:${property.landlord_phone}`}
+                    className="h-10 w-10 rounded-full bg-green-500 hover:bg-green-600 text-white flex items-center justify-center transition"
+                    aria-label="Call landlord"
+                  >
+                    <Phone size={16} />
+                  </a>
+
+                  {waLink && (
+                    <a
+                      href={waLink}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="h-10 w-10 rounded-full bg-[#25D366] hover:bg-[#20bd5a] text-white flex items-center justify-center transition"
+                      aria-label="WhatsApp landlord"
+                    >
+                      <MessageCircle size={16} />
+                    </a>
+                  )}
+                </div>
+              </div>
+
+              {/* Caretaker (optional) */}
+              {(property.caretaker_phone || property.caretaker_name) && (
+                <div className="flex items-center justify-between gap-4 rounded-2xl border border-gray-100 bg-gray-50/60 p-4">
+                  <div>
+                    <p className="text-xs text-gray-400">
+                      Caretaker
+                      {property.caretaker_name
+                        ? ` · ${property.caretaker_name}`
+                        : ""}
+                    </p>
+                    {property.caretaker_phone && (
+                      <p className="text-sm font-medium text-gray-900 mt-0.5">
+                        {property.caretaker_phone}
+                      </p>
+                    )}
+                  </div>
+
+                  <div className="flex gap-2 shrink-0">
+                    {property.caretaker_phone && (
+                      <a
+                        href={`tel:${property.caretaker_phone}`}
+                        className="h-10 w-10 rounded-full bg-green-500 hover:bg-green-600 text-white flex items-center justify-center transition"
+                        aria-label="Call caretaker"
+                      >
+                        <Phone size={16} />
+                      </a>
+                    )}
+
+                    {caretakerWaLink && (
+                      <a
+                        href={caretakerWaLink}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="h-10 w-10 rounded-full bg-[#25D366] hover:bg-[#20bd5a] text-white flex items-center justify-center transition"
+                        aria-label="WhatsApp caretaker"
+                      >
+                        <MessageCircle size={16} />
+                      </a>
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
         {/* ADDRESS */}
         <div className="mt-10 pt-8 border-t border-gray-100">
           <div className="bg-gray-50/60 border border-gray-100 rounded-2xl p-5">
@@ -495,17 +590,39 @@ export default function PropertyClient({
             Checking…
           </button>
         ) : unlocked ? (
-          <a
-            href={`tel:${property.landlord_phone}`}
-            className="
-              bg-green-500 hover:bg-green-600
-              text-white px-5 py-2.5 rounded-full
-              font-medium shadow-lg shadow-green-500/25
-              transition
-            "
-          >
-            Call Landlord
-          </a>
+          <div className="flex items-center gap-2">
+            <a
+              href={`tel:${property.landlord_phone}`}
+              className="
+                flex items-center gap-1.5
+                bg-green-500 hover:bg-green-600
+                text-white px-4 py-2.5 rounded-full
+                font-medium shadow-lg shadow-green-500/25
+                transition
+              "
+            >
+              <Phone size={16} />
+              Call
+            </a>
+
+            {waLink && (
+              <a
+                href={waLink}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="
+                  flex items-center gap-1.5
+                  bg-[#25D366] hover:bg-[#20bd5a]
+                  text-white px-4 py-2.5 rounded-full
+                  font-medium shadow-lg shadow-[#25D366]/25
+                  transition
+                "
+              >
+                <MessageCircle size={16} />
+                WhatsApp
+              </a>
+            )}
+          </div>
         ) : (
           <button
             onClick={requestUnlock}

@@ -22,6 +22,10 @@ export default function AddPropertyPage() {
 
   const [imageUrl, setImageUrl] = useState("");
   const [landlordPhone, setLandlordPhone] = useState("");
+  const [landlordWhatsapp, setLandlordWhatsapp] = useState("");
+  const [caretakerName, setCaretakerName] = useState("");
+  const [caretakerPhone, setCaretakerPhone] = useState("");
+  const [caretakerWhatsapp, setCaretakerWhatsapp] = useState("");
   const [address, setAddress] = useState("");
   const [schoolTag, setSchoolTag] = useState("");
   const [location, setLocation] = useState("");
@@ -112,6 +116,10 @@ export default function AddPropertyPage() {
           longitude: Number(longitude),
         
           landlord_phone: landlordPhone,
+          landlord_whatsapp: landlordWhatsapp || null,
+          caretaker_name: caretakerName || null,
+          caretaker_phone: caretakerPhone || null,
+          caretaker_whatsapp: caretakerWhatsapp || null,
         
           image_url: imageUrl,
         
@@ -307,6 +315,38 @@ export default function AddPropertyPage() {
           placeholder="Landlord Phone"
           value={landlordPhone}
           onChange={(e) => setLandlordPhone(e.target.value)}
+          className="w-full border p-4 rounded-2xl"
+        />
+
+        <input
+          placeholder="Landlord WhatsApp (e.g. 2348012345678)"
+          value={landlordWhatsapp}
+          onChange={(e) => setLandlordWhatsapp(e.target.value)}
+          className="w-full border p-4 rounded-2xl"
+        />
+
+        <p className="text-sm text-gray-400 pt-2">
+          Caretaker (optional)
+        </p>
+
+        <input
+          placeholder="Caretaker Name"
+          value={caretakerName}
+          onChange={(e) => setCaretakerName(e.target.value)}
+          className="w-full border p-4 rounded-2xl"
+        />
+
+        <input
+          placeholder="Caretaker Phone"
+          value={caretakerPhone}
+          onChange={(e) => setCaretakerPhone(e.target.value)}
+          className="w-full border p-4 rounded-2xl"
+        />
+
+        <input
+          placeholder="Caretaker WhatsApp (e.g. 2348012345678)"
+          value={caretakerWhatsapp}
+          onChange={(e) => setCaretakerWhatsapp(e.target.value)}
           className="w-full border p-4 rounded-2xl"
         />
 
