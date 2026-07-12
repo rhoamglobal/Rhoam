@@ -19,6 +19,7 @@ function PaymentSuccessContent() {
 
   const [loading, setLoading] = useState(true);
   const [success, setSuccess] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   useEffect(() => {
     const verifyPayment = async () => {
@@ -41,6 +42,8 @@ function PaymentSuccessContent() {
 
       if (data.success) {
         setSuccess(true);
+      } else {
+        setErrorMessage(data.message || "Unknown error");
       }
 
       setLoading(false);
@@ -53,6 +56,7 @@ function PaymentSuccessContent() {
     <PaymentStatus
       loading={loading}
       success={success}
+      errorMessage={errorMessage}
       onHome={() => router.push("/")}
     />
   );
@@ -61,10 +65,12 @@ function PaymentSuccessContent() {
 function PaymentStatus({
   loading,
   success = false,
+  errorMessage,
   onHome,
 }: {
   loading: boolean;
   success?: boolean;
+  errorMessage?: string | null;
   onHome?: () => void;
 }) {
   return (
@@ -102,7 +108,8 @@ function PaymentStatus({
           </h1>
 
           <p className="mb-6 text-gray-600">
-            We could not verify your payment.
+            We could not verify your payment
+            {errorMessage ? `: ${errorMessage}` : "."}
           </p>
 
           <button

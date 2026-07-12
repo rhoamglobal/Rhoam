@@ -4,4 +4,4 @@
 // Keep the real price here (or, if you later want per-property pricing,
 // look it up from the `properties` table server-side) — never take it
 // from the request body again.
-export const UNLOCK_FEE_NGN = 500;
+export const UNLOCK_FEE_NGN = 100;

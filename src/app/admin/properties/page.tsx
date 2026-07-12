@@ -22,7 +22,7 @@ import {
 } from "lucide-react";
 
 type Property = {
-  id: number;
+  id: string;
   title: string;
   price: number;
   image_url: string;
@@ -56,7 +56,7 @@ export default function AdminPropertiesPage() {
 
   // modal state
   const [confirmOpen, setConfirmOpen] = useState(false);
-  const [selectedId, setSelectedId] = useState<number | null>(null);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
 
   const { showToast } = useToast();
 
@@ -143,12 +143,12 @@ export default function AdminPropertiesPage() {
   }, []);
 
   // STEP 1: open modal instead of deleting directly
-  const requestDelete = (id: number) => {
+  const requestDelete = (id: string) => {
     setSelectedId(id);
     setConfirmOpen(true);
   };
   const toggleVerification = async (
-    id: number,
+    id: string,
     currentState: boolean
   ) => {
     const { error } = await supabase
@@ -175,7 +175,7 @@ export default function AdminPropertiesPage() {
   };
 
   const toggleAvailability = async (
-    id: number,
+    id: string,
     currentState: boolean
   ) => {
     const { error } = await supabase
@@ -202,7 +202,7 @@ export default function AdminPropertiesPage() {
   };
   
   const toggleVisibility = async (
-    id: number,
+    id: string,
     currentState: boolean
   ) => {
     const { error } = await supabase
@@ -232,7 +232,7 @@ export default function AdminPropertiesPage() {
   // all — separate from is_visible (which only toggles the "Available"
   // display badge shown on a listing that's still findable).
   const toggleActive = async (
-    id: number,
+    id: string,
     currentState: boolean
   ) => {
     const { error } = await supabase

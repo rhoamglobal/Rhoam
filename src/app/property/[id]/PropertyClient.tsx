@@ -93,7 +93,7 @@ export default function PropertyClient({
         .from("contact_unlocks")
         .select("id")
         .eq("user_id", userId)
-        .eq("property_id", Number(property.id))
+        .eq("property_id", property.id)
         .maybeSingle();
 
       setUnlocked(!!data);
@@ -140,7 +140,7 @@ export default function PropertyClient({
         return;
       }
 
-      // redirect to monnify checkout
+      // redirect to Paystack checkout
       if (data.paymentUrl) {
         window.location.href = data.paymentUrl;
       }

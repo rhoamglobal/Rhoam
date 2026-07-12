@@ -14,6 +14,13 @@ export async function POST(req: Request) {
       );
     }
 
+    if (!user.email) {
+      return NextResponse.json(
+        { message: "Your account has no email on file." },
+        { status: 400 }
+      );
+    }
+
     const { propertyId } = await req.json();
 
     if (!propertyId) {
@@ -25,56 +32,50 @@ export async function POST(req: Request) {
 
     const userId = user.id;
     // Fixed server-side price. The client can no longer set this itself.
-    const amount = UNLOCK_FEE_NGN;
+    // Paystack takes amounts in kobo, hence the * 100.
+    const amountKobo = UNLOCK_FEE_NGN * 100;
 
-    // STEP 1: Authenticate with Monnify
-    const auth = Buffer.from(
-      `${process.env.MONNIFY_API_KEY}:${process.env.MONNIFY_SECRET_KEY}`
-    ).toString("base64");
-
-    const tokenRes = await fetch(
-      "https://sandbox.monnify.com/api/v1/auth/login",
-      {
-        method: "POST",
-        headers: {
-          Authorization: `Basic ${auth}`,
-        },
-      }
-    );
-
-    const tokenData = await tokenRes.json();
-    const accessToken = tokenData.responseBody.accessToken;
-
-    // STEP 2: Generate payment reference
+    // Same reference format the verify route and webhook parse:
+    // unlock_propertyId_userId_timestamp
     const paymentReference = `unlock_${propertyId}_${userId}_${Date.now()}`;
 
-    // STEP 3: Initialize payment
-    const paymentRes = await fetch(
-      "https://sandbox.monnify.com/api/v1/merchant/transactions/init-transaction",
+    const paystackRes = await fetch(
+      "https://api.paystack.co/transaction/initialize",
       {
         method: "POST",
         headers: {
-          Authorization: `Bearer ${accessToken}`,
+          Authorization: `Bearer ${process.env.PAYSTACK_SECRET_KEY}`,
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          amount,
-          customerName: user.user_metadata?.full_name || "Property User",
-          customerEmail: user.email,
-          paymentReference,
-          paymentDescription: "Property contact unlock",
-          currencyCode: "NGN",
-          contractCode: process.env.MONNIFY_CONTRACT_CODE,
-          redirectUrl: `${process.env.NEXT_PUBLIC_BASE_URL}/payment-success?reference=${paymentReference}`,
-          paymentMethods: ["CARD", "ACCOUNT_TRANSFER"],
+          email: user.email,
+          amount: amountKobo,
+          reference: paymentReference,
+          currency: "NGN",
+          // Paystack appends ?reference=...&trxref=... to whatever URL
+          // you give it, so this doesn't need a query string of our own.
+          callback_url: `${process.env.NEXT_PUBLIC_BASE_URL}/payment-success`,
+          metadata: {
+            propertyId,
+            userId,
+            purpose: "contact_unlock",
+          },
         }),
       }
     );
 
-    const paymentData = await paymentRes.json();
+    const paystackData = await paystackRes.json();
+
+    if (!paystackRes.ok || !paystackData.status) {
+      console.log(paystackData);
+      return NextResponse.json(
+        { message: paystackData.message || "Payment initialization failed" },
+        { status: 500 }
+      );
+    }
 
     return NextResponse.json({
-      paymentUrl: paymentData.responseBody.checkoutUrl,
+      paymentUrl: paystackData.data.authorization_url,
     });
   } catch (error) {
     console.log(error);
