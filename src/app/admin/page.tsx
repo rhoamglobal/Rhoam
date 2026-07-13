@@ -102,6 +102,13 @@ export default function AdminPage() {
             >
               Manage Properties
             </Link>
+
+            <Link
+              href="/admin/errors"
+              className="px-5 py-3 rounded-2xl bg-gray-100 font-medium"
+            >
+              Error Log
+            </Link>
   
           </div>
   

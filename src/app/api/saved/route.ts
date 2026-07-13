@@ -23,7 +23,15 @@ export async function GET() {
 
   const { data: properties } = await supabaseAdmin
     .from("properties")
-    .select("*")
+    .select(
+      `
+      id, title, price, latitude, longitude, category,
+      image_url, images, description, amenities,
+      school_tag, location, is_verified, address,
+      is_available, is_visible, is_active,
+      room_count, occupants_per_room, bathroom_count
+    `
+    )
     .in("id", ids);
 
   return NextResponse.json(properties || []);

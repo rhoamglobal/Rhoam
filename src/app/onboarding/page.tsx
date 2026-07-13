@@ -1,11 +1,21 @@
 "use client";
 
+import { Suspense } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 
-export default function OnboardingPage() {
+function OnboardingContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const redirect = searchParams.get("redirect");
+
+  // Carry the "return to this page after auth" target through to
+  // signup/login, so unlocking a contact while logged out doesn't strand
+  // the person back at the homepage after they sign in.
+  const query = redirect
+    ? `?redirect=${encodeURIComponent(redirect)}`
+    : "";
 
   return (
     <div className="min-h-screen bg-white flex items-center justify-center px-6 relative overflow-hidden">
@@ -41,7 +51,7 @@ export default function OnboardingPage() {
         </div>
 
         {/* CTA */}
-        <Link href="/signup">
+        <Link href={`/signup${query}`}>
           <button className="w-full mt-10 py-4 rounded-full bg-[#ff5a5f] text-white font-semibold shadow-lg hover:scale-[1.02] active:scale-[0.98] transition">
             Get Started
           </button>
@@ -49,7 +59,7 @@ export default function OnboardingPage() {
 
         {/* skip */}
         <button
-          onClick={() => router.push("/")}
+          onClick={() => router.push(redirect || "/")}
           className="w-full mt-5 text-gray-400 font-medium"
         >
           Skip
@@ -59,7 +69,7 @@ export default function OnboardingPage() {
         <div className="mt-10 text-center text-sm text-gray-500">
           Already have an account?{" "}
           <Link
-            href="/login"
+            href={`/login${query}`}
             className="text-[#ff5a5f] font-semibold"
           >
             Sign in
@@ -68,5 +78,13 @@ export default function OnboardingPage() {
 
       </div>
     </div>
+  );
+}
+
+export default function OnboardingPage() {
+  return (
+    <Suspense>
+      <OnboardingContent />
+    </Suspense>
   );
 }

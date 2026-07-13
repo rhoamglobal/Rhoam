@@ -1,14 +1,16 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import { getAuthErrorMessage } from "@/lib/getAuthErrorMessage";
 import { isValidEmail } from "@/lib/auth_utils";
 
-export default function SignupPage() {
+function SignupForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const redirect = searchParams.get("redirect");
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -76,7 +78,11 @@ export default function SignupPage() {
   
     setLoading(false);
   
-    router.push("/login");
+    router.push(
+      redirect
+        ? `/login?redirect=${encodeURIComponent(redirect)}`
+        : "/login"
+    );
   };
   const canSubmit =
     email &&
@@ -182,7 +188,14 @@ export default function SignupPage() {
 
           <p className="text-center text-sm text-gray-500 mt-6">
             Already have an account?{" "}
-            <Link href="/login" className="text-[#ff5a5f] font-medium">
+            <Link
+              href={
+                redirect
+                  ? `/login?redirect=${encodeURIComponent(redirect)}`
+                  : "/login"
+              }
+              className="text-[#ff5a5f] font-medium"
+            >
               Login
             </Link>
           </p>
@@ -190,5 +203,13 @@ export default function SignupPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function SignupPage() {
+  return (
+    <Suspense>
+      <SignupForm />
+    </Suspense>
   );
 }

@@ -117,7 +117,11 @@ export default function PropertyClient({
   // HANDLE UNLOCK (Monnify)
   const requestUnlock = () => {
     if (!userId) {
-      router.push("/onboarding");
+      router.push(
+        `/onboarding?redirect=${encodeURIComponent(
+          `/property/${property.id}`
+        )}`
+      );
       return;
     }
 
@@ -145,7 +149,15 @@ export default function PropertyClient({
       const data = await res.json();
 
       if (!res.ok) {
-        showToast(data.message || "Failed to initialize payment.");
+        if (res.status === 409) {
+          // Already unlocked — this is good news, not an error. Sync the
+          // UI instead of leaving the "Unlock" button showing.
+          setUnlocked(true);
+          showToast("You've already unlocked this contact.");
+        } else {
+          showToast(data.message || "Failed to initialize payment.");
+        }
+
         setUnlocking(false);
         setShowUnlockModal(false);
         return;

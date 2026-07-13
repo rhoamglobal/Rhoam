@@ -12,7 +12,7 @@ export type Property = {
     lat?: number;
     lng?: number;
     image?: string;
-    landlord_phone: string;
+    landlord_phone?: string;
     landlord_whatsapp?: string;
     caretaker_name?: string;
     caretaker_phone?: string;

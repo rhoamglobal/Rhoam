@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import crypto from "crypto";
 import { supabaseAdmin as supabase } from "@/lib/supabaseAdmin";
 import { UNLOCK_FEE_NGN } from "@/lib/config";
+import { logError } from "@/lib/logError";
 
 export async function POST(req: Request) {
   try {
@@ -37,7 +38,13 @@ export async function POST(req: Request) {
     }
 
     if (data.amount !== UNLOCK_FEE_NGN * 100) {
-      console.log("Webhook amount mismatch", data.reference, data.amount);
+      await logError({
+        source: "server",
+        route: "/api/webhooks/paystack",
+        message: "Webhook amount mismatch",
+        context: { reference: data.reference, amount: data.amount },
+      });
+
       return NextResponse.json(
         { message: "Amount mismatch" },
         { status: 400 }
@@ -67,14 +74,32 @@ export async function POST(req: Request) {
     );
 
     if (error) {
-      console.log(error);
+      // Same worst-case as /api/unlock/verify: Paystack confirms the
+      // charge succeeded, but recording the unlock failed. Needs to be
+      // visible, not just swallowed.
+      await logError({
+        source: "server",
+        route: "/api/webhooks/paystack",
+        message: `Unlock write failed AFTER successful payment: ${error.message}`,
+        context: {
+          userId,
+          propertyId,
+          reference: paymentReference,
+          dbError: error,
+        },
+      });
     }
 
     return NextResponse.json({
       message: "Unlock successful",
     });
   } catch (error) {
-    console.log(error);
+    await logError({
+      source: "server",
+      route: "/api/webhooks/paystack",
+      message: error instanceof Error ? error.message : String(error),
+      stack: error instanceof Error ? error.stack : undefined,
+    });
 
     return NextResponse.json(
       { message: "Webhook failed" },

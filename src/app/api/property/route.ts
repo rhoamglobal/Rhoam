@@ -17,7 +17,23 @@ export async function GET(req: Request) {
   const amenities = searchParams.get("amenities");
 
   // Base query (MUST be first)
-  let query = supabase.from("properties").select("*").eq("is_active", true);
+  // Explicit column allowlist — this is a public, unauthenticated endpoint
+  // for map browsing. It must NEVER include landlord/caretaker contact
+  // fields, regardless of who's asking. Contact info is only ever
+  // attached server-side on the single-property page, and only after
+  // confirming that specific user has actually paid to unlock it.
+  let query = supabase
+    .from("properties")
+    .select(
+      `
+      id, title, price, latitude, longitude, category,
+      image_url, images, description, amenities,
+      school_tag, location, is_verified, address,
+      is_available, is_visible, is_active,
+      room_count, occupants_per_room, bathroom_count
+    `
+    )
+    .eq("is_active", true);
 
   // Map bounds filter (only apply if all exist)
   if (north && south && east && west) {

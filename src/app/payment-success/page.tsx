@@ -17,6 +17,12 @@ function PaymentSuccessContent() {
 
   const reference = searchParams.get("reference");
 
+  // reference format: unlock_propertyId_userId_timestamp
+  const propertyId = reference ? reference.split("_")[1] : null;
+  const destination = propertyId
+    ? `/property/${propertyId}`
+    : "/profile/unlocked";
+
   const [loading, setLoading] = useState(true);
   const [success, setSuccess] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -52,24 +58,24 @@ function PaymentSuccessContent() {
     verifyPayment();
   }, [reference]);
 
-  // Auto-advance to the unlocked contacts page shortly after a
-  // successful unlock, so the person doesn't have to tap through.
+  // Auto-advance back to the property they just unlocked, so the person
+  // doesn't have to tap through to call/WhatsApp the landlord.
   useEffect(() => {
     if (!success) return;
 
     const timer = setTimeout(() => {
-      router.push("/profile/unlocked");
+      router.push(destination);
     }, 1800);
 
     return () => clearTimeout(timer);
-  }, [success, router]);
+  }, [success, router, destination]);
 
   return (
     <PaymentStatus
       loading={loading}
       success={success}
       errorMessage={errorMessage}
-      onViewUnlocked={() => router.push("/profile/unlocked")}
+      onViewUnlocked={() => router.push(destination)}
       onHome={() => router.push("/")}
     />
   );
@@ -113,7 +119,7 @@ function PaymentStatus({
             onClick={onViewUnlocked}
             className="rounded-full bg-[#FF6B6B] px-6 py-3 text-white"
           >
-            View Unlocked Contact
+            Back to Property
           </button>
 
           <p className="mt-4 text-xs text-gray-400">

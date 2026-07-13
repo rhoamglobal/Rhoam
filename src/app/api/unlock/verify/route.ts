@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabaseAdmin";
 import { getAuthenticatedUser } from "@/lib/supabaseServer";
 import { UNLOCK_FEE_NGN } from "@/lib/config";
+import { logError } from "@/lib/logError";
 
 export async function POST(req: Request) {
   try {
@@ -69,10 +70,16 @@ export async function POST(req: Request) {
     const payment = verifyData.data;
 
     if (!verifyRes.ok || !payment || payment.status !== "success") {
-      console.log("Paystack verify failed:", {
-        ok: verifyRes.ok,
-        status: verifyRes.status,
-        body: verifyData,
+      await logError({
+        source: "server",
+        route: "/api/unlock/verify",
+        message: "Paystack verify failed",
+        context: {
+          userId: user.id,
+          reference,
+          status: verifyRes.status,
+          paystackResponse: verifyData,
+        },
       });
 
       return NextResponse.json(
@@ -89,12 +96,17 @@ export async function POST(req: Request) {
     // fixed unlock fee, not just that *some* payment on this reference
     // succeeded.
     if (payment.amount !== UNLOCK_FEE_NGN * 100) {
-      console.log(
-        "Amount mismatch:",
-        payment.amount,
-        "expected",
-        UNLOCK_FEE_NGN * 100
-      );
+      await logError({
+        source: "server",
+        route: "/api/unlock/verify",
+        message: "Payment amount mismatch",
+        context: {
+          userId: user.id,
+          reference,
+          received: payment.amount,
+          expected: UNLOCK_FEE_NGN * 100,
+        },
+      });
 
       return NextResponse.json(
         { message: "Payment amount mismatch" },
@@ -117,6 +129,23 @@ export async function POST(req: Request) {
     );
 
     if (error) {
+      // This is the worst-case scenario: Paystack confirms the money was
+      // actually taken, but the database write recording the unlock
+      // failed. The student paid and got nothing. This absolutely has
+      // to be visible somewhere, not just swallowed into a generic
+      // error response.
+      await logError({
+        source: "server",
+        route: "/api/unlock/verify",
+        message: `Unlock write failed AFTER successful payment: ${error.message}`,
+        context: {
+          userId: user.id,
+          propertyId,
+          reference,
+          dbError: error,
+        },
+      });
+
       return NextResponse.json(
         { message: error.message },
         { status: 500 }
@@ -127,7 +156,12 @@ export async function POST(req: Request) {
       success: true,
     });
   } catch (error) {
-    console.log(error);
+    await logError({
+      source: "server",
+      route: "/api/unlock/verify",
+      message: error instanceof Error ? error.message : String(error),
+      stack: error instanceof Error ? error.stack : undefined,
+    });
 
     return NextResponse.json(
       { message: "Verification failed" },
