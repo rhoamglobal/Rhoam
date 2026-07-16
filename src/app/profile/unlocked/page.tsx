@@ -13,12 +13,12 @@ type UnlockedPropertyDetails = {
   title: string;
   price: number;
   image_url: string;
-  images?: string[];
-  landlord_phone: string;
-  landlord_whatsapp?: string;
-  caretaker_name?: string;
-  caretaker_phone?: string;
-  caretaker_whatsapp?: string;
+  images?: string[] | null;
+  landlord_phone: string | null;
+  landlord_whatsapp?: string | null;
+  caretaker_name?: string | null;
+  caretaker_phone?: string | null;
+  caretaker_whatsapp?: string | null;
   school_tag: string;
   location: string;
 };
@@ -180,7 +180,7 @@ export default function UnlockedPage() {
                     </p>
 
                     <p className="text-sm font-medium text-gray-800 mt-3">
-                      {property.landlord_phone}
+                      {property.landlord_phone || "No phone on file"}
                       {property.landlord_whatsapp && (
                         <span className="text-gray-400 font-normal">
                           {" "}
@@ -190,20 +190,22 @@ export default function UnlockedPage() {
                     </p>
 
                     <div className="flex gap-3 mt-5">
-                      <a
-                        href={`tel:${property.landlord_phone}`}
-                        className="
-                          flex-1 py-3 rounded-full
-                          bg-green-500 hover:bg-green-600
-                          text-white font-medium
-                          shadow-lg shadow-green-500/25
-                          flex items-center justify-center gap-2
+                      {property.landlord_phone && (
+                        <a
+                          href={`tel:${property.landlord_phone}`}
+                          className="
+                            flex-1 py-3 rounded-full
+                            bg-green-500 hover:bg-green-600
+                            text-white font-medium
+                            shadow-lg shadow-green-500/25
+                            flex items-center justify-center gap-2
                           transition
                         "
                       >
                         <Phone size={16} />
                         Call
                       </a>
+                      )}
 
                       {property.landlord_whatsapp && (
                         <a

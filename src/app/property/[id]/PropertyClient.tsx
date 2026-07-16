@@ -13,7 +13,7 @@ import {
   MapPin,
   ChevronLeft,
   Phone,
-  MessageCircle,
+  Map,
 } from "lucide-react";
 import { supabase } from "@/lib/supabaseClient";
 import { useToast } from "@/components/ToastProvider";
@@ -21,6 +21,7 @@ import { schools } from "@/lib/schools";
 import { getDistanceKm, kmToWalkMinutes } from "@/lib/distance";
 import { UNLOCK_FEE_NGN } from "@/lib/config";
 import UnlockModal from "@/components/UnlockModal";
+import ContactModal from "@/components/ContactModal";
 
 export default function PropertyClient({
   property,
@@ -48,6 +49,27 @@ export default function PropertyClient({
   );
   const [unlocking, setUnlocking] = useState(false);
   const [showUnlockModal, setShowUnlockModal] = useState(false);
+  const [showContactModal, setShowContactModal] = useState(false);
+
+  const [scrolled, setScrolled] = useState(false);
+
+  // scroll model
+  useEffect(() => {
+    const handleScroll = () => {
+      setScrolled(window.scrollY > 250);
+    };
+
+    window.addEventListener(
+      "scroll",
+      handleScroll
+    );
+
+    return () =>
+      window.removeEventListener(
+        "scroll",
+        handleScroll
+      );
+  }, []);
 
   const { showToast } = useToast();
   const router = useRouter();
@@ -114,7 +136,7 @@ export default function PropertyClient({
     checkUnlock();
   }, [userId, property.id]);
 
-  // HANDLE UNLOCK (Monnify)
+  // HANDLE UNLOCK
   const requestUnlock = () => {
     if (!userId) {
       router.push(
@@ -204,24 +226,86 @@ export default function PropertyClient({
 
         <div className="absolute inset-0 bg-gradient-to-t from-black/45 via-black/0 to-black/10" />
 
-        {/* BACK BUTTON */}
-        <button
-          onClick={() => window.history.back()}
-          className="
-            absolute top-4 left-4
-            h-10 w-10 rounded-full
-            bg-white/95 hover:bg-white
-            shadow-md
+        <div
+          className={`
+            fixed top-0 left-0 right-0
+            h-[75px]
+            bg-white/95
+            backdrop-blur-lg
+            shadow-sm
+            z-[1900]
+            transition-all duration-300
             flex items-center justify-center
-            transition
-          "
-          aria-label="Go back"
+            ${
+              scrolled
+                ? "opacity-100"
+                : "opacity-0 pointer-events-none"
+            }
+          `}
         >
-          <ChevronLeft size={20} />
-        </button>
+          <h2
+            className={`
+              font-semibold text-lg
+              transition-all duration-300
+              ${
+                scrolled
+                  ? "opacity-100"
+                  : "opacity-0"
+              }
+            `}
+          >
+            {property.title}
+          </h2>
+        </div>
+
+        {/* LEFT BUTTONS */}
+        <div
+          className="
+            fixed top-4 left-4
+            flex items-center gap-3
+            z-[2000]
+          "
+        >
+          {/* BACK */}
+          <button
+            onClick={() => router.back()}
+            className={`
+              h-11 w-11 rounded-full
+              flex items-center justify-center
+              shadow-md
+              transition-all duration-300
+              ${
+                scrolled
+                  ? "bg-white text-black"
+                  : "bg-black/35 text-white backdrop-blur-md"
+              }
+            `}
+          >
+            <ChevronLeft size={20} />
+          </button>
+
+          {/* MAP */}
+          <button
+            onClick={() => router.push("/")}
+            className={`
+              h-11 w-11 rounded-full
+              flex items-center justify-center
+              shadow-md
+              transition-all duration-300
+              ${
+                scrolled
+                  ? "bg-white text-black"
+                  : "bg-black/35 text-white backdrop-blur-md"
+              }
+            `}
+          >
+            <Map size={18} />
+          </button>
+        </div>
 
         {/* SAVE BUTTON */}
         <button
+          
           onClick={async () => {
             const res = await fetch("/api/save", {
               method: "POST",
@@ -234,15 +318,21 @@ export default function PropertyClient({
             const data = await res.json();
             setSaved(data.saved);
           }}
-          className="
-            absolute top-4 right-4
-            h-10 w-10 rounded-full
-            bg-white/95 hover:bg-white
-            shadow-md
+          className={`
+            fixed top-4 right-4
+            h-11 w-11 rounded-full
             flex items-center justify-center
-            transition
-          "
+            shadow-md
+            transition-all duration-300
+            z-[2000]
+            ${
+              scrolled
+                ? "bg-white text-black"
+                : "bg-black/35 text-white backdrop-blur-md"
+            }
+          `}
           aria-label={saved ? "Remove from saved" : "Save property"}
+          
         >
           <Heart
             size={18}
@@ -255,10 +345,11 @@ export default function PropertyClient({
         {images.length > 1 && (
           <div
             className="
-              absolute bottom-4 right-4
+              fixed bottom-4 right-4
               px-3 py-1 rounded-full
               bg-black/45 backdrop-blur-sm
               text-white text-xs font-medium
+
             "
           >
             {activeImage + 1} / {images.length}
@@ -400,90 +491,6 @@ export default function PropertyClient({
           </div>
         )}
 
-        {/* CONTACTS */}
-        {unlocked && (
-          <div className="mt-10 pt-8 border-t border-gray-100">
-            <h2 className="text-lg font-semibold mb-4">Contacts</h2>
-
-            <div className="space-y-3">
-              {/* Landlord */}
-              <div className="flex items-center justify-between gap-4 rounded-2xl border border-gray-100 bg-gray-50/60 p-4">
-                <div>
-                  <p className="text-xs text-gray-400">Landlord</p>
-                  <p className="text-sm font-medium text-gray-900 mt-0.5">
-                    {property.landlord_phone}
-                  </p>
-                </div>
-
-                <div className="flex gap-2 shrink-0">
-                  <a
-                    href={`tel:${property.landlord_phone}`}
-                    className="h-10 w-10 rounded-full bg-green-500 hover:bg-green-600 text-white flex items-center justify-center transition"
-                    aria-label="Call landlord"
-                  >
-                    <Phone size={16} />
-                  </a>
-
-                  {waLink && (
-                    <a
-                      href={waLink}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="h-10 w-10 rounded-full bg-[#25D366] hover:bg-[#20bd5a] text-white flex items-center justify-center transition"
-                      aria-label="WhatsApp landlord"
-                    >
-                      <MessageCircle size={16} />
-                    </a>
-                  )}
-                </div>
-              </div>
-
-              {/* Caretaker (optional) */}
-              {(property.caretaker_phone || property.caretaker_name) && (
-                <div className="flex items-center justify-between gap-4 rounded-2xl border border-gray-100 bg-gray-50/60 p-4">
-                  <div>
-                    <p className="text-xs text-gray-400">
-                      Caretaker
-                      {property.caretaker_name
-                        ? ` · ${property.caretaker_name}`
-                        : ""}
-                    </p>
-                    {property.caretaker_phone && (
-                      <p className="text-sm font-medium text-gray-900 mt-0.5">
-                        {property.caretaker_phone}
-                      </p>
-                    )}
-                  </div>
-
-                  <div className="flex gap-2 shrink-0">
-                    {property.caretaker_phone && (
-                      <a
-                        href={`tel:${property.caretaker_phone}`}
-                        className="h-10 w-10 rounded-full bg-green-500 hover:bg-green-600 text-white flex items-center justify-center transition"
-                        aria-label="Call caretaker"
-                      >
-                        <Phone size={16} />
-                      </a>
-                    )}
-
-                    {caretakerWaLink && (
-                      <a
-                        href={caretakerWaLink}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="h-10 w-10 rounded-full bg-[#25D366] hover:bg-[#20bd5a] text-white flex items-center justify-center transition"
-                        aria-label="WhatsApp caretaker"
-                      >
-                        <MessageCircle size={16} />
-                      </a>
-                    )}
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-        )}
-
         {/* ADDRESS */}
         <div className="mt-10 pt-8 border-t border-gray-100">
           <div className="bg-gray-50/60 border border-gray-100 rounded-2xl p-5">
@@ -602,39 +609,19 @@ export default function PropertyClient({
             Checking…
           </button>
         ) : unlocked ? (
-          <div className="flex items-center gap-2">
-            <a
-              href={`tel:${property.landlord_phone}`}
-              className="
-                flex items-center gap-1.5
-                bg-green-500 hover:bg-green-600
-                text-white px-4 py-2.5 rounded-full
-                font-medium shadow-lg shadow-green-500/25
-                transition
-              "
-            >
-              <Phone size={16} />
-              Call
-            </a>
-
-            {waLink && (
-              <a
-                href={waLink}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="
-                  flex items-center gap-1.5
-                  bg-[#25D366] hover:bg-[#20bd5a]
-                  text-white px-4 py-2.5 rounded-full
-                  font-medium shadow-lg shadow-[#25D366]/25
-                  transition
-                "
-              >
-                <MessageCircle size={16} />
-                WhatsApp
-              </a>
-            )}
-          </div>
+          <button
+            onClick={() => setShowContactModal(true)}
+            className="
+              flex items-center gap-1.5
+              bg-green-500 hover:bg-green-600
+              text-white px-5 py-2.5 rounded-full
+              font-medium shadow-lg shadow-green-500/25
+              transition
+            "
+          >
+            <Phone size={16} />
+            Contact Now
+          </button>
         ) : (
           <button
             onClick={requestUnlock}
@@ -662,6 +649,16 @@ export default function PropertyClient({
           if (unlocking) return;
           setShowUnlockModal(false);
         }}
+      />
+
+      <ContactModal
+        open={showContactModal}
+        landlordPhone={property.landlord_phone}
+        landlordWaLink={waLink}
+        caretakerName={property.caretaker_name}
+        caretakerPhone={property.caretaker_phone}
+        caretakerWaLink={caretakerWaLink}
+        onClose={() => setShowContactModal(false)}
       />
     </div>
   );

@@ -5,6 +5,7 @@ import { supabase } from "@/lib/supabase";
 import { useToast } from "@/components/ToastProvider";
 import { PROPERTY_CATEGORIES } from "@/lib/categories";
 import { compressImage } from "@/lib/compressImage";
+import { validateImageFile, validateImageFiles } from "@/lib/validateImageFile";
 import { schools } from "@/lib/schools";
 
 export default function AddPropertyPage() {
@@ -281,7 +282,16 @@ export default function AddPropertyPage() {
           accept="image/*"
           onChange={(e) => {
             if (e.target.files?.[0]) {
-              setImage(e.target.files[0]);
+              const file = e.target.files[0];
+              const error = validateImageFile(file);
+
+              if (error) {
+                showToast(error, "error");
+                e.target.value = "";
+                return;
+              }
+
+              setImage(file);
             }
           }}
           className="w-full border p-4 rounded-2xl"
@@ -292,13 +302,17 @@ export default function AddPropertyPage() {
           multiple
           type="file"
           accept="image/*"
-          onChange={(e) =>
-            setGalleryFiles(
-              Array.from(
-                e.target.files || []
-              )
-            )
-          }
+          onChange={(e) => {
+            const { valid, errors } = validateImageFiles(
+              Array.from(e.target.files || [])
+            );
+
+            if (errors.length) {
+              showToast(errors.join(" "), "error");
+            }
+
+            setGalleryFiles(valid);
+          }}
           className="w-full border p-4 rounded-2xl"
         />
 

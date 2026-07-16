@@ -17,6 +17,16 @@
 // Running that will OVERWRITE this file with a guaranteed-accurate
 // version in the same shape, so nothing else in the codebase needs to
 // change when you do.
+//
+// Note on `Relationships: []`: every table below needs this field even
+// though it's always empty here — @supabase/supabase-js's internal
+// GenericTable type requires it to resolve Row/Insert/Update types at
+// all. Without it, TypeScript silently collapses every insert/update to
+// `never`. An empty array is a safe default; it just means typed
+// embedded-resource joins (e.g. .select("*, properties(*)") inferring
+// the join shape automatically from a foreign key) won't be perfectly
+// typed — the manual "could be array or object" handling already in
+// profile/unlocked/page.tsx covers exactly that gap.
 
 export type Json =
   | string
@@ -114,6 +124,7 @@ export type Database = {
           is_visible?: boolean;
           is_active?: boolean;
         };
+        Relationships: [];
       };
 
       contact_unlocks: {
@@ -141,6 +152,7 @@ export type Database = {
           payment_reference?: string;
           payment_method?: string;
         };
+        Relationships: [];
       };
 
       saved_properties: {
@@ -165,6 +177,7 @@ export type Database = {
           user_id?: string;
           property_id?: string;
         };
+        Relationships: [];
       };
 
       profiles: {
@@ -183,6 +196,7 @@ export type Database = {
           email?: string | null;
           created_at?: string;
         };
+        Relationships: [];
       };
 
       admins: {
@@ -199,6 +213,7 @@ export type Database = {
         Update: {
           user_id?: string;
         };
+        Relationships: [];
       };
 
       error_logs: {
@@ -229,7 +244,19 @@ export type Database = {
           stack?: string | null;
           context?: Json | null;
         };
+        Relationships: [];
       };
     };
+
+    // Recent versions of @supabase/supabase-js require the full
+    // GenericSchema shape — Tables alone isn't enough, even if these are
+    // all empty. Without them, TypeScript can't properly resolve the
+    // client's generic types, and silently collapses row types to
+    // `never` on .insert()/.update()/.upsert() calls throughout the
+    // codebase.
+    Views: Record<string, never>;
+    Functions: Record<string, never>;
+    Enums: Record<string, never>;
+    CompositeTypes: Record<string, never>;
   };
 };

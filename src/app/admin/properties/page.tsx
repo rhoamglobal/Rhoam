@@ -7,6 +7,7 @@ import { useToast } from "@/components/ToastProvider";
 import Link from "next/link";
 import { Search, ChevronLeft, ChevronRight } from "lucide-react";
 import { useDebounce } from "@/hooks/useDebounce";
+import { extractStoragePath } from "@/lib/storagePath";
 
 import {
   Pencil,
@@ -262,6 +263,14 @@ export default function AdminPropertiesPage() {
   const deleteProperty = async () => {
     if (!selectedId) return;
 
+    // Look up the images BEFORE deleting the row — once it's gone, we
+    // have no way to know what to clean up in storage.
+    const { data: propertyToDelete } = await supabase
+      .from("properties")
+      .select("image_url, images")
+      .eq("id", selectedId)
+      .maybeSingle();
+
     const { error } = await supabase
       .from("properties")
       .delete()
@@ -270,6 +279,33 @@ export default function AdminPropertiesPage() {
     if (error) {
       showToast("Failed to delete property", "error");
       return;
+    }
+
+    // Best-effort storage cleanup — a failure here shouldn't block the
+    // property deletion itself, which already succeeded above. Without
+    // this, deleted properties' images sit in storage forever.
+    if (propertyToDelete) {
+      const allUrls = [
+        propertyToDelete.image_url,
+        ...(propertyToDelete.images || []),
+      ].filter(Boolean);
+
+      const paths = allUrls
+        .map(extractStoragePath)
+        .filter((p): p is string => p !== null);
+
+      if (paths.length) {
+        const { error: storageError } = await supabase.storage
+          .from("property-images")
+          .remove(paths);
+
+        if (storageError) {
+          console.error(
+            "Failed to clean up storage for deleted property:",
+            storageError
+          );
+        }
+      }
     }
 
     showToast("Property deleted successfully", "success");

@@ -5,7 +5,7 @@ import { supabase } from "@/lib/supabase";
 
 type Profile = {
   id: string;
-  email: string;
+  email: string | null;
   created_at: string;
 };
 
@@ -57,7 +57,7 @@ export default function AdminUsersPage() {
               <div>
 
                 <p className="font-semibold">
-                  {user.email}
+                  {user.email || "No email on file"}
                 </p>
 
                 <p className="text-sm text-gray-500">

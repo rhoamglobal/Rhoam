@@ -3,9 +3,22 @@ import { getAuthenticatedUser } from "@/lib/supabaseServer";
 import { supabaseAdmin } from "@/lib/supabaseAdmin";
 import { UNLOCK_FEE_NGN } from "@/lib/config";
 import { logError } from "@/lib/logError";
+import { rateLimit, getClientIp } from "@/lib/rateLimit";
 
 export async function POST(req: Request) {
   try {
+    // Rate limit BEFORE auth — an unauthenticated flood shouldn't even
+    // reach the session check.
+    const ip = getClientIp(req);
+    const limit = rateLimit(`unlock-initiate:${ip}`, 10, 10 * 60 * 1000);
+
+    if (!limit.allowed) {
+      return NextResponse.json(
+        { message: "Too many attempts. Please try again shortly." },
+        { status: 429 }
+      );
+    }
+
     // Who is actually logged in — never trust a userId from the request body.
     const { user } = await getAuthenticatedUser();
 

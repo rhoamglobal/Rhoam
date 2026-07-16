@@ -1,7 +1,18 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabaseAdmin";
+import { rateLimit, getClientIp } from "@/lib/rateLimit";
 
 export async function GET(req: NextRequest) {
+  const ip = getClientIp(req);
+  // Generous — the frontend already debounces at 300ms, so someone
+  // typing continuously for a while can still hit this a lot. This is
+  // sized to stop a scraping script, not a fast typist.
+  const limit = rateLimit(`search:${ip}`, 40, 60 * 1000);
+
+  if (!limit.allowed) {
+    return NextResponse.json([], { status: 429 });
+  }
+
   const q = req.nextUrl.searchParams.get("q");
 
   if (!q) return NextResponse.json([]);

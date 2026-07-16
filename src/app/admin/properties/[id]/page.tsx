@@ -7,11 +7,18 @@ import { useToast } from "@/components/ToastProvider";
 import { PROPERTY_CATEGORIES } from "@/lib/categories";
 import { schools } from "@/lib/schools";
 import { compressImage } from "@/lib/compressImage";
+import { validateImageFile, validateImageFiles } from "@/lib/validateImageFile";
 
 
 export default function EditPropertyPage() {
   const params = useParams();
   const router = useRouter();
+
+  // useParams() types this as string | string[] | undefined — Next.js
+  // guarantees a plain string for a non-catch-all [id] segment at
+  // runtime, but TypeScript can't know that statically. Normalize it
+  // once here instead of passing the loose type into every query below.
+  const id = Array.isArray(params.id) ? params.id[0] : params.id;
 
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -49,10 +56,12 @@ export default function EditPropertyPage() {
     let active = true;
 
     const fetchProperty = async () => {
+      if (!id) return;
+
       const { data, error } = await supabase
         .from("properties")
         .select("*")
-        .eq("id", params.id)
+        .eq("id", id)
         .single();
 
       if (!active) return;
@@ -94,7 +103,7 @@ export default function EditPropertyPage() {
     return () => {
       active = false;
     };
-  }, [params.id, showToast]);
+  }, [id, showToast]);
   const removeGalleryImage = (
     imageUrl: string
   ) => {
@@ -106,6 +115,11 @@ export default function EditPropertyPage() {
   };
 
   const handleUpdate = async () => {
+    if (!id) {
+      showToast("Missing property id.");
+      return;
+    }
+
     setSaving(true);
 
     let updatedImageUrl = imageUrl;
@@ -199,7 +213,7 @@ export default function EditPropertyPage() {
         caretaker_phone: caretakerPhone || null,
         caretaker_whatsapp: caretakerWhatsapp || null,
       })
-      .eq("id", params.id);
+      .eq("id", id);
 
     setSaving(false);
 
@@ -428,11 +442,19 @@ export default function EditPropertyPage() {
                 <input
                   type="file"
                   accept="image/*"
-                  onChange={(e) =>
-                    setCoverImage(
-                      e.target.files?.[0] || null
-                    )
-                  }
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (!file) return;
+
+                    const error = validateImageFile(file);
+                    if (error) {
+                      showToast(error);
+                      e.target.value = "";
+                      return;
+                    }
+
+                    setCoverImage(file);
+                  }}
                   className="w-full border border-dashed border-gray-300 rounded-2xl p-4"
                 />
               </div>
@@ -446,11 +468,17 @@ export default function EditPropertyPage() {
                   multiple
                   type="file"
                   accept="image/*"
-                  onChange={(e) =>
-                    setGalleryFiles(
+                  onChange={(e) => {
+                    const { valid, errors } = validateImageFiles(
                       Array.from(e.target.files || [])
-                    )
-                  }
+                    );
+
+                    if (errors.length) {
+                      showToast(errors.join(" "));
+                    }
+
+                    setGalleryFiles(valid);
+                  }}
                   className="w-full border border-dashed border-gray-300 rounded-2xl p-4"
                 />
               </div>

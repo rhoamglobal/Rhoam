@@ -1,8 +1,20 @@
 import { NextResponse } from "next/server";
 import { logError } from "@/lib/logError";
+import { rateLimit, getClientIp } from "@/lib/rateLimit";
 
 export async function POST(req: Request) {
   try {
+    const ip = getClientIp(req);
+    // A real browser hitting this repeatedly means something is
+    // genuinely broken and re-rendering the error boundary in a loop —
+    // this limit is sized to still capture that, while stopping someone
+    // from deliberately spamming your error log with junk.
+    const limit = rateLimit(`log-error:${ip}`, 20, 60 * 1000);
+
+    if (!limit.allowed) {
+      return NextResponse.json({ logged: false });
+    }
+
     const { message, stack, route, context } = await req.json();
 
     if (!message) {

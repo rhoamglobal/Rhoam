@@ -1,7 +1,17 @@
 import { NextResponse } from "next/server";
 import { supabaseAdmin as supabase } from "@/lib/supabaseAdmin";
+import { rateLimit, getClientIp } from "@/lib/rateLimit";
 
 export async function GET(req: Request) {
+  const ip = getClientIp(req);
+  // Generous — active map panning fires this often during normal use.
+  // Sized to stop scraping, not normal browsing.
+  const limit = rateLimit(`property-search:${ip}`, 100, 60 * 1000);
+
+  if (!limit.allowed) {
+    return NextResponse.json([], { status: 429 });
+  }
+
   const { searchParams } = new URL(req.url);
 
   const north = searchParams.get("north");
