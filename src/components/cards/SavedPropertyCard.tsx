@@ -2,7 +2,7 @@
 
 import { Property } from "@/components/map/types";
 import { Heart } from "lucide-react";
-import { useRouter } from "next/navigation";
+import Link from "next/link";
 import Image from "next/image";
 import { useAuth } from "@/components/providers/AuthProvider";
 import { toggleSaved } from "@/lib/saved";
@@ -16,7 +16,6 @@ export default function SavedPropertyCard({
   property: Property;
   onRemove: (id: string) => void;
 }) {
-  const router = useRouter();
   const { user } = useAuth();
 
   const handleRemove = (e: React.MouseEvent) => {
@@ -29,9 +28,10 @@ export default function SavedPropertyCard({
   };
 
   return (
-    <div
-      onClick={() => router.push(`/property/${property.id}`)}
+    <Link
+      href={`/property/${property.id}`}
       className="
+        block
         cursor-pointer group
         transition-all duration-300
       "
@@ -96,6 +96,6 @@ export default function SavedPropertyCard({
           {property.category}
         </p>
       </div>
-    </div>
+    </Link>
   );
 }

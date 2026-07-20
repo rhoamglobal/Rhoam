@@ -3,8 +3,8 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/components/providers/AuthProvider";
-import { useRouter } from "next/navigation";
 import Image from "next/image";
+import Link from "next/link";
 import { Phone, ArrowRight, Home, CheckCircle2, MessageCircle } from "lucide-react";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
 
@@ -48,7 +48,6 @@ function SkeletonCard() {
 
 export default function UnlockedPage() {
   const { user } = useAuth();
-  const router = useRouter();
 
   const [properties, setProperties] = useState<UnlockedProperty[]>([]);
   const [loading, setLoading] = useState(true);
@@ -229,10 +228,8 @@ export default function UnlockedPage() {
                         </a>
                       )}
 
-                      <button
-                        onClick={() =>
-                          router.push(`/property/${property.id}`)
-                        }
+                      <Link
+                        href={`/property/${property.id}`}
                         className="
                           flex-1 py-3 rounded-full
                           border border-[#ff5a5f] text-[#ff5a5f]
@@ -244,7 +241,7 @@ export default function UnlockedPage() {
                       >
                         View
                         <ArrowRight size={16} />
-                      </button>
+                      </Link>
                     </div>
 
                     {(property.caretaker_phone ||

@@ -26,6 +26,18 @@ export default function PreviewCard({
 
   const [saved, setSaved] = useState(false);
 
+  // Prefetch the moment the card appears (when a map pin is tapped), so
+  // by the time someone actually taps through, the page is already
+  // warm. This is the same underlying mechanism <Link> uses for
+  // automatic prefetching — used directly here since the card itself is
+  // a framer-motion element, not something we want to restructure into
+  // an <a> tag.
+  useEffect(() => {
+    if (property) {
+      router.prefetch(`/property/${property.id}`);
+    }
+  }, [property, router]);
+
   // authenticate saving
   useEffect(() => {
     const checkSaved = async () => {

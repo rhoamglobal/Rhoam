@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
+import Link from "next/link";
 import { amenityIcons } from "@/lib/amenities";
 import { Property } from "@/components/map/types";
 import {
@@ -521,12 +522,11 @@ export default function PropertyClient({
 
             <div className="flex gap-4 overflow-x-auto pb-2 snap-x snap-mandatory scrollbar-hide">
               {nearbyProperties.map((item) => (
-                <div
+                <Link
                   key={item.id}
-                  onClick={() =>
-                    (window.location.href = `/property/${item.id}`)
-                  }
+                  href={`/property/${item.id}`}
                   className="
+                    block
                     min-w-[260px]
                     max-w-[260px]
                     snap-start
@@ -573,7 +573,7 @@ export default function PropertyClient({
                       {item.category}
                     </div>
                   </div>
-                </div>
+                </Link>
               ))}
             </div>
           </div>

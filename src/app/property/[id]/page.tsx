@@ -44,14 +44,29 @@ export default async function PropertyPage({
   // someone who has (or guesses) the old link.
   if (!property.is_active) return notFound();
 
+  // These two don't depend on each other — the auth/unlock check and the
+  // nearby-properties fetch only need what we already have from the
+  // property fetch above. Running them in parallel instead of one after
+  // another shaves a full round-trip off every page load.
+  const [{ user }, { data: nearbyProperties }] = await Promise.all([
+    getAuthenticatedUser(),
+    supabaseAdmin
+      .from("properties")
+      .select(PUBLIC_PROPERTY_COLUMNS)
+      .eq("school_tag", property.school_tag)
+      .eq("is_active", true)
+      .neq("id", property.id)
+      .limit(4),
+  ]);
+
   // Only attach contact info if this specific visitor is logged in AND has
   // an actual paid unlock for this specific property. Nothing else on this
   // page — not the map, not search, not the saved list — is allowed to
-  // include these fields at all.
+  // include these fields at all. This part has to stay sequential: we
+  // can't know whether to fetch contact fields until we know whether
+  // there's an actual unlock row for this user.
   let contactFields: Record<string, string | null> = {};
   let isUnlocked = false;
-
-  const { user } = await getAuthenticatedUser();
 
   if (user) {
     const { data: unlock } = await supabaseAdmin
@@ -79,16 +94,6 @@ export default async function PropertyPage({
     ...contactFields,
     isUnlocked,
   };
-
-  // Fetch nearby properties (same school, exclude current) — same
-  // allowlist, contact info is never relevant for the preview carousel.
-  const { data: nearbyProperties } = await supabaseAdmin
-    .from("properties")
-    .select(PUBLIC_PROPERTY_COLUMNS)
-    .eq("school_tag", property.school_tag)
-    .eq("is_active", true)
-    .neq("id", property.id)
-    .limit(4);
 
   return (
     <PropertyClient
