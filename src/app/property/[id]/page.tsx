@@ -3,6 +3,8 @@ import { supabaseAdmin } from "@/lib/supabaseAdmin";
 import { getAuthenticatedUser } from "@/lib/supabaseServer";
 import PropertyClient from "./PropertyClient";
 
+import type { Metadata } from "next";
+
 export const dynamic = "force-dynamic";
 
 // Every field EXCEPT landlord/caretaker contact info. This page must never
@@ -23,6 +25,95 @@ const CONTACT_COLUMNS = `
   landlord_phone, landlord_whatsapp,
   caretaker_name, caretaker_phone, caretaker_whatsapp
 `;
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}): Promise<Metadata> {
+  const { id } = await params;
+
+  const { data: property } = await supabaseAdmin
+    .from("properties")
+    .select(`
+      id,
+      title,
+      price,
+      description,
+      image_url,
+      location,
+      category,
+      room_count
+    `)
+    .eq("id", id)
+    .single();
+
+  if (!property) {
+    return {
+      title: "Property Not Found",
+    };
+  }
+
+  const title =
+    `${property.title} • ₦${Number(property.price).toLocaleString()} | RHOAM`;
+
+  const description =
+    property.description ??
+    `Explore this ${property.category} in ${property.location} on RHOAM.`;
+
+  return {
+    title,
+
+    description,
+
+    keywords: [
+      property.category,
+      property.location,
+      property.title,
+      "Apartment",
+      "Student Accommodation",
+      "Shortlet",
+      "Hotel",
+      "RHOAM",
+    ],
+
+    openGraph: {
+      title,
+
+      description,
+
+      images: property.image_url
+        ? [
+            {
+              url: property.image_url,
+              width: 1200,
+              height: 630,
+              alt: property.title,
+            },
+          ]
+        : [],
+
+      type: "website",
+    },
+
+    twitter: {
+      card: "summary_large_image",
+
+      title,
+
+      description,
+
+      images: property.image_url
+        ? [property.image_url]
+        : [],
+    },
+
+    alternates: {
+      canonical: `/property/${id}`,
+    },
+  };
+}
+
+
 
 export default async function PropertyPage({
   params,
@@ -94,11 +185,52 @@ export default async function PropertyPage({
     ...contactFields,
     isUnlocked,
   };
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Apartment",
+  
+    name: fullProperty.title,
+  
+    description: fullProperty.description,
+  
+    image:
+      fullProperty.images?.length
+        ? fullProperty.images
+        : fullProperty.image_url
+        ? [fullProperty.image_url]
+        : [],
+  
+    address: {
+      "@type": "PostalAddress",
+      streetAddress: fullProperty.address ?? "",
+      addressLocality: fullProperty.location ?? "",
+      addressCountry: "NG",
+    },
+  
+    offers: {
+      "@type": "Offer",
+      price: fullProperty.price,
+      priceCurrency: "NGN",
+      availability: fullProperty.is_available
+        ? "https://schema.org/InStock"
+        : "https://schema.org/SoldOut",
+    },
+  };
+  
 
   return (
-    <PropertyClient
-      property={fullProperty}
-      nearbyProperties={nearbyProperties || []}
-    />
+    <>
+  <script
+    type="application/ld+json"
+    dangerouslySetInnerHTML={{
+      __html: JSON.stringify(jsonLd),
+    }}
+  />
+
+  <PropertyClient
+    property={fullProperty}
+    nearbyProperties={nearbyProperties || []}
+  />
+</>
   );
 }
