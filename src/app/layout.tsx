@@ -7,53 +7,37 @@ import { ToastProvider } from "@/components/ToastProvider";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://rhoam.ng"), // change to your domain when live
-
+  metadataBase: new URL("https://rhoam.ng"),
   title: {
-    default: "RHOAM",
+    default: "Rhoam | Student Apartments Near You", // changed
     template: "%s | RHOAM",
   },
-
   description:
-    "Nigeria's map-first platform for discovering student accommodation, apartments, shortlets and hotels.",
-
-  keywords: [
-    "RHOAM",
-    "Student Accommodation",
-    "Apartments",
-    "Shortlets",
-    "Hotels",
-    "Property",
-    "Nigeria",
-    "ESUT",
-    "UNN",
-    "Map",
-  ],
+    "Nigeria's map-first platform for discovering student accommodation", // use your OG description here too
 
   openGraph: {
-    title: "RHOAM",
+    url: 'https://rhoam.ng',
+    title: "Rhoam | Student Apartments Near You", // match
     description:
-      "Find verified student accommodation, apartments, shortlets and hotels on one interactive map.",
-
+      "Nigeria's map-first platform for discovering student accommodation",
     siteName: "RHOAM",
     images: [
       {
-        url: '/rhoam-logo.jpeg', // put image in public/assets/
+        url: '/rhoam-logo.jpeg',
         width: 1200,
         height: 630,
         alt: 'Rhoam - Map-first rentals in Nigeria',
       },
     ],
-
     type: "website",
   },
 
   twitter: {
     card: "summary_large_image",
-    title: "RHOAM",
+    title: "Rhoam | Student Apartments Near You", // match
     description:
       "Discover verified properties on RHOAM.",
-      images: ['/rhoam-logo.jpeg'],
+    images: ['/rhoam-logo.jpeg'],
   },
 };
 
