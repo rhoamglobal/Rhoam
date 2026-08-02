@@ -106,6 +106,7 @@ export async function generateMetadata({
         ? [property.image_url]
         : [],
     },
+    
 
     alternates: {
       canonical: `/property/${id}`,
@@ -185,9 +186,17 @@ export default async function PropertyPage({
     ...contactFields,
     isUnlocked,
   };
+
+  const schemaType =
+    fullProperty.category === "Hotel"
+      ? "Hotel"
+      : fullProperty.category === "Shortlet"
+      ? "LodgingBusiness"
+      : "Apartment";
+      
   const jsonLd = {
     "@context": "https://schema.org",
-    "@type": "Apartment",
+    "@type": schemaType,
   
     name: fullProperty.title,
   
@@ -220,17 +229,17 @@ export default async function PropertyPage({
 
   return (
     <>
-  <script
-    type="application/ld+json"
-    dangerouslySetInnerHTML={{
-      __html: JSON.stringify(jsonLd),
-    }}
-  />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(jsonLd),
+        }}
+      />
 
-  <PropertyClient
-    property={fullProperty}
-    nearbyProperties={nearbyProperties || []}
-  />
-</>
+      <PropertyClient
+        property={fullProperty}
+        nearbyProperties={nearbyProperties || []}
+      />
+    </>
   );
 }

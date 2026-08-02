@@ -36,6 +36,14 @@ export const metadata: Metadata = {
       "Find verified student accommodation, apartments, shortlets and hotels on one interactive map.",
 
     siteName: "RHOAM",
+    images: [
+      {
+        url: '/public/rhoam-logo.jpeg', // put image in public/assets/
+        width: 1200,
+        height: 630,
+        alt: 'Rhoam - Map-first rentals in Nigeria',
+      },
+    ],
 
     type: "website",
   },
@@ -45,6 +53,7 @@ export const metadata: Metadata = {
     title: "RHOAM",
     description:
       "Discover verified properties on RHOAM.",
+      images: ['/public/rhoam-logo.jpeg'],
   },
 };
 
