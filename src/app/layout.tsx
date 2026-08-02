@@ -38,7 +38,7 @@ export const metadata: Metadata = {
     siteName: "RHOAM",
     images: [
       {
-        url: '/public/rhoam-logo.jpeg', // put image in public/assets/
+        url: '/rhoam-logo.jpeg', // put image in public/assets/
         width: 1200,
         height: 630,
         alt: 'Rhoam - Map-first rentals in Nigeria',
@@ -53,7 +53,7 @@ export const metadata: Metadata = {
     title: "RHOAM",
     description:
       "Discover verified properties on RHOAM.",
-      images: ['/public/rhoam-logo.jpeg'],
+      images: ['/rhoam-logo.jpeg'],
   },
 };
 
