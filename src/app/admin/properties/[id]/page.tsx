@@ -36,6 +36,7 @@ export default function EditPropertyPage() {
   // room count
   const [roomCount, setRoomCount] = useState("");
   const [occupantsPerRoom, setOccupantsPerRoom] = useState("");
+  const [multipleUnitsAvailable, setMultipleUnitsAvailable] = useState(false);
 
   const [amenities, setAmenities] = useState("");
   const [landlordPhone, setLandlordPhone] = useState("");
@@ -58,18 +59,21 @@ export default function EditPropertyPage() {
     const fetchProperty = async () => {
       if (!id) return;
 
-      const { data, error } = await supabase
-        .from("properties")
-        .select("*")
-        .eq("id", id)
-        .single();
+      // Contact fields are no longer selectable via the anon/authenticated
+      // Postgres role at all (see supabase-restrict-contact-columns.sql),
+      // so this has to go through a server route that checks admin status
+      // itself and reads with the service-role client.
+      const res = await fetch(`/api/admin/properties/${id}`);
+      const json = await res.json();
 
       if (!active) return;
 
-      if (error) {
-        showToast(error.message);
+      if (!res.ok) {
+        showToast(json.message || "Couldn't load this property.");
         return;
       }
+
+      const data = json.property;
 
       setTitle(data.title || "");
       setDescription(data.description || "");
@@ -82,6 +86,7 @@ export default function EditPropertyPage() {
       setGalleryImages(data.images || []);
       setRoomCount(String(data.room_count || ""));
       setOccupantsPerRoom(String(data.occupants_per_room || ""));
+      setMultipleUnitsAvailable(Boolean(data.multiple_units_available));
 
       setAmenities(
         Array.isArray(data.amenities)
@@ -186,9 +191,16 @@ export default function EditPropertyPage() {
   
 
   
-    const { error } = await supabase
-      .from("properties")
-      .update({
+    // Contact fields can no longer be written via a direct client-side
+    // update — the anon/authenticated Postgres role has had column-level
+    // UPDATE revoked on those columns (see
+    // supabase-restrict-contact-columns.sql). This now goes through a
+    // server route that re-checks admin status and writes with the
+    // service-role client.
+    const res = await fetch(`/api/admin/properties/${id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
         title,
         description,
         address,
@@ -196,13 +208,14 @@ export default function EditPropertyPage() {
         category,
         school_tag: schoolTag,
         location,
-      
+
         image_url: updatedImageUrl,
-      
+
         images: finalGallery,
         room_count: Number(roomCount),
         occupants_per_room: Number(occupantsPerRoom),
-      
+        multiple_units_available: multipleUnitsAvailable,
+
         amenities: amenities
           .split(",")
           .map((x) => x.trim())
@@ -212,13 +225,15 @@ export default function EditPropertyPage() {
         caretaker_name: caretakerName || null,
         caretaker_phone: caretakerPhone || null,
         caretaker_whatsapp: caretakerWhatsapp || null,
-      })
-      .eq("id", id);
+      }),
+    });
+
+    const json = await res.json();
 
     setSaving(false);
 
-    if (error) {
-        showToast(error.message);
+    if (!res.ok) {
+      showToast(json.message || "Couldn't save this property.");
       return;
     }
 
@@ -347,6 +362,29 @@ export default function EditPropertyPage() {
                       className="w-full border rounded-2xl p-4"
                     />
                   </div>
+                </div>
+
+                <div>
+                  <label className="flex items-center gap-3 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={multipleUnitsAvailable}
+                      onChange={(e) =>
+                        setMultipleUnitsAvailable(e.target.checked)
+                      }
+                      className="h-5 w-5 rounded border-gray-300 accent-[#ff5a5f]"
+                    />
+                    <span className="font-medium">
+                      Multiple rooms confirmed available
+                    </span>
+                  </label>
+                  <p className="mt-1.5 text-xs text-gray-400 ml-8">
+                    Only check this for multi-room properties (hostels, lodges) where
+                    you&rsquo;ve personally confirmed more than one vacant room. Shows a
+                    &ldquo;Multiple rooms available&rdquo; badge that stays active longer than
+                    a normal single-unit confirmation. Leave unchecked for single-unit
+                    listings.
+                  </p>
                 </div>
 
                 <div>

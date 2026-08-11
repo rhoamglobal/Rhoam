@@ -7,6 +7,7 @@ import {
   GraduationCap,
   LayoutGrid,
 } from "lucide-react";
+import { Z_CLASS } from "@/lib/zIndex";
 
 type Props = {
   active: string;
@@ -22,7 +23,7 @@ export const CATEGORIES = [
 
 export default function CategoryBar({ active, setActive }: Props) {
   return (
-    <div className="absolute top-[78px] left-0 w-full z-[900]">
+    <div className={`absolute top-[78px] left-0 w-full ${Z_CLASS.categoryBar}`}>
       <div className="flex gap-4 overflow-x-auto px-6 py-3 scrollbar-hide">
         {CATEGORIES.map(({ name, icon: Icon }) => {
           const isActive = active === name;

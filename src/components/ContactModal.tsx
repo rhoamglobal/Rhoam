@@ -1,7 +1,11 @@
 "use client";
 
+import { Z_CLASS } from "@/lib/zIndex";
 import { AnimatePresence, motion } from "framer-motion";
-import { Phone, MessageCircle, X } from "lucide-react";
+import { Phone, MessageCircle, X, Flag } from "lucide-react";
+import { useDialogA11y } from "@/hooks/useDialogA11y";
+import { usePrefersReducedMotion } from "@/hooks/usePrefersReducedMotion";
+import { getModalPanelMotion } from "@/lib/motionPresets";
 
 type ContactPerson = {
   role: string;
@@ -18,6 +22,7 @@ type Props = {
   caretakerPhone?: string | null;
   caretakerWaLink?: string | null;
   onClose: () => void;
+  onReportIssue?: () => void;
 };
 
 function ContactRow({ role, name, phone, waLink }: ContactPerson) {
@@ -68,11 +73,15 @@ export default function ContactModal({
   caretakerPhone,
   caretakerWaLink,
   onClose,
+  onReportIssue,
 }: Props) {
+  const { panelRef } = useDialogA11y({ open, onClose });
+  const panelMotion = getModalPanelMotion(usePrefersReducedMotion());
+
   return (
     <AnimatePresence>
       {open && (
-        <div className="fixed inset-0 z-[10000] flex items-end sm:items-center justify-center">
+        <div className={`fixed inset-0 ${Z_CLASS.criticalModal} flex items-end sm:items-center justify-center`}>
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -82,10 +91,12 @@ export default function ContactModal({
           />
 
           <motion.div
-            initial={{ opacity: 0, y: 40, scale: 0.98 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 24, scale: 0.98 }}
-            transition={{ type: "spring", stiffness: 340, damping: 30 }}
+            ref={panelRef}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="contact-modal-title"
+            tabIndex={-1}
+            {...panelMotion}
             className="
               relative w-full sm:max-w-sm
               bg-white
@@ -95,7 +106,7 @@ export default function ContactModal({
             "
           >
             <div className="flex items-center justify-between mb-5">
-              <h2 className="text-xl font-semibold text-gray-900">
+              <h2 id="contact-modal-title" className="text-xl font-semibold text-gray-900">
                 Contact details
               </h2>
 
@@ -122,6 +133,19 @@ export default function ContactModal({
                 waLink={caretakerWaLink}
               />
             </div>
+
+            {onReportIssue && (
+              <button
+                onClick={() => {
+                  onClose();
+                  onReportIssue();
+                }}
+                className="mt-5 w-full flex items-center justify-center gap-2 text-sm font-medium text-gray-500 hover:text-[#ff5a5f] transition py-2"
+              >
+                <Flag size={14} />
+                Report an issue with this contact
+              </button>
+            )}
           </motion.div>
         </div>
       )}

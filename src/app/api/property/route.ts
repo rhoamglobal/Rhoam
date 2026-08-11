@@ -40,6 +40,7 @@ export async function GET(req: Request) {
       image_url, images, description, amenities,
       school_tag, location, is_verified, address,
       is_available, is_visible, is_active,
+      verified_at, last_confirmed_at,
       room_count, occupants_per_room, bathroom_count
     `
     )

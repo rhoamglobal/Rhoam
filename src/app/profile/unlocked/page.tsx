@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/components/providers/AuthProvider";
 import Image from "next/image";
 import Link from "next/link";
@@ -56,32 +55,21 @@ export default function UnlockedPage() {
     const fetchUnlocked = async () => {
       if (!user) return;
 
-      const { data } = await supabase
-        .from("contact_unlocks")
-        .select(
-          `
-          id,
-          property_id,
-          properties (
-            id,
-            title,
-            price,
-            image_url,
-            images,
-            landlord_phone,
-            landlord_whatsapp,
-            caretaker_name,
-            caretaker_phone,
-            caretaker_whatsapp,
-            school_tag,
-            location
-          )
-        `
-        )
-        .returns<UnlockedProperty[]>();
+      // Contact fields (landlord_phone, caretaker_phone, etc.) are no
+      // longer readable via a direct client-side query — the anon/
+      // authenticated Postgres role has had column-level SELECT revoked
+      // on those columns (see supabase-restrict-contact-columns.sql).
+      // This now has to go through a server route using the service-role
+      // client, which re-checks the unlock ownership itself.
+      try {
+        const res = await fetch("/api/profile/unlocked");
+        const json = await res.json();
 
-      if (data) {
-        setProperties(data);
+        if (res.ok) {
+          setProperties(json.properties as UnlockedProperty[]);
+        }
+      } catch {
+        // Leave properties empty; the empty-state UI below covers this.
       }
 
       setLoading(false);

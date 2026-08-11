@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect } from "react";
+import { Z_CLASS } from "@/lib/zIndex";
+import { useDialogA11y } from "@/hooks/useDialogA11y";
 
 type Props = {
   open: boolean;
@@ -21,19 +22,12 @@ export default function ConfirmModal({
   onConfirm,
   onCancel,
 }: Props) {
-  useEffect(() => {
-    const handleEsc = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onCancel();
-    };
-
-    window.addEventListener("keydown", handleEsc);
-    return () => window.removeEventListener("keydown", handleEsc);
-  }, [onCancel]);
+  const { panelRef } = useDialogA11y({ open, onClose: onCancel });
 
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-[9999] flex items-center justify-center">
+    <div className={`fixed inset-0 ${Z_CLASS.modalPanel} flex items-center justify-center`}>
       
       {/* overlay */}
       <div
@@ -42,9 +36,16 @@ export default function ConfirmModal({
       />
 
       {/* modal */}
-      <div className="relative w-full max-w-sm bg-white rounded-3xl shadow-2xl p-6 animate-fadeIn">
+      <div
+        ref={panelRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="confirm-modal-title"
+        tabIndex={-1}
+        className="relative w-full max-w-sm bg-white rounded-3xl shadow-2xl p-6 animate-fadeIn"
+      >
 
-        <h2 className="text-lg font-semibold text-gray-800">
+        <h2 id="confirm-modal-title" className="text-lg font-semibold text-gray-800">
           {title}
         </h2>
 

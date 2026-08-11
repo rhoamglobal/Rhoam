@@ -12,6 +12,7 @@ import {
   Navigation,
   Sparkles,
   CheckCircle2,
+  SearchX,
 } from "lucide-react";
 
 import {
@@ -35,6 +36,7 @@ type Props = {
   }[];
   properties?: Property[];
   loading?: boolean;
+  query?: string;
   onFlyTo: (target: {
     latitude: number;
     longitude: number;
@@ -47,6 +49,7 @@ export default function SearchSuggestions({
   locations = [],
   properties = [],
   loading = false,
+  query = "",
   onFlyTo,
   onPreview,
 }: Props) {
@@ -62,7 +65,13 @@ export default function SearchSuggestions({
     locations.length > 0 ||
     properties.length > 0;
 
-  if (!loading && !hasResults) {
+  const hasQuery = query.trim().length > 0;
+
+  // Previously this returned null the moment there were zero results,
+  // which is correct for "nothing typed yet" but silently hid the
+  // dropdown for "typed something, zero matches" too — indistinguishable
+  // from the search being broken. Only bail out to null for the former.
+  if (!loading && !hasResults && !hasQuery) {
     return null;
   }
 
@@ -88,6 +97,18 @@ export default function SearchSuggestions({
               </div>
             ))}
           </div>
+        </div>
+      ) : !hasResults && hasQuery ? (
+        <div className="flex flex-col items-center px-6 py-8 text-center">
+          <div className="h-11 w-11 rounded-2xl bg-gray-100 flex items-center justify-center mb-3">
+            <SearchX size={18} className="text-gray-400" />
+          </div>
+          <p className="text-sm font-semibold text-gray-900">
+            No matches for &ldquo;{query}&rdquo;
+          </p>
+          <p className="mt-1 text-xs text-gray-500 max-w-[220px]">
+            Try a different school, area, or apartment name.
+          </p>
         </div>
       ) : (
         <>

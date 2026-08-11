@@ -18,7 +18,8 @@ const PUBLIC_PROPERTY_COLUMNS = `
   image_url, images, description, amenities,
   school_tag, location, is_verified, address,
   is_available, is_visible, is_active,
-  room_count, occupants_per_room, bathroom_count
+  verified_at, verified_by, last_confirmed_at,
+  room_count, occupants_per_room, bathroom_count, multiple_units_available
 `;
 
 const CONTACT_COLUMNS = `

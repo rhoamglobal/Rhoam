@@ -11,6 +11,7 @@ import { Property } from "../types";
 import { schools } from "@/lib/schools";
 import { useDebounce } from "@/hooks/useDebounce";
 import { Search, SlidersHorizontal, X } from "lucide-react";
+import { Z_CLASS } from "@/lib/zIndex";
 
 export default function SearchBar({
   search,
@@ -149,7 +150,7 @@ export default function SearchBar({
   return (
     <div
       ref={wrapperRef}
-      className="relative z-[2000] mx-auto mt-4 w-full max-w-2xl px-3 sm:px-4"
+      className={`relative ${Z_CLASS.propertyFloatingControls} mx-auto mt-4 w-full max-w-2xl px-3 sm:px-4`}
     >
       <div
         className={`
@@ -229,6 +230,7 @@ export default function SearchBar({
               locations={locationMatches}
               properties={visibleProperties}
               loading={loadingSuggestions}
+              query={input}
               onFlyTo={(target) => {
                 setFlyTarget(target);
                 setIsFocused(false);

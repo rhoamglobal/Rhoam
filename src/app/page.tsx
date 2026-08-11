@@ -28,10 +28,22 @@ export default function Page() {
         search={search}
         filters={filters}
         flyTarget={flyTarget}
+        onResetNarrowing={() => {
+          setCategory("All");
+          setSearch("");
+          setFilters(emptyFilters);
+        }}
       />
 
-      {/* 🔝 UI overlays the map */}
-      <div className="absolute top-0 left-0 w-full z-[1000]">
+      {/* 🔝 UI overlays the map. No z-index here on purpose — TopBar and
+          Categories each set their own (propertyFloatingControls and
+          categoryBar respectively). Giving this wrapper its own z-index
+          would create a new stacking context that caps both of them at
+          that value, regardless of what they declare internally — which
+          is exactly what was making the search dropdown and filter panel
+          render behind the map's PreviewCard (also propertyFloatingControls,
+          but outside this wrapper and therefore not capped). */}
+      <div className="absolute top-0 left-0 w-full">
         <TopBar
           search={search}
           setSearch={setSearch}

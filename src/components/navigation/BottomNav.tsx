@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Map, Heart, User } from "lucide-react";
+import { Z_CLASS } from "@/lib/zIndex";
 
 export default function BottomNav() {
   const pathname = usePathname();
@@ -18,12 +19,12 @@ export default function BottomNav() {
 
   return (
     <nav
-      className="
-        fixed bottom-0 left-0 w-full z-[1000]
+      className={`
+        fixed bottom-0 left-0 w-full ${Z_CLASS.mapControls}
         h-16 pb-safe
         bg-white border-t border-gray-200
         shadow-[0_-4px_20px_rgba(0,0,0,0.06)]
-      "
+      `}
     >
       <div className="flex items-center justify-around h-16">
         {tabs.map((tab) => {

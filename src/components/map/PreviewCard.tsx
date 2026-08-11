@@ -6,7 +6,8 @@ import Image from "next/image";
 import { Property } from "./types";
 import { useEffect, useState } from "react";
 import { isSaved, toggleSaved } from "@/lib/saved";
-import { Heart, CheckCircle2, MapPin, ArrowRight } from "lucide-react";
+import { Heart, CheckCircle2, MapPin, ArrowRight, X } from "lucide-react";
+import { Z_CLASS } from "@/lib/zIndex";
 import { useAuth } from "@/components/providers/AuthProvider";
 
 import { schools } from "@/lib/schools";
@@ -18,8 +19,13 @@ import {
 
 export default function PreviewCard({
   property,
+  onClose,
 }: {
   property: Property | null;
+  // Previously the only way to dismiss this card was tapping elsewhere on
+  // the map (via CloseOnMapClick) — no visible affordance told anyone
+  // that. This makes dismissal explicit and discoverable (RHM-106).
+  onClose?: () => void;
 }) {
   const router = useRouter();
   const { user } = useAuth();
@@ -92,8 +98,8 @@ export default function PreviewCard({
           exit={{ y: 120, x: "-50%", opacity: 0 }}
           transition={{ type: "spring", stiffness: 320, damping: 30 }}
           onClick={() => router.push(`/property/${property.id}`)}
-          className="
-            fixed bottom-10 left-1/2 z-[2000]
+          className={`
+            fixed bottom-10 left-1/2 ${Z_CLASS.propertyFloatingControls}
             w-[min(360px,92vw)]
             bg-white rounded-[28px]
             overflow-hidden
@@ -101,7 +107,8 @@ export default function PreviewCard({
             cursor-pointer
             transition-transform duration-200
             hover:-translate-y-0.5
-          "
+            
+          `}
         >
           {/* IMAGE */}
           <div className="relative h-44 w-full bg-gray-100">
@@ -119,6 +126,28 @@ export default function PreviewCard({
             />
 
             <div className="absolute inset-0 bg-gradient-to-t from-black/35 via-black/0 to-transparent" />
+
+            {/* CLOSE BUTTON */}
+            {onClose && (
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onClose();
+                }}
+                className="
+                  absolute top-3 left-3
+                  h-10 w-10 rounded-full
+                  bg-white/95 hover:bg-white
+                  shadow-md
+                  flex items-center justify-center
+                  transition
+                  z-10
+                "
+                aria-label="Close preview"
+              >
+                <X size={18} color="#374151" />
+              </button>
+            )}
 
             {/* SAVE BUTTON */}
             <button

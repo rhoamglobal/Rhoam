@@ -33,6 +33,7 @@ export default function AddPropertyPage() {
 
   const [roomCount, setRoomCount] = useState("");
   const [occupantsPerRoom, setOccupantsPerRoom] = useState("");
+  const [multipleUnitsAvailable, setMultipleUnitsAvailable] = useState(false);
 
   const [amenities, setAmenities] = useState("");
 
@@ -94,47 +95,52 @@ export default function AddPropertyPage() {
     }
     
   
-    const { error } = await supabase
-      .from("properties")
-      .insert([
-        {
-          title,
-          description,
-          address,
-        
-          category,
-          school_tag: schoolTag,
-          location,
-        
-          price: Number(price),
-        
-          room_count: Number(roomCount),
-          occupants_per_room: Number(
-            occupantsPerRoom
-          ),
-        
-          latitude: Number(latitude),
-          longitude: Number(longitude),
-        
-          landlord_phone: landlordPhone,
-          landlord_whatsapp: landlordWhatsapp || null,
-          caretaker_name: caretakerName || null,
-          caretaker_phone: caretakerPhone || null,
-          caretaker_whatsapp: caretakerWhatsapp || null,
-        
-          image_url: imageUrl,
-        
-          images: [
-            imageUrl,
-            ...galleryUrls,
-          ],
-        
-          amenities: amenities
-            .split(",")
-            .map((x) => x.trim())
-            .filter(Boolean),
-        }
-        ]);
+    // Contact fields can no longer be written via a direct client-side
+    // insert — the anon/authenticated Postgres role has had column-level
+    // INSERT revoked on those columns (see
+    // supabase-restrict-contact-columns.sql). This now goes through a
+    // server route that checks admin status and writes with the
+    // service-role client.
+    const res = await fetch("/api/admin/properties", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        title,
+        description,
+        address,
+
+        category,
+        school_tag: schoolTag,
+        location,
+
+        price: Number(price),
+
+        room_count: Number(roomCount),
+        occupants_per_room: Number(occupantsPerRoom),
+        multiple_units_available: multipleUnitsAvailable,
+
+        latitude: Number(latitude),
+        longitude: Number(longitude),
+
+        landlord_phone: landlordPhone,
+        landlord_whatsapp: landlordWhatsapp || null,
+        caretaker_name: caretakerName || null,
+        caretaker_phone: caretakerPhone || null,
+        caretaker_whatsapp: caretakerWhatsapp || null,
+
+        image_url: imageUrl,
+
+        images: [imageUrl, ...galleryUrls],
+
+        amenities: amenities
+          .split(",")
+          .map((x) => x.trim())
+          .filter(Boolean),
+      }),
+    });
+
+    const json = await res.json();
+    const error = res.ok ? null : { message: json.message || "Couldn't create this property." };
 
     setLoading(false);
   
@@ -195,6 +201,20 @@ export default function AddPropertyPage() {
         />
 
         </div>
+
+        <label className="flex items-center gap-3 cursor-pointer border p-4 rounded-2xl">
+          <input
+            type="checkbox"
+            checked={multipleUnitsAvailable}
+            onChange={(e) =>
+              setMultipleUnitsAvailable(e.target.checked)
+            }
+            className="h-5 w-5 rounded border-gray-300 accent-[#ff5a5f]"
+          />
+          <span className="font-medium">
+            Multiple rooms confirmed available (multi-unit properties only)
+          </span>
+        </label>
 
         <select
           value={category}

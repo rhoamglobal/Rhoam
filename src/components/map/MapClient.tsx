@@ -18,7 +18,9 @@ import { Property } from "./types";
 import RememberMapView from "./RememberMapView";
 
 import { detectSchoolFromSearch } from "@/lib/detectSchool";
-import { Filters, emptyFilters } from "./topbar/filters/SmartFilters";
+import { Filters, emptyFilters, countActive } from "./topbar/filters/SmartFilters";
+import MapEmptyState from "./MapEmptyState";
+import ValuePropBanner from "./ValuePropBanner";
 
   // ✅ school search HERE
 
@@ -53,6 +55,7 @@ type Props = {
     latitude: number;
     longitude: number;
   } | null;
+  onResetNarrowing?: () => void;
 };
 
 export default function MapClient({
@@ -60,6 +63,7 @@ export default function MapClient({
   search,
   filters = emptyFilters,
   flyTarget,
+  onResetNarrowing,
 }: Props) {
   const [selected, setSelected] = useState<Property | null>(null);
   const [bounds, setBounds] = useState<LatLngBounds | null>(null);
@@ -75,7 +79,7 @@ export default function MapClient({
 
   
   // ✅ database filtering
-  const properties = usePropertySearch({
+  const { properties, status, refetch } = usePropertySearch({
     bounds,
     category,
     search: debouncedSearch,
@@ -83,6 +87,17 @@ export default function MapClient({
   });
 
   const { user } = useAuth();
+
+  // Used to pick which empty-state message applies (RHM-114): a search
+  // that's actively narrowed down (category/search/filters) gets a
+  // "widen your search" message, while a genuinely empty area (no
+  // narrowing applied at all) gets a cold-start "not here yet" message.
+  const isNarrowed =
+    category !== "All" || debouncedSearch.trim().length > 0 || countActive(filters) > 0;
+
+  const showEmptyState =
+    status === "success" && Array.isArray(properties) && properties.length === 0;
+  const showErrorState = status === "error";
 
 
   
@@ -158,8 +173,22 @@ export default function MapClient({
           
       </MapContainer>
 
+      <ValuePropBanner />
 
-<PreviewCard property={selected} />
+      {showErrorState && <MapEmptyState variant="error" onRetry={refetch} />}
+
+      {showEmptyState &&
+        !showErrorState &&
+        (isNarrowed ? (
+          <MapEmptyState
+            variant="narrowed-empty"
+            onReset={() => onResetNarrowing?.()}
+          />
+        ) : (
+          <MapEmptyState variant="cold-start-empty" />
+        ))}
+
+      <PreviewCard property={selected} onClose={() => setSelected(null)} />
     </div>
   );
 }

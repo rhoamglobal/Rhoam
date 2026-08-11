@@ -7,8 +7,10 @@ import { motion } from "framer-motion";
 import { useRouter, useSearchParams } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import { getAuthErrorMessage } from "@/lib/getAuthErrorMessage";
-import { isValidEmail } from "@/lib/auth_utils";
-import { Mail, Lock, Eye, EyeOff, WifiOff, ArrowRight, ChevronLeft } from "lucide-react";
+import { isValidEmail, getPasswordError } from "@/lib/auth_utils";
+import { Mail, Lock, Eye, EyeOff, ArrowRight, ChevronLeft } from "lucide-react";
+import OAuthButtons from "@/components/auth/OAuthButtons";
+import { useOnlineStatus } from "@/hooks/useOnlineStatus";
 
 function LoginForm() {
   const router = useRouter();
@@ -21,29 +23,22 @@ function LoginForm() {
   const [loading, setLoading] = useState(false);
 
   const [errorMsg, setErrorMsg] = useState("");
-  const [isOnline, setIsOnline] = useState(() =>
-    typeof navigator === "undefined" ? true : navigator.onLine
-  );
+  const isOnline = useOnlineStatus();
+
+  // Surfaces a failure from the OAuth callback route (e.g. exchangeCodeForSession
+  // failing) through the same error banner used for email/password errors,
+  // rather than that redirect param silently going nowhere.
+  useEffect(() => {
+    const oauthError = searchParams.get("error");
+    if (oauthError) setErrorMsg(oauthError);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const [emailError, setEmailError] = useState("");
   const [passwordError, setPasswordError] = useState("");
   const [shake, setShake] = useState(false);
   const [emailFocused, setEmailFocused] = useState(false);
   const [passwordFocused, setPasswordFocused] = useState(false);
-
-  // 🌐 NETWORK DETECTION
-  useEffect(() => {
-    const online = () => setIsOnline(true);
-    const offline = () => setIsOnline(false);
-
-    window.addEventListener("online", online);
-    window.addEventListener("offline", offline);
-
-    return () => {
-      window.removeEventListener("online", online);
-      window.removeEventListener("offline", offline);
-    };
-  }, []);
 
   const handleLogin = async () => {
     if (!isOnline) {
@@ -105,14 +100,6 @@ function LoginForm() {
         <ChevronLeft size={18} />
       </Link>
 
-      {/* offline banner */}
-      {!isOnline && (
-        <div className="absolute top-5 flex items-center gap-2 px-4 py-2 bg-yellow-50 border border-yellow-200 text-yellow-700 text-sm rounded-xl">
-          <WifiOff size={14} />
-          You are offline
-        </div>
-      )}
-
       <div className="relative w-full max-w-md">
 
         <motion.div
@@ -150,6 +137,11 @@ function LoginForm() {
               {errorMsg}
             </div>
           )}
+
+          {/* OAuth — recommended path, sits above the email/password fallback */}
+          <div className="mb-5">
+            <OAuthButtons redirect={redirect} disabled={loading} />
+          </div>
 
           {/* inputs */}
           <div className="space-y-5">
@@ -198,6 +190,16 @@ function LoginForm() {
                 <label className="text-xs font-medium text-gray-500">
                   Password
                 </label>
+                <Link
+                  href={
+                    redirect
+                      ? `/forgot-password?redirect=${encodeURIComponent(redirect)}`
+                      : "/forgot-password"
+                  }
+                  className="text-xs font-medium text-[#ff5a5f] hover:text-[#ff4d52] transition"
+                >
+                  Forgot password?
+                </Link>
               </div>
               <div
                 className={`relative mt-2 rounded-2xl transition-shadow ${
@@ -220,12 +222,7 @@ function LoginForm() {
                   onChange={(e) => {
                     const val = e.target.value;
                     setPassword(val);
-
-                    if (val && val.length < 6) {
-                      setPasswordError("Min 6 characters");
-                    } else {
-                      setPasswordError("");
-                    }
+                    setPasswordError(getPasswordError(val));
                   }}
                 />
                 <button

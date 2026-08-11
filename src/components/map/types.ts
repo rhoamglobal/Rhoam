@@ -20,6 +20,10 @@ export type Property = {
     school_tag: string;
     location: string;
     is_verified?: boolean;
+    verified_at?: string | null;
+    verified_by?: string | null;
+    last_confirmed_at?: string | null;
+    multiple_units_available?: boolean;
     address: string;
 
     is_available: boolean;

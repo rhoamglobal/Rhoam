@@ -1,14 +1,16 @@
 "use client";
 
-import { useEffect, useState, Suspense } from "react";
+import { useState, Suspense } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { motion } from "framer-motion";
 import { useRouter, useSearchParams } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import { getAuthErrorMessage } from "@/lib/getAuthErrorMessage";
-import { isValidEmail } from "@/lib/auth_utils";
-import { Mail, Lock, Eye, EyeOff, WifiOff, ArrowRight, ChevronLeft } from "lucide-react";
+import { isValidEmail, getPasswordError } from "@/lib/auth_utils";
+import { Mail, Lock, Eye, EyeOff, ArrowRight, ChevronLeft } from "lucide-react";
+import OAuthButtons from "@/components/auth/OAuthButtons";
+import { useOnlineStatus } from "@/hooks/useOnlineStatus";
 
 function SignupForm() {
   const router = useRouter();
@@ -21,9 +23,7 @@ function SignupForm() {
   const [loading, setLoading] = useState(false);
 
   const [errorMsg, setErrorMsg] = useState("");
-  const [isOnline, setIsOnline] = useState(() =>
-    typeof navigator === "undefined" ? true : navigator.onLine
-  );
+  const isOnline = useOnlineStatus();
 
   const [emailError, setEmailError] = useState("");
   const [passwordError, setPasswordError] = useState("");
@@ -31,18 +31,6 @@ function SignupForm() {
   const [emailFocused, setEmailFocused] = useState(false);
   const [passwordFocused, setPasswordFocused] = useState(false);
 
-  useEffect(() => {
-    const online = () => setIsOnline(true);
-    const offline = () => setIsOnline(false);
-
-    window.addEventListener("online", online);
-    window.addEventListener("offline", offline);
-
-    return () => {
-      window.removeEventListener("online", online);
-      window.removeEventListener("offline", offline);
-    };
-  }, []);
 
   const handleSignup = async () => {
     if (!isOnline) {
@@ -124,13 +112,6 @@ function SignupForm() {
         <ChevronLeft size={18} />
       </Link>
 
-      {!isOnline && (
-        <div className="absolute top-5 flex items-center gap-2 px-4 py-2 bg-yellow-50 border border-yellow-200 text-yellow-700 text-sm rounded-xl">
-          <WifiOff size={14} />
-          You are offline
-        </div>
-      )}
-
       <div className="relative w-full max-w-md">
 
         <motion.div
@@ -166,6 +147,10 @@ function SignupForm() {
               {errorMsg}
             </div>
           )}
+
+          <div className="mb-5">
+            <OAuthButtons redirect={redirect} disabled={loading} />
+          </div>
 
           <div className="space-y-5">
 
@@ -233,12 +218,7 @@ function SignupForm() {
                   onChange={(e) => {
                     const val = e.target.value;
                     setPassword(val);
-
-                    if (val && val.length < 6) {
-                      setPasswordError("Min 6 characters");
-                    } else {
-                      setPasswordError("");
-                    }
+                    setPasswordError(getPasswordError(val));
                   }}
                 />
                 <button

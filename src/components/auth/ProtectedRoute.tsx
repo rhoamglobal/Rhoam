@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 
 import { useAuth } from "@/components/providers/AuthProvider";
 
@@ -12,12 +12,17 @@ export default function ProtectedRoute({
 }) {
   const { user, loading } = useAuth();
   const router = useRouter();
+  const pathname = usePathname();
 
   useEffect(() => {
+    // Preserve where the user was trying to go, so logging in from
+    // /onboarding sends them back here instead of always to the homepage.
     if (!loading && !user) {
-      router.push("/onboarding");
+      router.push(
+        `/onboarding?redirect=${encodeURIComponent(pathname || "/")}`
+      );
     }
-  }, [user, loading]);
+  }, [user, loading, pathname]);
 
   if (loading || !user) {
     return (
@@ -36,7 +41,9 @@ export default function ProtectedRoute({
                 shadow-lg
               "
             >
-              
+              <span className="text-white text-2xl font-bold select-none">
+                R
+              </span>
             </div>
           </div>
   

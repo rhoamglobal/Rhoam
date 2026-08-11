@@ -2,6 +2,7 @@
 
 import { createContext, useContext, useState } from "react";
 import type { ReactNode } from "react";
+import { Z_CLASS } from "@/lib/zIndex";
 
 type ToastType = "error" | "success";
 
@@ -30,9 +31,23 @@ export function ToastProvider({ children }: { children: ReactNode }) {
     <ToastContext.Provider value={{ showToast }}>
       {children}
 
+      {/*
+        Deliberately the app's topmost z-index tier (see src/lib/zIndex.ts):
+        a toast can fire while a modal is open (e.g. the "already unlocked"
+        sync message while UnlockModal is up), and it needs to stay visible
+        rather than render behind that modal's backdrop.
+
+        aria-live="assertive" for errors since those need immediate
+        announcement (e.g. a failed payment); "polite" for success so it
+        doesn't interrupt whatever the screen reader is already reading.
+        Previously this had no aria-live at all, so none of these state
+        changes were ever announced to screen reader users.
+      */}
       {toast && (
         <div
-          className={`fixed top-5 left-1/2 -translate-x-1/2 px-4 py-3 rounded-xl text-white shadow-lg z-[9999] ${
+          role="status"
+          aria-live={toast.type === "error" ? "assertive" : "polite"}
+          className={`fixed top-5 left-1/2 -translate-x-1/2 px-4 py-3 rounded-xl text-white shadow-lg ${Z_CLASS.toast} ${
             toast.type === "error" ? "bg-red-500" : "bg-green-500"
           }`}
         >

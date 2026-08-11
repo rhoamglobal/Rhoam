@@ -10,6 +10,8 @@ type Args = {
   filters: Filters;
 };
 
+export type PropertySearchStatus = "idle" | "loading" | "error" | "success";
+
 export function usePropertySearch({
   bounds,
   category,
@@ -17,6 +19,8 @@ export function usePropertySearch({
   filters,
 }: Args) {
   const [properties, setProperties] = useState<Property[]>([]);
+  const [status, setStatus] = useState<PropertySearchStatus>("idle");
+  const [refetchToken, setRefetchToken] = useState(0);
 
   useEffect(() => {
     if (!bounds) return;
@@ -46,17 +50,31 @@ export function usePropertySearch({
     }
 
     let cancelled = false;
+    setStatus("loading");
 
     fetch(`/api/property?${params.toString()}`)
-      .then((res) => res.json())
+      .then((res) => {
+        if (!res.ok) throw new Error("Property search failed");
+        return res.json();
+      })
       .then((data) => {
-        if (!cancelled) setProperties(data);
+        if (cancelled) return;
+        setProperties(data);
+        setStatus("success");
+      })
+      .catch(() => {
+        if (cancelled) return;
+        setProperties([]);
+        setStatus("error");
       });
 
     return () => {
       cancelled = true;
     };
-  }, [bounds, category, search, filters]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [bounds, category, search, filters, refetchToken]);
 
-  return properties;
+  const refetch = () => setRefetchToken((t) => t + 1);
+
+  return { properties, status, refetch };
 }

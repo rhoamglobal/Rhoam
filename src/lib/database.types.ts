@@ -67,6 +67,12 @@ export type Database = {
           is_available: boolean;
           is_visible: boolean;
           is_active: boolean;
+          verified_at: string | null;
+          verified_by: string | null;
+          last_confirmed_at: string | null;
+          caretaker_email: string | null;
+          caretaker_status_token: string | null;
+          multiple_units_available: boolean;
         };
         Insert: {
           id?: string;
@@ -95,6 +101,12 @@ export type Database = {
           is_available?: boolean;
           is_visible?: boolean;
           is_active?: boolean;
+          verified_at?: string | null;
+          verified_by?: string | null;
+          last_confirmed_at?: string | null;
+          caretaker_email?: string | null;
+          caretaker_status_token?: string | null;
+          multiple_units_available?: boolean;
         };
         Update: {
           id?: string;
@@ -123,6 +135,12 @@ export type Database = {
           is_available?: boolean;
           is_visible?: boolean;
           is_active?: boolean;
+          verified_at?: string | null;
+          verified_by?: string | null;
+          last_confirmed_at?: string | null;
+          caretaker_email?: string | null;
+          caretaker_status_token?: string | null;
+          multiple_units_available?: boolean;
         };
         Relationships: [];
       };
@@ -151,6 +169,121 @@ export type Database = {
           property_id?: string;
           payment_reference?: string;
           payment_method?: string;
+        };
+        Relationships: [];
+      };
+
+      unlock_reports: {
+        Row: {
+          id: number;
+          created_at: string;
+          user_id: string;
+          property_id: string;
+          unlock_reference: string | null;
+          issue_type: "wrong_number" | "listing_gone" | "other";
+          note: string | null;
+          status: "open" | "reviewing" | "resolved";
+          resolved_at: string | null;
+          resolution_note: string | null;
+        };
+        Insert: {
+          id?: number;
+          created_at?: string;
+          user_id: string;
+          property_id: string;
+          unlock_reference?: string | null;
+          issue_type: "wrong_number" | "listing_gone" | "other";
+          note?: string | null;
+          status?: "open" | "reviewing" | "resolved";
+          resolved_at?: string | null;
+          resolution_note?: string | null;
+        };
+        Update: {
+          id?: number;
+          created_at?: string;
+          user_id?: string;
+          property_id?: string;
+          unlock_reference?: string | null;
+          issue_type?: "wrong_number" | "listing_gone" | "other";
+          note?: string | null;
+          status?: "open" | "reviewing" | "resolved";
+          resolved_at?: string | null;
+          resolution_note?: string | null;
+        };
+        Relationships: [];
+      };
+
+      waitlist_signups: {
+        Row: {
+          id: number;
+          created_at: string;
+          email: string;
+          context: string | null;
+        };
+        Insert: {
+          id?: number;
+          created_at?: string;
+          email: string;
+          context?: string | null;
+        };
+        Update: {
+          id?: number;
+          created_at?: string;
+          email?: string;
+          context?: string | null;
+        };
+        Relationships: [];
+      };
+
+      unlock_feedback: {
+        Row: {
+          id: number;
+          created_at: string;
+          user_id: string;
+          property_id: string;
+          response: "found_place" | "still_looking" | "no_response" | "listing_wrong";
+        };
+        Insert: {
+          id?: number;
+          created_at?: string;
+          user_id: string;
+          property_id: string;
+          response: "found_place" | "still_looking" | "no_response" | "listing_wrong";
+        };
+        Update: {
+          id?: number;
+          created_at?: string;
+          user_id?: string;
+          property_id?: string;
+          response?: "found_place" | "still_looking" | "no_response" | "listing_wrong";
+        };
+        Relationships: [];
+      };
+
+      availability_pings: {
+        Row: {
+          id: number;
+          created_at: string;
+          property_id: string;
+          requested_by_user_id: string | null;
+          status: "pending" | "confirmed_available" | "confirmed_taken";
+          responded_at: string | null;
+        };
+        Insert: {
+          id?: number;
+          created_at?: string;
+          property_id: string;
+          requested_by_user_id?: string | null;
+          status?: "pending" | "confirmed_available" | "confirmed_taken";
+          responded_at?: string | null;
+        };
+        Update: {
+          id?: number;
+          created_at?: string;
+          property_id?: string;
+          requested_by_user_id?: string | null;
+          status?: "pending" | "confirmed_available" | "confirmed_taken";
+          responded_at?: string | null;
         };
         Relationships: [];
       };

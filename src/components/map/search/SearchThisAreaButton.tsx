@@ -1,5 +1,7 @@
 "use client";
 
+import { Z_CLASS } from "@/lib/zIndex";
+
 type Props = {
   visible: boolean;
   onClick: () => void;
@@ -9,7 +11,7 @@ export default function SearchThisAreaButton({ visible, onClick }: Props) {
   if (!visible) return null;
 
   return (
-    <div className="absolute top-29 left-1/2 -translate-x-1/2 z-[1000]">
+    <div className={`absolute top-29 left-1/2 -translate-x-1/2 ${Z_CLASS.mapControls}`}>
       <button
         onClick={onClick}
         className="bg-white 
