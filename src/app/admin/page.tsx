@@ -109,6 +109,13 @@ export default function AdminPage() {
             >
               Error Log
             </Link>
+
+            <Link
+              href="/admin/availability-requests"
+              className="px-5 py-3 rounded-2xl bg-gray-100 font-medium"
+            >
+              Availability Requests
+            </Link>
   
           </div>
   

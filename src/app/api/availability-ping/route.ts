@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabaseAdmin";
 import { getAuthenticatedUser } from "@/lib/supabaseServer";
-import { sendCaretakerAvailabilityPing } from "@/lib/mailer";
+import { sendAdminAvailabilityPingNotice } from "@/lib/mailer";
 import { logError } from "@/lib/logError";
 
 const RATE_LIMIT_MS = 60 * 60 * 1000; // one ping per property per hour
@@ -28,7 +28,9 @@ export async function POST(req: Request) {
 
     const { data: property, error: propertyError } = await supabaseAdmin
       .from("properties")
-      .select("id, title, caretaker_email, caretaker_status_token")
+      .select(
+        "id, title, caretaker_name, caretaker_phone, caretaker_whatsapp, caretaker_status_token"
+      )
       .eq("id", propertyId)
       .maybeSingle();
 
@@ -39,7 +41,7 @@ export async function POST(req: Request) {
       );
     }
 
-    if (!property.caretaker_email || !property.caretaker_status_token) {
+    if (!property.caretaker_status_token) {
       // Nothing we can do here — no contact on file to ping. Not the
       // student's fault, so this isn't really a 4xx/5xx in spirit, but
       // the caller still needs to know it can't proceed.
@@ -96,26 +98,32 @@ export async function POST(req: Request) {
     const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "";
     const statusUrl = `${baseUrl}/caretaker/${property.caretaker_status_token}`;
 
+    // Routes through you rather than auto-messaging the caretaker: you
+    // reach out personally (your own WhatsApp, free, no Meta Business
+    // setup) and either forward this same statusUrl so the caretaker can
+    // self-confirm with one tap, or resolve it manually from
+    // /admin/availability-requests once they reply to you in words.
     try {
-      await sendCaretakerAvailabilityPing({
-        to: property.caretaker_email,
+      await sendAdminAvailabilityPingNotice({
+        propertyId,
         propertyTitle: property.title,
         statusUrl,
+        caretakerName: property.caretaker_name,
+        caretakerPhone: property.caretaker_phone,
+        caretakerWhatsapp: property.caretaker_whatsapp,
       });
-    } catch (emailError) {
+    } catch (notifyError) {
       await logError({
         source: "server",
         route: "/api/availability-ping",
-        message: `Failed to send ping email: ${
-          emailError instanceof Error ? emailError.message : String(emailError)
+        message: `Failed to notify admin of ping: ${
+          notifyError instanceof Error ? notifyError.message : String(notifyError)
         }`,
         context: { propertyId },
       });
-
-      return NextResponse.json(
-        { message: "Couldn't reach the caretaker right now. Please try again shortly." },
-        { status: 502 }
-      );
+      // Not fatal to the student's request — the pending row is already
+      // saved, and it'll still show up in /admin/availability-requests
+      // even if this particular notification email failed to send.
     }
 
     return NextResponse.json({ success: true, alreadyPinged: false });

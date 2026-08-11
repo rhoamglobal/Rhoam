@@ -522,35 +522,35 @@ export default function PropertyClient({
 
         <div className="max-w-5xl mx-auto px-6 py-10">
 
-          {/* TITLE + PRICE */}
-          <div className="flex justify-between items-start gap-4 flex-wrap">
-            <div>
-              <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight">
-                {property.title}
-              </h1>
+          {/* TITLE + PRICE — always the same line, regardless of how many
+              badges are active. Badges live in their own row below, free
+              to wrap on their own without ever touching price position. */}
+          <div className="flex items-start justify-between gap-3">
+            <h1 className="text-xl sm:text-3xl font-semibold tracking-tight min-w-0 flex-1">
+              {property.title}
+            </h1>
 
-              <div className="flex items-center gap-2 flex-wrap mt-2.5">
-                {property.is_verified && (
-                  <VerifiedBadge verifiedAt={property.verified_at} />
-                )}
-
-                <AvailabilityBadge
-                  lastConfirmedAt={property.last_confirmed_at}
-                  multipleUnitsAvailable={
-                    property.multiple_units_available
-                  }
-                />
-              </div>
-
-              <p className="text-sm text-gray-500 mt-1.5">
-                {property.category}
-              </p>
-            </div>
-
-            <div className="bg-[#FF6B6B] text-white px-5 py-2.5 rounded-full text-lg font-semibold shadow-lg shadow-[#FF6B6B]/25">
+            <div className="shrink-0 bg-[#FF6B6B] text-white px-4 py-2 sm:px-5 sm:py-2.5 rounded-full text-base sm:text-lg font-semibold shadow-lg shadow-[#FF6B6B]/25 tabular-nums">
               ₦{property.price.toLocaleString()}
             </div>
           </div>
+
+          <div className="flex items-center gap-2 flex-wrap mt-2.5">
+            {property.is_verified && (
+              <VerifiedBadge verifiedAt={property.verified_at} />
+            )}
+
+            <AvailabilityBadge
+              lastConfirmedAt={property.last_confirmed_at}
+              multipleUnitsAvailable={
+                property.multiple_units_available
+              }
+            />
+          </div>
+
+          <p className="text-sm text-gray-500 mt-1.5">
+            {property.category}
+          </p>
 
           {distanceInfo && (
             <div className="flex items-center gap-1.5 mt-4 text-sm text-gray-500">
