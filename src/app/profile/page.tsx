@@ -60,8 +60,8 @@ function XIcon({ size = 15, className }: { size?: number; className?: string }) 
 // TODO(dev): replace with the real, live handles before shipping — these
 // are the actual account URLs, not the generic homepage links the old
 // code pointed at.
-const INSTAGRAM_URL = "https://instagram.com/rhoam_global";
-const X_URL = "https://x.com/rhoam_global";
+const INSTAGRAM_URL = "https://instagram.com/rhoam_waypoint";
+const X_URL = "https://x.com/rhoam_waypoint";
 
 export default function ProfilePage() {
   const { user } = useAuth();
