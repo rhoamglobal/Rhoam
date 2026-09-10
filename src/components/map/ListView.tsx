@@ -5,7 +5,11 @@ import { useAuth } from "@/components/providers/AuthProvider";
 import { isSaved, toggleSaved } from "@/lib/saved";
 import { schools } from "@/lib/schools";
 import { detectSchoolFromSearch } from "@/lib/detectSchool";
-import { getDistanceKm } from "@/lib/distance";
+import {
+  getDistanceKm,
+  kmToWalkMinutes,
+  getDistanceBadge,
+} from "@/lib/distance";
 import { useListProperties } from "@/hooks/useListProperties";
 import { Filters, countActive } from "./topbar/filters/SmartFilters";
 import PropertyShelf from "./PropertyShelf";
@@ -28,12 +32,16 @@ type Props = {
 const SCHOOL_SEE_ALL_ZOOM = 15;
 const LOCATION_SEE_ALL_ZOOM = 16.5;
 
+function hasValidCoords(p: Property) {
+  return Number.isFinite(p.latitude) && Number.isFinite(p.longitude);
+}
+
 // Groups the flat property list into an Airbnb-home-feed-style shelf
 // layout: one "More in {School}" shelf per school present in the data
 // (matched school from the search term first, mirroring "Based on your
-// Lekki search"), then one "More in {Location}" shelf per distinct area
-// tag within that school (front gate, back gate, etc. — whatever's
-// actually been entered against each property).
+// Lekki search"), then one "More in {Location}, {School}" shelf per
+// distinct area tag within that school (front gate, back gate, etc. —
+// whatever's actually been entered against each property).
 function useShelves(properties: Property[], search: string) {
   return useMemo(() => {
     const bySchool = new Map<string, Property[]>();
@@ -63,13 +71,22 @@ function useShelves(properties: Property[], search: string) {
         (s) => s.name.toLowerCase() === schoolKey.toLowerCase()
       );
 
-      const schoolTarget: FlyTarget = school
+      // Properties with valid coordinates only — a missing/malformed
+      // latitude or longitude is fine for showing the card itself, but
+      // can't stand in as a "See all" fly-to point (and would fail the
+      // distance calculation below), so those are filtered out from
+      // being picked as the representative point here specifically.
+      const geoProperties = schoolProperties.filter(hasValidCoords);
+
+      const schoolTarget: FlyTarget | null = school
         ? { latitude: school.lat, longitude: school.lng, zoom: SCHOOL_SEE_ALL_ZOOM }
-        : {
-            latitude: schoolProperties[0].latitude,
-            longitude: schoolProperties[0].longitude,
+        : geoProperties[0]
+        ? {
+            latitude: geoProperties[0].latitude,
+            longitude: geoProperties[0].longitude,
             zoom: SCHOOL_SEE_ALL_ZOOM,
-          };
+          }
+        : null;
 
       const byLocation = new Map<string, Property[]>();
       for (const p of schoolProperties) {
@@ -81,22 +98,28 @@ function useShelves(properties: Property[], search: string) {
 
       const locationShelves = [...byLocation.entries()]
         .sort((a, b) => b[1].length - a[1].length)
-        .map(([locationName, locationProperties]) => ({
-          title: `More in ${locationName}`,
-          properties: locationProperties,
-          // Same convention the search bar's own location suggestions
-          // use: the first matching property's coordinates stand in for
-          // that area, since areas like "Front Gate" aren't a single
-          // registered point of their own.
-          target: {
-            latitude: locationProperties[0].latitude,
-            longitude: locationProperties[0].longitude,
-            zoom: LOCATION_SEE_ALL_ZOOM,
-          } as FlyTarget,
-        }));
+        .map(([locationName, locationProperties]) => {
+          const geoLocationProperties = locationProperties.filter(hasValidCoords);
+          return {
+            title: `More in ${locationName}, ${schoolKey}`,
+            properties: locationProperties,
+            // Same convention the search bar's own location suggestions
+            // use: the first matching property's coordinates stand in
+            // for that area, since areas like "Front Gate" aren't a
+            // single registered point of their own.
+            target: geoLocationProperties[0]
+              ? ({
+                  latitude: geoLocationProperties[0].latitude,
+                  longitude: geoLocationProperties[0].longitude,
+                  zoom: LOCATION_SEE_ALL_ZOOM,
+                } as FlyTarget)
+              : schoolTarget,
+          };
+        });
 
       return {
         schoolKey,
+        school,
         schoolShelf: {
           title: `More in ${schoolKey}`,
           properties: schoolProperties,
@@ -154,13 +177,21 @@ export default function ListView({
   };
 
   // Nearest-first within each shelf when we have a location fix —
-  // otherwise the API's own newest-first order stands.
+  // otherwise the API's own newest-first order stands. Properties with
+  // no usable coordinates sort to the end rather than corrupting the
+  // comparator with NaN (NaN - NaN comparisons are unstable).
   const sortedProperties = userLocation
-    ? [...properties].sort(
-        (a, b) =>
+    ? [...properties].sort((a, b) => {
+        const aValid = hasValidCoords(a);
+        const bValid = hasValidCoords(b);
+        if (!aValid && !bValid) return 0;
+        if (!aValid) return 1;
+        if (!bValid) return -1;
+        return (
           getDistanceKm(userLocation.lat, userLocation.lng, a.latitude, a.longitude) -
           getDistanceKm(userLocation.lat, userLocation.lng, b.latitude, b.longitude)
-      )
+        );
+      })
     : properties;
 
   const shelves = useShelves(sortedProperties, search);
@@ -218,28 +249,52 @@ export default function ListView({
           </div>
         )}
 
-        {shelves.map(({ schoolKey, schoolShelf, locationShelves }) => (
-          <div key={schoolKey}>
-            <PropertyShelf
-              title={schoolShelf.title}
-              properties={schoolShelf.properties}
-              savedIds={savedIds}
-              onSave={handleSave}
-              onSeeAll={() => onSeeAll(schoolShelf.target)}
-            />
+        {shelves.map(({ schoolKey, school, schoolShelf, locationShelves }) => {
+          // Bound to this shelf group's school — every property here
+          // shares the same school_tag, so the distance is always
+          // measured to the same point.
+          const getDistanceMeta = (property: Property) => {
+            if (!school || !hasValidCoords(property)) {
+              return { distanceInfo: null, distanceBadge: null };
+            }
+            const km = getDistanceKm(
+              property.latitude,
+              property.longitude,
+              school.lat,
+              school.lng
+            );
+            const minutes = kmToWalkMinutes(km);
+            return {
+              distanceInfo: `${minutes} min walk to ${school.name}`,
+              distanceBadge: getDistanceBadge(minutes),
+            };
+          };
 
-            {locationShelves.map((shelf) => (
+          return (
+            <div key={schoolKey}>
               <PropertyShelf
-                key={shelf.title}
-                title={shelf.title}
-                properties={shelf.properties}
+                title={schoolShelf.title}
+                properties={schoolShelf.properties}
                 savedIds={savedIds}
                 onSave={handleSave}
-                onSeeAll={() => onSeeAll(shelf.target)}
+                onSeeAll={() => schoolShelf.target && onSeeAll(schoolShelf.target)}
+                getDistanceMeta={getDistanceMeta}
               />
-            ))}
-          </div>
-        ))}
+
+              {locationShelves.map((shelf) => (
+                <PropertyShelf
+                  key={shelf.title}
+                  title={shelf.title}
+                  properties={shelf.properties}
+                  savedIds={savedIds}
+                  onSave={handleSave}
+                  onSeeAll={() => shelf.target && onSeeAll(shelf.target)}
+                  getDistanceMeta={getDistanceMeta}
+                />
+              ))}
+            </div>
+          );
+        })}
       </div>
     </div>
   );

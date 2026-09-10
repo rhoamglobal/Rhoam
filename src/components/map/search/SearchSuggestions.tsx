@@ -286,7 +286,7 @@ export default function SearchSuggestions({
                       {/* META */}
                       <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-gray-500">
                         <span className="font-semibold text-[#ff5a5f]">
-                          NGN {property.price.toLocaleString()}
+                          NGN {property.price != null ? property.price.toLocaleString() : "—"}
                         </span>
 
                         <span>

@@ -208,16 +208,28 @@ export default function MapClient({
             }}
         >
           {Array.isArray(properties) &&
-            properties.map((property) => (
-              <Marker
-                key={property.id}
-                position={[property.latitude, property.longitude]}
-                icon={priceIcon(property.price)}
-                eventHandlers={{
-                  click: () => setSelected(property),
-                }}
-              />
-            ))}
+            properties
+              // A property with a missing/malformed latitude or longitude
+              // (e.g. a hastily-added test listing) throws a hard,
+              // uncaught "Invalid LatLng object" error from Leaflet when
+              // rendered — that crashes the entire map, not just that one
+              // pin. Skip it instead; better one missing pin than a dead
+              // page.
+              .filter(
+                (property) =>
+                  Number.isFinite(property.latitude) &&
+                  Number.isFinite(property.longitude)
+              )
+              .map((property) => (
+                <Marker
+                  key={property.id}
+                  position={[property.latitude, property.longitude]}
+                  icon={priceIcon(property.price)}
+                  eventHandlers={{
+                    click: () => setSelected(property),
+                  }}
+                />
+              ))}
         </MarkerClusterGroup>
         
           

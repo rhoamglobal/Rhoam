@@ -5,6 +5,16 @@ import { useRouter } from "next/navigation";
 import { Heart, CheckCircle2, MapPin, ArrowRight, X } from "lucide-react";
 import { Property } from "./types";
 
+// Formats a price safely. property.price is typed as required, but a
+// hastily-added listing (e.g. test data under a newly-added school) can
+// still have it come back null/undefined from the database — calling
+// .toLocaleString() on that directly throws "Cannot read properties of
+// null", which crashes the whole page instead of just that one card.
+function formatPrice(price: number | null | undefined) {
+  if (price == null || Number.isNaN(price)) return "Price on request";
+  return `₦${price.toLocaleString()}`;
+}
+
 // The visual card shared by PreviewCard (map popup) and PropertyShelf
 // (list view's horizontally-scrolling rows). Pulled out of PreviewCard
 // rather than duplicated, so a future design tweak to the card only
@@ -30,6 +40,7 @@ export default function PropertyCard({
   variant?: "floating" | "shelf";
 }) {
   const router = useRouter();
+  const priceLabel = formatPrice(property.price);
 
   if (variant === "shelf") {
     return (
@@ -79,16 +90,29 @@ export default function PropertyCard({
           <h3 className="text-sm font-semibold text-gray-900 truncate">
             {property.title}
           </h3>
-          <p className="text-xs text-gray-400 truncate mt-0.5 flex items-center gap-1">
-            <MapPin size={10} />
-            {property.location}
-          </p>
-          {distanceInfo && (
-            <p className="text-xs text-gray-400 truncate">{distanceBadge}</p>
+
+          {/* Distance-to-school replaces the raw location tag here — a
+              walk time is more useful at a glance than "Front Gate" on
+              its own. Falls back to the location tag only when we can't
+              resolve a matching school (no coordinates to measure from). */}
+          {distanceInfo ? (
+            <p className="text-xs text-gray-400 truncate mt-0.5">
+              {distanceInfo}
+            </p>
+          ) : (
+            property.location && (
+              <p className="text-xs text-gray-400 truncate mt-0.5 flex items-center gap-1">
+                <MapPin size={10} />
+                {property.location}
+              </p>
+            )
           )}
+
           <p className="text-sm text-gray-900 mt-1">
-            <span className="font-semibold">₦{property.price.toLocaleString()}</span>
-            <span className="text-gray-500"> / year</span>
+            <span className="font-semibold">{priceLabel}</span>
+            {property.price != null && (
+              <span className="text-gray-500"> / year</span>
+            )}
           </p>
         </div>
       </div>
@@ -148,9 +172,11 @@ export default function PropertyCard({
 
         <div className="absolute bottom-3 left-4 text-white">
           <span className="text-xl font-bold drop-shadow-sm">
-            ₦{property.price.toLocaleString()}
+            {priceLabel}
           </span>
-          <span className="text-xs text-white/80 ml-1">/ year</span>
+          {property.price != null && (
+            <span className="text-xs text-white/80 ml-1">/ year</span>
+          )}
         </div>
       </div>
 

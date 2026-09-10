@@ -1,8 +1,11 @@
 "use client";
 
-import { ArrowRight, ArrowUpRight } from "lucide-react";
+import Image from "next/image";
+import { ArrowRight } from "lucide-react";
 import { Property } from "./types";
 import PropertyCard from "./PropertyCard";
+
+type DistanceMeta = { distanceInfo: string | null; distanceBadge: string | null };
 
 export default function PropertyShelf({
   title,
@@ -10,6 +13,7 @@ export default function PropertyShelf({
   savedIds,
   onSave,
   onSeeAll,
+  getDistanceMeta,
 }: {
   title: string;
   properties: Property[];
@@ -19,8 +23,20 @@ export default function PropertyShelf({
   // shared handler in ListView, same one the header arrow and the
   // trailing "See all" tile both call.
   onSeeAll: () => void;
+  // Computes the "X min walk to {school}" text for a given property.
+  // Optional so PropertyShelf doesn't require every caller to know
+  // about schools — falls back to the card's own default (the raw
+  // location tag) when omitted.
+  getDistanceMeta?: (property: Property) => DistanceMeta;
 }) {
   if (properties.length === 0) return null;
+
+  // Up to 3 thumbnails for the trailing "See all" collage, most-recent
+  // first — mirrors the stacked-photo tile Airbnb itself uses at the end
+  // of a shelf, rather than a plain icon placeholder.
+  const previewImages = properties
+    .slice(0, 3)
+    .map((p) => p.images?.[0] || p.image_url || p.image || "/placeholder.jpg");
 
   return (
     <div className="mb-9">
@@ -36,28 +52,58 @@ export default function PropertyShelf({
       </div>
 
       <div className="flex items-start gap-4 overflow-x-auto pb-1 snap-x snap-mandatory scrollbar-hide">
-        {properties.map((property) => (
-          <PropertyCard
-            key={property.id}
-            property={property}
-            saved={savedIds.has(property.id)}
-            onSave={() => onSave(property.id)}
-            variant="shelf"
-          />
-        ))}
+        {properties.map((property) => {
+          const meta = getDistanceMeta?.(property);
+          return (
+            <PropertyCard
+              key={property.id}
+              property={property}
+              saved={savedIds.has(property.id)}
+              onSave={() => onSave(property.id)}
+              distanceInfo={meta?.distanceInfo}
+              distanceBadge={meta?.distanceBadge}
+              variant="shelf"
+            />
+          );
+        })}
 
-        {/* Trailing "See all" tile — same action as the header arrow,
-            placed at the end of the scroll per Airbnb's own pattern.
-            Height approximates a shelf card's full height (image + text
-            block below) so it doesn't look squashed next to real cards. */}
+        {/* Trailing "See all" tile — a stacked-photo collage, same
+            pattern Airbnb itself uses at the end of a shelf, rather than
+            a plain icon placeholder. Same action as the header arrow. */}
         <button
           onClick={onSeeAll}
-          className="w-[140px] shrink-0 snap-start h-[268px] rounded-2xl border border-dashed border-[#ffb3b5] bg-[#fff8f7] hover:bg-[#fff1f1] transition flex flex-col items-center justify-center gap-2 text-[#ff5a5f]"
+          aria-label={`See all in ${title}`}
+          className="w-[140px] shrink-0 snap-start flex flex-col items-center pt-2"
         >
-          <span className="h-10 w-10 rounded-full bg-white shadow-sm flex items-center justify-center">
-            <ArrowUpRight size={18} />
+          <div className="relative h-[190px] w-full">
+            {previewImages.map((src, i) => {
+              // Fanned stack: back-most image furthest rotated/offset,
+              // front-most (i === 0) sits flat and on top.
+              const rotations = [0, -6, 6];
+              const offsets = [0, 10, 18];
+              return (
+                <div
+                  key={i}
+                  className="absolute inset-x-2 top-0 h-[160px] rounded-2xl overflow-hidden shadow-md ring-1 ring-black/5 bg-gray-100"
+                  style={{
+                    transform: `rotate(${rotations[i]}deg) translateY(${offsets[i]}px)`,
+                    zIndex: previewImages.length - i,
+                  }}
+                >
+                  <Image
+                    src={src}
+                    alt=""
+                    fill
+                    sizes="140px"
+                    className="object-cover"
+                  />
+                </div>
+              );
+            })}
+          </div>
+          <span className="text-sm font-semibold text-gray-900 mt-3">
+            See all
           </span>
-          <span className="text-sm font-semibold">See all</span>
         </button>
       </div>
     </div>
