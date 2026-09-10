@@ -1,7 +1,8 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { LatLngBounds } from "leaflet";
 import { Property } from "@/components/map/types";
 import { Filters } from "@/components/map/topbar/filters/SmartFilters";
+import { detectSchoolFromSearch } from "@/lib/detectSchool";
 
 type Args = {
   bounds: LatLngBounds | null;
@@ -30,13 +31,21 @@ export function usePropertySearch({
     const east = bounds.getEast();
     const west = bounds.getWest();
 
+    // The API only does a literal ilike match against school_tag — it
+    // has no notion of aliases. Searching "nsukka" should still surface
+    // UNN's properties (school_tag is stored as "UNN"), so resolve any
+    // matched alias to the canonical name before sending it. A literal
+    // "ESUT" search still matches school_tag directly either way.
+    const matchedSchool = detectSchoolFromSearch(search);
+    const effectiveSearch = matchedSchool ? matchedSchool.name : search;
+
     const params = new URLSearchParams({
       north: String(north),
       south: String(south),
       east: String(east),
       west: String(west),
       category,
-      search,
+      search: effectiveSearch,
     });
 
     if (filters.minPrice) params.set("minPrice", filters.minPrice);
@@ -50,6 +59,10 @@ export function usePropertySearch({
     }
 
     let cancelled = false;
+    // Safe pattern, unlike the refetch bug above: "loading" here doesn't
+    // feed back into this effect's own dependency array, so it can't
+    // cause a render loop — it's a one-way "fetch started" flag.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setStatus("loading");
 
     fetch(`/api/property?${params.toString()}`)
@@ -71,10 +84,14 @@ export function usePropertySearch({
     return () => {
       cancelled = true;
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [bounds, category, search, filters, refetchToken]);
 
-  const refetch = () => setRefetchToken((t) => t + 1);
+  // Stable reference — MapClient's own MapEmptyState "Retry" button calls
+  // this directly. Keeping it memoized (rather than a fresh closure each
+  // render) is just good hygiene; see useListProperties for the version
+  // of this bug that actually caused a render loop when an unmemoized
+  // refetch was forwarded up through a parent effect.
+  const refetch = useCallback(() => setRefetchToken((t) => t + 1), []);
 
   return { properties, status, refetch };
 }

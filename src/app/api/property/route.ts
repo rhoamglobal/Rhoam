@@ -60,12 +60,17 @@ export async function GET(req: Request) {
     query = query.eq("category", category);
   }
 
-  // Search filter (title + description)
+  // Search filter (title + description + school + area). school_tag and
+  // location previously weren't matched here at all, so searching a
+  // school name or an area like "front gate" silently returned nothing
+  // even when matching properties existed — the client resolves aliases
+  // (e.g. "nsukka" -> "UNN") to the canonical name before this runs, but
+  // this still needs to match it against the right column.
   if (search) {
     const safeSearch = search.replace(/[,()]/g, " ").trim().slice(0, 100);
     if (safeSearch) {
       query = query.or(
-        `title.ilike.%${safeSearch}%,description.ilike.%${safeSearch}%`
+        `title.ilike.%${safeSearch}%,description.ilike.%${safeSearch}%,school_tag.ilike.%${safeSearch}%,location.ilike.%${safeSearch}%`
       );
     }
   }

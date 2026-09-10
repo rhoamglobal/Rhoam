@@ -2,14 +2,12 @@
 
 import { useEffect } from "react";
 import { useMap } from "react-leaflet";
+import type { FlyTarget } from "../types";
 
 export default function FlyToProperty({
   target,
 }: {
-  target: {
-    latitude: number;
-    longitude: number;
-  } | null;
+  target: FlyTarget | null;
 }) {
   const map = useMap();
 
@@ -18,7 +16,7 @@ export default function FlyToProperty({
 
     map.flyTo(
       [target.latitude, target.longitude],
-      18,
+      target.zoom ?? 18,
       {
         duration: 1.5,
       }

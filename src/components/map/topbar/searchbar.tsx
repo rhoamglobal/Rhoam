@@ -8,6 +8,7 @@ import SmartFilters, {
   emptyFilters,
 } from "./filters/SmartFilters";
 import { Property } from "../types";
+import type { FlyTarget } from "../types";
 import { schools } from "@/lib/schools";
 import { useDebounce } from "@/hooks/useDebounce";
 import { Search, SlidersHorizontal, X } from "lucide-react";
@@ -22,12 +23,7 @@ export default function SearchBar({
 }: {
   search: string;
   setSearch: (v: string) => void;
-  setFlyTarget: (
-    target: {
-      latitude: number;
-      longitude: number;
-    } | null
-  ) => void;
+  setFlyTarget: (target: FlyTarget | null) => void;
   filters: Filters;
   setFilters: React.Dispatch<React.SetStateAction<Filters>>;
 }) {
@@ -233,6 +229,16 @@ export default function SearchBar({
               query={input}
               onFlyTo={(target) => {
                 setFlyTarget(target);
+                // School/area selections carry a label — commit it as
+                // the real search immediately (don't wait for Enter),
+                // so it stays visible in the box and list view's shelf
+                // grouping picks it up right away. A plain map jump
+                // (e.g. the per-property "fly to" icon) has no label
+                // and leaves the search untouched.
+                if (target.label) {
+                  setInput(target.label);
+                  setSearch(target.label);
+                }
                 setIsFocused(false);
               }}
               onPreview={() => {

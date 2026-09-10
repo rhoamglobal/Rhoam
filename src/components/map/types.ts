@@ -1,3 +1,15 @@
+// Shared shape for anywhere the map gets told to fly somewhere — search
+// suggestions (school/location/property), and list view's "See all"
+// tiles. zoom is optional: defaults to the tight property-level zoom in
+// FlyToProperty, but "See all" on a school/location shelf passes a
+// wider zoom explicitly so more of the area (and more property pins)
+// stay in view after the flight.
+export type FlyTarget = {
+  latitude: number;
+  longitude: number;
+  zoom?: number;
+};
+
 export type Property = {
     id: string;
     title: string;

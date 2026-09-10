@@ -2,22 +2,24 @@
 
 import { MapContainer, TileLayer, Marker } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
-import { useState } from "react";
-import L, { LatLngBounds } from "leaflet";
+import { useEffect, useRef, useState } from "react";
+import L, { LatLngBounds, Map as LeafletMap } from "leaflet";
 
 import { priceIcon } from "./PriceMarker";
 import CloseOnMapClick from "./CloseOnMapClick";
 import PreviewCard from "./PreviewCard";
 
 import MapAutoFit from "./MapAutoFit";
+import UserLocationMarker from "./UserLocationMarker";
+import type { UserLocation, LocationStatus } from "@/hooks/useUserLocation";
 
 import { useDebounce } from "@/hooks/useDebounce";
 import { usePropertySearch } from "@/hooks/usePropertySearch";
 import { Property } from "./types";
+import type { FlyTarget } from "./types";
 
 import RememberMapView from "./RememberMapView";
 
-import { detectSchoolFromSearch } from "@/lib/detectSchool";
 import { Filters, emptyFilters, countActive } from "./topbar/filters/SmartFilters";
 import MapEmptyState from "./MapEmptyState";
 import ValuePropBanner from "./ValuePropBanner";
@@ -51,11 +53,17 @@ type Props = {
   category: string;
   search: string;
   filters?: Filters;
-  flyTarget: {
-    latitude: number;
-    longitude: number;
-  } | null;
+  flyTarget: FlyTarget | null;
   onResetNarrowing?: () => void;
+  // Lifted to page.tsx so both MapClient and ListView share a single
+  // geolocation fix instead of each prompting the browser separately.
+  userLocation: UserLocation;
+  locationStatus: LocationStatus;
+  // Whether the map is the currently-visible view (vs. hidden behind
+  // list view via display:none). Leaflet miscalculates tile layout
+  // while its container has zero size, so toggling back needs an
+  // explicit invalidateSize() — see the effect below.
+  isActive?: boolean;
 };
 
 export default function MapClient({
@@ -64,20 +72,20 @@ export default function MapClient({
   filters = emptyFilters,
   flyTarget,
   onResetNarrowing,
+  userLocation,
+  locationStatus,
+  isActive = true,
 }: Props) {
   const [selected, setSelected] = useState<Property | null>(null);
   const [bounds, setBounds] = useState<LatLngBounds | null>(null);
+  const mapRef = useRef<LeafletMap | null>(null);
+  const hasFlownToUser = useRef(false);
 
 
   // ✅ debounce search HERE
   const debouncedSearch = useDebounce(search, 400);
 
 
-  // ✅ detect school 
-  
-  const detectedSchool = detectSchoolFromSearch(debouncedSearch);
-
-  
   // ✅ database filtering
   const { properties, status, refetch } = usePropertySearch({
     bounds,
@@ -87,6 +95,39 @@ export default function MapClient({
   });
 
   const { user } = useAuth();
+
+  // Fly to the user's fix the moment it arrives — but only once. Repeat
+  // visits or a mid-session re-fix (were we to add one later) shouldn't
+  // keep yanking the map away from wherever the person has since panned.
+  useEffect(() => {
+    if (userLocation && !hasFlownToUser.current && mapRef.current) {
+      mapRef.current.flyTo([userLocation.lat, userLocation.lng], 15);
+      hasFlownToUser.current = true;
+    }
+  }, [userLocation]);
+
+  // Fixes Leaflet rendering grey/offset tiles after its container goes
+  // from display:none back to visible (e.g. switching from list view
+  // back to map view) — Leaflet caches container size internally and
+  // doesn't notice the change on its own.
+  useEffect(() => {
+    if (isActive && mapRef.current) {
+      // Let the browser finish the display:none -> visible layout pass
+      // first, or invalidateSize reads the still-stale (zero) size.
+      const id = requestAnimationFrame(() => {
+        mapRef.current?.invalidateSize();
+      });
+      return () => cancelAnimationFrame(id);
+    }
+  }, [isActive]);
+
+  // RememberMapView should only restore the last-saved view once we know
+  // geolocation has failed (denied/unavailable) — never while pending
+  // (would race the flyTo above) and never once granted (flyTo already
+  // owns centering at that point; restoring afterward would just yank
+  // the map straight back to wherever it last was, second-guessing the
+  // fresh fix we just centered on).
+  const skipRestore = locationStatus !== "denied" && locationStatus !== "unavailable";
 
   // Used to pick which empty-state message applies (RHM-114): a search
   // that's actively narrowed down (category/search/filters) gets a
@@ -109,6 +150,7 @@ export default function MapClient({
         zoom={13}
         scrollWheelZoom
         style={{ height: "100%", width: "100%" }}
+        ref={mapRef}
       >
         
         <CloseOnMapClick onClose={() => setSelected(null)} />
@@ -116,12 +158,20 @@ export default function MapClient({
         <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
         <FlyToProperty target={flyTarget} />
 
-        <RememberMapView />
+        <RememberMapView skipRestore={skipRestore} />
         <MapBoundsListener setBounds={setBounds} />
         
 
         
-        <MapAutoFit properties={properties} />
+        <MapAutoFit properties={properties} skip={skipRestore} />
+
+        {userLocation && (
+          <UserLocationMarker
+            lat={userLocation.lat}
+            lng={userLocation.lng}
+            accuracy={userLocation.accuracy}
+          />
+        )}
  
         <MarkerClusterGroup
           chunkedLoading

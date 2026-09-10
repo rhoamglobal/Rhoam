@@ -40,6 +40,11 @@ type Props = {
   onFlyTo: (target: {
     latitude: number;
     longitude: number;
+    // When present, the caller should also commit this as the actual
+    // search text — a school/area click is a search selection, not just
+    // a map jump, so list view's shelf grouping (which reads the
+    // committed search) needs to see it too.
+    label?: string;
   }) => void;
   onPreview: () => void;
 };
@@ -140,6 +145,7 @@ export default function SearchSuggestions({
                   onFlyTo({
                     latitude: school.lat,
                     longitude: school.lng,
+                    label: school.name,
                   })
                 }
                 className="group flex w-full items-center justify-between rounded-2xl px-3 py-3 text-left transition hover:bg-white hover:shadow-sm"
@@ -182,6 +188,7 @@ export default function SearchSuggestions({
                   onFlyTo({
                     latitude: location.lat,
                     longitude: location.lng,
+                    label: location.name,
                   })
                 }
                 className="group flex w-full items-center justify-between rounded-2xl px-3 py-3 text-left transition hover:bg-white hover:shadow-sm"
