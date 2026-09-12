@@ -10,6 +10,14 @@ export type FlyTarget = {
   zoom?: number;
 };
 
+// Wider than the tight zoom=18 used when flying to a single selected
+// property/search result — both "See all" (ListView) and selecting a
+// school/location chip (page.tsx) want to show the whole area's
+// properties at once, not zoom in on one point. Shared here so the two
+// call sites can't drift apart.
+export const SCHOOL_SEE_ALL_ZOOM = 15;
+export const LOCATION_SEE_ALL_ZOOM = 16.5;
+
 export type Property = {
     id: string;
     title: string;

@@ -14,7 +14,7 @@ import { useListProperties } from "@/hooks/useListProperties";
 import { Filters, countActive } from "./topbar/filters/SmartFilters";
 import PropertyShelf from "./PropertyShelf";
 import ListEmptyState from "./ListEmptyState";
-import { Property, FlyTarget } from "./types";
+import { Property, FlyTarget, SCHOOL_SEE_ALL_ZOOM, LOCATION_SEE_ALL_ZOOM } from "./types";
 import type { UserLocation } from "@/hooks/useUserLocation";
 
 type Props = {
@@ -24,13 +24,12 @@ type Props = {
   userLocation: UserLocation;
   onResetNarrowing?: () => void;
   onSeeAll: (target: FlyTarget) => void;
+  // Set when the category bar's location chips have narrowed to one
+  // area within the matched school (see page.tsx's schoolContext) — when
+  // present, only that area's shelf renders instead of the full
+  // school-by-location breakdown.
+  selectedLocation?: string | null;
 };
-
-// Wider than the tight zoom=18 used when flying to a single selected
-// property/search result — "See all" is meant to show the whole area's
-// properties at once, not zoom in on one point.
-const SCHOOL_SEE_ALL_ZOOM = 15;
-const LOCATION_SEE_ALL_ZOOM = 16.5;
 
 function hasValidCoords(p: Property) {
   return Number.isFinite(p.latitude) && Number.isFinite(p.longitude);
@@ -101,6 +100,7 @@ function useShelves(properties: Property[], search: string) {
         .map(([locationName, locationProperties]) => {
           const geoLocationProperties = locationProperties.filter(hasValidCoords);
           return {
+            locationName,
             title: `More in ${locationName}, ${schoolKey}`,
             properties: locationProperties,
             // Same convention the search bar's own location suggestions
@@ -138,6 +138,7 @@ export default function ListView({
   userLocation,
   onResetNarrowing,
   onSeeAll,
+  selectedLocation,
 }: Props) {
   const { user } = useAuth();
   const { properties, status, refetch } = useListProperties({
@@ -204,7 +205,11 @@ export default function ListView({
       <div className="max-w-6xl mx-auto px-5">
         <div className="mb-6">
           <h1 className="text-2xl md:text-3xl font-bold text-gray-900">
-            {userLocation ? "Places near you" : "Explore student housing"}
+            {selectedLocation
+              ? selectedLocation
+              : userLocation
+              ? "Places near you"
+              : "Explore student housing"}
           </h1>
           <p className="text-sm text-gray-500 mt-1">
             {status === "success"
@@ -269,6 +274,29 @@ export default function ListView({
               distanceBadge: getDistanceBadge(minutes),
             };
           };
+
+          // A location chip is active — this school renders only that
+          // one area's shelf (or nothing, if the selection belongs to a
+          // different school than this group).
+          if (selectedLocation) {
+            const matched = locationShelves.find(
+              (shelf) =>
+                shelf.locationName.toLowerCase() === selectedLocation.toLowerCase()
+            );
+            if (!matched) return null;
+
+            return (
+              <PropertyShelf
+                key={matched.title}
+                title={matched.title}
+                properties={matched.properties}
+                savedIds={savedIds}
+                onSave={handleSave}
+                onSeeAll={() => matched.target && onSeeAll(matched.target)}
+                getDistanceMeta={getDistanceMeta}
+              />
+            );
+          }
 
           return (
             <div key={schoolKey}>

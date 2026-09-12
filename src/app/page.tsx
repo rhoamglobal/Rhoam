@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import dynamic from "next/dynamic";
 import TopBar from "@/components/map/topbar/searchbar";
 import Categories from "@/components/map/topbar/CategoryBar";
@@ -8,7 +8,13 @@ import { emptyFilters } from "@/components/map/topbar/filters/SmartFilters";
 import ListView from "@/components/map/ListView";
 import ViewToggle from "@/components/map/ViewToggle";
 import { useUserLocation } from "@/hooks/useUserLocation";
-import type { FlyTarget } from "@/components/map/types";
+import { useSchoolLocations } from "@/hooks/useSchoolLocations";
+import { detectSchoolFromSearch } from "@/lib/detectSchool";
+import {
+  FlyTarget,
+  SCHOOL_SEE_ALL_ZOOM,
+  LOCATION_SEE_ALL_ZOOM,
+} from "@/components/map/types";
 
 const MapClient = dynamic(() => import("@/components/map/MapClient"), {
   ssr: false,
@@ -52,6 +58,29 @@ export default function Page() {
   // an unnecessary re-render chain.
   const { location: userLocation, status: locationStatus } = useUserLocation();
 
+  // When the search matches a school, the category bar contextually
+  // swaps from property-type chips to that school's areas (student
+  // areas are the current priority — property-type filtering is still
+  // reachable via the filters panel, just not living here permanently).
+  const matchedSchool = useMemo(() => detectSchoolFromSearch(search), [search]);
+  const { locations: schoolLocations } = useSchoolLocations(
+    matchedSchool?.name ?? null
+  );
+
+  const [selectedLocation, setSelectedLocation] = useState<string | null>(null);
+
+  // Leaving school context (search cleared/changed to something else)
+  // always drops any location drilldown along with it — an "orphaned"
+  // selected location with no matching school wouldn't mean anything.
+  useEffect(() => {
+    // Safe pattern, same reasoning as the documented exceptions
+    // elsewhere in this file/codebase: selectedLocation doesn't feed
+    // back into matchedSchool?.name (this effect's own dependency), so
+    // it can't cascade.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setSelectedLocation(null);
+  }, [matchedSchool?.name]);
+
   const resetNarrowing = () => {
     setCategory("All");
     setSearch("");
@@ -64,6 +93,42 @@ export default function Page() {
   const handleSeeAll = (target: FlyTarget) => {
     setFlyTarget(target);
     setView("map");
+  };
+
+  // A location chip flies the map there (without switching views — this
+  // is a lighter-weight "narrow down" action than "See all") and, in
+  // list view, drills the shelves down to just that area. Re-selecting
+  // "All {School}" (location === null) zooms back out to the school
+  // overview and restores the full breakdown.
+  const handleSelectLocation = (locationName: string | null) => {
+    setSelectedLocation(locationName);
+
+    if (!matchedSchool) return;
+
+    if (locationName === null) {
+      setFlyTarget({
+        latitude: matchedSchool.lat,
+        longitude: matchedSchool.lng,
+        zoom: SCHOOL_SEE_ALL_ZOOM,
+      });
+      return;
+    }
+
+    const location = schoolLocations.find((l) => l.name === locationName);
+    if (location) {
+      setFlyTarget({
+        latitude: location.lat,
+        longitude: location.lng,
+        zoom: LOCATION_SEE_ALL_ZOOM,
+      });
+    }
+  };
+
+  // The back button on the category bar's location-chip row — leaves
+  // school context entirely, back to normal property-type categories.
+  const handleExitSchool = () => {
+    setSearch("");
+    setSelectedLocation(null);
   };
 
   return (
@@ -95,6 +160,7 @@ export default function Page() {
           userLocation={userLocation}
           onResetNarrowing={resetNarrowing}
           onSeeAll={handleSeeAll}
+          selectedLocation={selectedLocation}
         />
       )}
 
@@ -133,6 +199,17 @@ export default function Page() {
           active={category}
           setActive={setCategory}
           trailing={<ViewToggle view={view} onChange={setView} />}
+          schoolContext={
+            matchedSchool
+              ? {
+                  schoolName: matchedSchool.name,
+                  locations: schoolLocations.map((l) => l.name),
+                  activeLocation: selectedLocation,
+                  onSelectLocation: handleSelectLocation,
+                  onExit: handleExitSchool,
+                }
+              : undefined
+          }
         />
       </div>
     </div>

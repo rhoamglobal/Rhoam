@@ -33,6 +33,20 @@ export default function SearchBar({
   const [loadingSuggestions, setLoadingSuggestions] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
 
+  // Normally this component is the only thing that changes `search`
+  // (submitSearch / onFlyTo), and both of those already keep `input` in
+  // sync manually — so this only actually fires when something external
+  // resets it, e.g. the category bar's "back to all areas" button
+  // clearing the school match. Safe against fighting live typing: typing
+  // only ever updates local `input`, never the committed `search` prop.
+  useEffect(() => {
+    // Safe pattern, same reasoning as the other documented exceptions:
+    // setInput doesn't feed back into `search` (this effect's own
+    // dependency), so it can't cascade.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setInput(search);
+  }, [search]);
+
   const activeFilterCount =
     (filters.minPrice ? 1 : 0) +
     (filters.maxPrice ? 1 : 0) +
@@ -65,6 +79,9 @@ export default function SearchBar({
 
   useEffect(() => {
     if (!debouncedInput.trim()) {
+      // Safe pattern: doesn't feed back into debouncedInput (this
+      // effect's own dependency), so it can't cascade.
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setProperties([]);
       setLoadingSuggestions(false);
       return;

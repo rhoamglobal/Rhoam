@@ -1,6 +1,7 @@
 "use client";
 
-import { Circle, CircleMarker } from "react-leaflet";
+import { Circle, Marker } from "react-leaflet";
+import L from "leaflet";
 
 type Props = {
   lat: number;
@@ -8,9 +9,33 @@ type Props = {
   accuracy: number;
 };
 
-// Deliberately visually distinct from priceIcon (coral price bubbles) and
-// the cluster bubbles (also coral) so nobody mistakes "where I am" for a
-// listing — blue is the de facto convention (Google Maps, Airbnb, Uber).
+// A teardrop pin (not a plain dot) in the brand coral, with a soft
+// pulsing halo at its base — deliberately shaped differently from
+// priceIcon's pill bubbles and the cluster circles (also coral) so it
+// still reads unmistakably as "you", not a listing, even sharing the
+// same color family.
+const userPinIcon = L.divIcon({
+  className: "user-location-pin",
+  html: `
+    <div class="user-location-pin-wrap">
+      <div class="user-location-pin-pulse"></div>
+      <svg width="30" height="40" viewBox="0 0 30 40" xmlns="http://www.w3.org/2000/svg">
+        <path
+          d="M15 0C6.7 0 0 6.7 0 15c0 11.2 15 25 15 25s15-13.8 15-25C30 6.7 23.3 0 15 0z"
+          fill="#ff5a5f"
+          stroke="white"
+          stroke-width="2"
+        />
+        <circle cx="15" cy="15" r="5.5" fill="white" />
+      </svg>
+    </div>
+  `,
+  iconSize: [30, 40],
+  // Bottom tip of the pin (where it "points") sits on the actual
+  // coordinate, matching how map pins conventionally anchor.
+  iconAnchor: [15, 40],
+});
+
 export default function UserLocationMarker({ lat, lng, accuracy }: Props) {
   return (
     <>
@@ -20,24 +45,18 @@ export default function UserLocationMarker({ lat, lng, accuracy }: Props) {
         center={[lat, lng]}
         radius={accuracy}
         pathOptions={{
-          color: "#4285F4",
-          fillColor: "#4285F4",
+          color: "#ff5a5f",
+          fillColor: "#ff5a5f",
           fillOpacity: 0.08,
           weight: 1,
         }}
         interactive={false}
       />
-      <CircleMarker
-        center={[lat, lng]}
-        radius={8}
-        pathOptions={{
-          color: "white",
-          fillColor: "#4285F4",
-          fillOpacity: 1,
-          weight: 3,
-        }}
-        className="user-location-pulse"
+      <Marker
+        position={[lat, lng]}
+        icon={userPinIcon}
         interactive={false}
+        zIndexOffset={1000}
       />
     </>
   );
