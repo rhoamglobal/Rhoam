@@ -28,6 +28,7 @@ import UnlockModal from "@/components/UnlockModal";
 import ContactModal from "@/components/ContactModal";
 import ReportIssueModal from "@/components/ReportIssueModal";
 import { Z_CLASS } from "@/lib/zIndex";
+import { recordPropertyView } from "@/lib/propertyViewTracking";
 
 export default function PropertyClient({
   property,
@@ -36,6 +37,13 @@ export default function PropertyClient({
   property: Property & { isUnlocked?: boolean };
   nearbyProperties: Property[];
 }) {
+  // Counts toward the install prompt's "after they've browsed a few
+  // properties" threshold — one view per page load/property, not tied
+  // to how long they stay or what they do here.
+  useEffect(() => {
+    recordPropertyView();
+  }, []);
+
   const waLink = property.landlord_whatsapp
     ? `https://wa.me/${property.landlord_whatsapp.replace(/\D/g, "")}`
     : null;
